@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# transcripciones de sesión AI (contienen secretos pegados en el chat)
+claude-session.jsonl
+codex-session.jsonl

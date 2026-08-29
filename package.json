@@ -1,27 +1,47 @@
 {
-  "name": "puente",
+  "name": "camalote",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:integration": "RUN_INTEGRATION=1 vitest run src/test/pdas.integration.test.ts",
+    "icons": "node scripts/generate-icons.mjs",
+    "relayer": "node scripts/setup-relayer.mjs"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@privy-io/react-auth": "^3.38.0",
+    "@solana-program/memo": "^0.13.0",
+    "@solana-program/token": "^0.16.0",
+    "@solana/kit": "^8.1.0",
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
+    "lucide-react": "^1.35.0",
     "next": "16.3.3",
+    "permissionless": "^0.4.0",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "viem": "^2.56.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "playwright-core": "^1.62.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   },
   "packageManager": "pnpm@10.8.1"
 }

@@ -1,26 +1,225 @@
 @import "tailwindcss";
 
+/*
+ * Camalote — sistema de diseño
+ * Neutrales cálidos + un solo acento (índigo "camalote") + gradiente de marca
+ * Base→Solana reservado para momentos clave (hero, progreso, éxito).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: #fbfaf8;
+  --surface: #ffffff;
+  --foreground: #1c1917;
+  --muted: #f3f1ee;
+  --muted-foreground: #57534e;
+  --border: #e7e5e4;
+  /* violeta de la flor del camalote (del render de marca) */
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-foreground: #ffffff;
+  --success: #15803d;
+  --warning: #b45309;
+  --destructive: #dc2626;
+  --ring: #7c3aed;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --base-blue: #0052ff;
+  --solana-purple: #8b5cf6;
+  --solana-green: #109d74;
+  --brand-gradient: linear-gradient(
+    100deg,
+    var(--base-blue) 0%,
+    var(--solana-purple) 52%,
+    var(--solana-green) 100%
+  );
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #12100e;
+    --surface: #1b1916;
+    --foreground: #f0eee9;
+    --muted: #262320;
+    --muted-foreground: #a8a29e;
+    --border: #2e2a26;
+    --primary: #8250f4;
+    --primary-hover: #9268f6;
+    --primary-foreground: #ffffff;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --destructive: #f87171;
+    --ring: #a78bfa;
+    --solana-green: #14f195;
+    --base-blue: #4d85ff;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --color-base-blue: var(--base-blue);
+  --color-solana-purple: var(--solana-purple);
+  --color-solana-green: var(--solana-green);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif,
+    system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular",
+    monospace;
+  --font-hand: var(--font-caveat), cursive;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.text-gradient {
+  background: var(--brand-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.bg-brand-gradient {
+  background: var(--brand-gradient);
+}
+
+/* ——— Animaciones (solo transform/opacity, con reduced-motion) ——— */
+
+.camalote-sail {
+  offset-path: path("M 45 116 Q 280 108 515 116");
+  offset-rotate: 0deg;
+  opacity: 0;
+}
+
+.wave {
+  transform: translateX(-560px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .camalote-sail {
+    animation: camalote-sail 16s ease-in-out infinite;
+  }
+  .camalote-bob {
+    animation: camalote-bob 3.2s ease-in-out infinite;
+    transform-origin: 50% 80%;
+  }
+  /* la correntada: cada capa deriva a su ritmo hacia la orilla verde */
+  .wave-slow {
+    animation: wave-drift 26s linear infinite;
+  }
+  .wave-mid {
+    animation: wave-drift 19s linear infinite;
+  }
+  .wave-fast {
+    animation: wave-drift 13s linear infinite;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 400ms cubic-bezier(0, 0, 0.2, 1) both;
+  }
+  .animate-fade-up-delay {
+    animation: fade-up 400ms cubic-bezier(0, 0, 0.2, 1) 120ms both;
+  }
+  .animate-pop {
+    animation: pop 300ms cubic-bezier(0, 0, 0.2, 1) both;
+  }
+  .animate-soft-pulse {
+    animation: soft-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camalote-sail {
+    opacity: 1;
+    offset-distance: 45%;
+  }
+}
+
+@keyframes camalote-sail {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+/* balanceo suave, como flotando en la correntada */
+@keyframes camalote-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+}
+
+
+@keyframes wave-drift {
+  from {
+    transform: translateX(-560px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
