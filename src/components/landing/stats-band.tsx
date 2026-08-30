@@ -60,10 +60,7 @@ export function StatsBand() {
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.statsTitle}
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
-          {t.landing.statsSub}
-        </p>
-        <dl className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-8 text-center sm:grid-cols-4">
+        <dl className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-8 text-center sm:grid-cols-4">
           {cells.map((cell) => (
             <div key={cell.label} className="flex flex-col-reverse gap-1">
               <dt className="text-sm text-muted-foreground">{cell.label}</dt>
