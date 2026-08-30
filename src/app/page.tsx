@@ -79,7 +79,7 @@ function Header() {
 function Hero() {
   const { t } = useLang();
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+    <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
         {DEMO_MODE && (
           <div className="mb-5 animate-fade-up">
@@ -133,7 +133,7 @@ function surfacePath(y: number, amp: number): string {
 function BridgeVisual() {
   const { t } = useLang();
   return (
-    <figure className="mx-auto mt-16 w-full max-w-3xl">
+    <figure className="mx-auto mt-10 w-full max-w-3xl sm:mt-16">
       <div
         className="flex w-full justify-center overflow-hidden"
         aria-hidden="true"
@@ -260,7 +260,7 @@ function Showdown() {
   return (
     <section
       id="convenceme"
-      className="border-t border-border bg-muted/40 py-20"
+      className="border-t border-border bg-muted/40 py-12 sm:py-20"
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -270,8 +270,8 @@ function Showdown() {
           {t.landing.showdownSub}
         </p>
 
-        <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
-          <Card className="p-6 opacity-80">
+        <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
+          <Card className="p-5 opacity-80 sm:p-6">
             <div className="flex items-center gap-2">
               <BaseMark className="size-3.5 rounded-[2px]" />
               <h3 className="font-medium text-muted-foreground">
@@ -295,7 +295,7 @@ function Showdown() {
           </Card>
 
           <div className="overflow-hidden rounded-2xl bg-brand-gradient p-[1px]">
-            <div className="h-full rounded-[calc(1rem-1px)] bg-surface p-6">
+            <div className="h-full rounded-[calc(1rem-1px)] bg-surface p-5 sm:p-6">
               <div className="flex items-center gap-2">
                 <SolanaMark className="size-3.5" />
                 <h3 className="font-medium">{t.landing.solanaColTitle}</h3>
@@ -315,8 +315,8 @@ function Showdown() {
           </div>
         </div>
 
-        <figure className="mx-auto mt-14 max-w-md -rotate-1">
-          <blockquote className="rounded-2xl border border-border bg-surface p-8 font-hand text-2xl leading-snug shadow-sm sm:text-3xl">
+        <figure className="mx-auto mt-10 max-w-md -rotate-1 sm:mt-14">
+          <blockquote className="rounded-2xl border border-border bg-surface p-6 font-hand text-xl leading-snug shadow-sm sm:p-8 sm:text-3xl">
             {t.landing.letter.map((line, i) => (
               <span key={i}>
                 {line}
@@ -333,7 +333,7 @@ function Showdown() {
 function WhySolana() {
   const { t } = useLang();
   return (
-    <section id="por-que-solana" className="border-t border-border py-20">
+    <section id="por-que-solana" className="border-t border-border py-12 sm:py-20">
       <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.whyTitle}
@@ -341,14 +341,14 @@ function WhySolana() {
         <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
           {t.landing.whySub}
         </p>
-        <div className="mt-12 flex flex-col">
+        <div className="mt-6 flex flex-col sm:mt-12">
           {t.landing.whyItems.map((reason, i) => (
             <div
               key={reason.claim}
-              className="grid gap-3 border-t border-border py-8 first:border-t-0 sm:grid-cols-[80px_1fr] sm:gap-6"
+              className="grid gap-3 border-t border-border py-5 first:border-t-0 sm:grid-cols-[80px_1fr] sm:gap-6 sm:py-8"
             >
               <span
-                className="font-mono text-sm text-muted-foreground"
+                className="hidden font-mono text-sm text-muted-foreground sm:block"
                 aria-hidden="true"
               >
                 0{i + 1}
@@ -385,16 +385,16 @@ const STEP_ICONS = [Mail, Wallet, Zap];
 function HowItWorks() {
   const { t } = useLang();
   return (
-    <section id="como-funciona" className="py-20">
+    <section id="como-funciona" className="py-12 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.stepsTitle}
         </h2>
-        <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
           {t.landing.steps.map((step, i) => {
             const Icon = STEP_ICONS[i];
             return (
-              <Card key={step.title} className="p-6">
+              <Card key={step.title} className="p-5 sm:p-6">
                 <div className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon className="size-5" aria-hidden="true" />
@@ -419,7 +419,7 @@ function HowItWorks() {
 function Pricing() {
   const { t } = useLang();
   return (
-    <section id="precio" className="border-t border-border bg-muted/40 py-20">
+    <section id="precio" className="border-t border-border bg-muted/40 py-12 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -438,23 +438,28 @@ const TRUST_ICONS = [ShieldCheck, Lock, HeartHandshake];
 function Trust() {
   const { t } = useLang();
   return (
-    <section className="py-20">
+    <section className="py-12 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.trustTitle}
         </h2>
-        <div className="mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-4xl gap-5 sm:mt-12 sm:grid-cols-3 sm:gap-6">
           {t.landing.trust.map((point, i) => {
             const Icon = TRUST_ICONS[i];
             return (
-              <div key={point.title} className="text-center sm:text-left">
-                <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div
+                key={point.title}
+                className="flex items-start gap-4 text-left sm:block"
+              >
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 font-medium">{point.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {point.body}
-                </p>
+                <div>
+                  <h3 className="font-medium sm:mt-4">{point.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {point.body}
+                  </p>
+                </div>
               </div>
             );
           })}
@@ -467,7 +472,7 @@ function Trust() {
 function Faq() {
   const { t } = useLang();
   return (
-    <section className="py-20">
+    <section className="py-12 sm:py-20">
       <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.faqTitle}
@@ -499,9 +504,9 @@ function Faq() {
 function FinalCta() {
   const { t } = useLang();
   return (
-    <section className="px-4 pb-24 sm:px-6">
+    <section className="px-4 pb-16 sm:px-6 sm:pb-24">
       <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-brand-gradient p-[1px]">
-        <div className="rounded-[calc(1.5rem-1px)] bg-surface px-6 py-14 text-center">
+        <div className="rounded-[calc(1.5rem-1px)] bg-surface px-6 py-10 text-center sm:py-14">
           <CamaloteMark className="mx-auto mb-5 size-16" />
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             {t.landing.finalTitle1} {t.landing.finalTitle2}

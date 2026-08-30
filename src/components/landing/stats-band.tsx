@@ -55,7 +55,7 @@ export function StatsBand() {
   ];
 
   return (
-    <section className="border-t border-border py-16">
+    <section className="border-t border-border py-12 sm:py-16">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.statsTitle}
