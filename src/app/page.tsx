@@ -20,6 +20,7 @@ import { BaseMark, SolanaMark } from "@/components/chain-logos";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MiniCalc } from "@/components/landing/mini-calc";
+import { StatsBand } from "@/components/landing/stats-band";
 import { DEMO_MODE } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 
@@ -32,6 +33,7 @@ export default function LandingPage() {
         <Showdown />
         <WhySolana />
         <HowItWorks />
+        <StatsBand />
         <Pricing />
         <Trust />
         <Faq />
