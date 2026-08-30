@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MiniCalc } from "@/components/landing/mini-calc";
 import { StatsBand } from "@/components/landing/stats-band";
+import { InstallCta } from "@/components/install-cta";
 import { DEMO_MODE } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 
@@ -108,6 +109,7 @@ function Hero() {
             {t.landing.heroSecondary}
           </a>
         </div>
+        <InstallCta className="mt-4" />
       </div>
 
       <BridgeVisual />
@@ -518,6 +520,7 @@ function FinalCta() {
             {t.landing.finalCta}
             <ArrowRight className="size-5" aria-hidden="true" />
           </Link>
+          <InstallCta className="mt-4" />
         </div>
       </div>
     </section>

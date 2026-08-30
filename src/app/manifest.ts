@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Camalote · Traé tus USDC a Solana",
     short_name: "Camalote",
     description:
-      "Llevá tus USDC de Base a Solana en segundos. Sin gas, sin vueltas.",
+      "Traé tus USDC de Base a Solana con tu mail y nada más. Nunca más de medio dólar por cruce.",
     start_url: "/app",
     display: "standalone",
     background_color: "#fbfaf8",

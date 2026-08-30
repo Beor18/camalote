@@ -105,6 +105,9 @@ const es = {
         body: "Un minuto después, tus USDC están en Solana. La ciudad es tuya.",
       },
     ],
+    installCta: "Instalala en tu teléfono",
+    installIosHint:
+      "En iPhone: tocá el botón Compartir y elegí «Agregar a inicio».",
     statsTitle: "Esto ya arrancó.",
     statsVolumeLabel: "USDC cruzados",
     statsCrossingsLabel: "Cruces completados",
@@ -383,6 +386,9 @@ const en: Dictionary = {
         body: "A minute later, your USDC are on Solana. The city is yours.",
       },
     ],
+    installCta: "Install it on your phone",
+    installIosHint:
+      "On iPhone: tap the Share button and choose “Add to Home Screen”.",
     statsTitle: "It's already moving.",
     statsVolumeLabel: "USDC crossed",
     statsCrossingsLabel: "Crossings completed",
