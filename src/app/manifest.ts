@@ -2,11 +2,11 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Camalote · Traé tus USDC a Solana",
+    name: "Camalote · Cobrá en dólares",
     short_name: "Camalote",
     description:
-      "Traé tus USDC de Base a Solana con tu mail y nada más. Nunca más de medio dólar por cruce.",
-    start_url: "/app",
+      "Tu link para cobrar en USDC: te pagan desde Coinbase o Base y te llega a Solana. Nunca más de medio dólar por cobro.",
+    start_url: "/app/cobrar",
     display: "standalone",
     background_color: "#fbfaf8",
     theme_color: "#7c3aed",
