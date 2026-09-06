@@ -43,3 +43,7 @@ next-env.d.ts
 # transcripciones de sesión AI (contienen secretos pegados en el chat)
 claude-session.jsonl
 codex-session.jsonl
+
+# videos de demo (pesados; se suben a YouTube)
+docs/demo/*.mp4
+docs/demo/*.webm
