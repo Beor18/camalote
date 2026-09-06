@@ -4,17 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   Check,
   ChevronDown,
   HeartHandshake,
-  Laptop,
+  Landmark,
   Link2,
   Lock,
   MessageCircle,
   Minus,
   ShieldCheck,
-  Sparkles,
-  Users,
   Zap,
 } from "lucide-react";
 import { CamaloteLogo, CamaloteMark } from "@/components/logo";
@@ -33,11 +32,11 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <HowYouGetPaid />
-        <WhoFor />
+        <Showdown />
+        <WhySolana />
+        <HowItWorks />
         <StatsBand />
         <Pricing />
-        <Showdown />
         <Trust />
         <Faq />
         <FinalCta />
@@ -68,7 +67,7 @@ function Header() {
           </a>
           <LangToggle />
           <Link
-            href="/app"
+            href="/app/cobrar"
             className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-100 hover:bg-primary-hover active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {t.landing.navOpenApp}
@@ -84,103 +83,37 @@ function Hero() {
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8">
       <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-5 flex flex-wrap items-center justify-center gap-2 animate-fade-up">
-          <Badge tone="neutral">{t.landing.heroKicker}</Badge>
-          {DEMO_MODE && <Badge tone="warning">{t.landing.badgeDemo}</Badge>}
-        </div>
+        {DEMO_MODE && (
+          <div className="mb-5 animate-fade-up">
+            <Badge tone="warning">{t.landing.badgeDemo}</Badge>
+          </div>
+        )}
         <h1 className="animate-fade-up font-display text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
-          {t.landing.hero2Line1}
+          {t.landing.heroLine1}
           <br />
-          <span className="text-gradient">{t.landing.hero2Line2}</span>
+          {t.landing.heroLine2Pre}
+          <span className="text-gradient">{t.landing.heroLine2Highlight}</span>
+          {t.landing.heroLine2Post}
         </h1>
         <p className="animate-fade-up-delay mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          {t.landing.hero2Sub}
+          {t.landing.heroSub}
         </p>
         <div className="animate-fade-up-delay mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link href="/app/cobrar" className={ctaClasses}>
-            {t.landing.hero2Cta}
+            {t.landing.heroCta}
             <ArrowRight className="size-5" aria-hidden="true" />
           </Link>
-          <Link
-            href="/app"
+          <a
+            href="#convenceme"
             className="inline-flex h-13 items-center rounded-xl px-5 text-base text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {t.landing.hero2Secondary}
-          </Link>
+            {t.landing.heroSecondary}
+          </a>
         </div>
         <InstallCta className="mt-4" />
       </div>
 
       <BridgeVisual />
-    </section>
-  );
-}
-
-const COBRAR_ICONS = [Link2, MessageCircle, Zap];
-
-function HowYouGetPaid() {
-  const { t } = useLang();
-  return (
-    <section id="como-cobras" className="border-t border-border py-12 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.cobrarTitle}
-        </h2>
-        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
-          {t.landing.cobrarSteps.map((step, i) => {
-            const Icon = COBRAR_ICONS[i];
-            return (
-              <Card key={step.title} className="p-5 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="font-display text-sm font-semibold text-muted-foreground">
-                    0{i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 font-medium">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {step.body}
-                </p>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const WHO_ICONS = [Laptop, Sparkles, Users];
-
-function WhoFor() {
-  const { t } = useLang();
-  return (
-    <section id="para-quien" className="bg-muted/40 py-12 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.whoTitle}
-        </h2>
-        <div className="mx-auto mt-8 grid max-w-4xl gap-5 sm:mt-12 sm:grid-cols-3 sm:gap-6">
-          {t.landing.who.map((item, i) => {
-            const Icon = WHO_ICONS[i];
-            return (
-              <div key={item.title} className="flex items-start gap-4 text-left sm:block">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="size-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <h3 className="font-medium sm:mt-4">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {item.body}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </section>
   );
 }
@@ -330,25 +263,23 @@ function Showdown() {
   return (
     <section
       id="convenceme"
-      className="border-t border-border bg-muted/40 py-12 sm:py-20"
+      className="border-t border-border bg-muted/40 py-10 sm:py-20"
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <p className="text-center text-sm font-medium text-primary">
-          {t.landing.bridgeSectionTitle}
-        </p>
-        <h2 className="mt-3 text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.heroLine1} {t.landing.heroLine2Pre}
-          <span className="text-gradient">{t.landing.heroLine2Highlight}</span>
-          {t.landing.heroLine2Post}
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t.landing.showdownTitle}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
-          {t.landing.heroSub} {t.landing.showdownSub}
+          {t.landing.showdownSub}
         </p>
 
         <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <Card className="p-5 opacity-80 sm:p-6">
             <div className="flex items-center gap-2">
-              <BaseMark className="size-3.5 rounded-[2px]" />
+              <Landmark
+                className="size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
               <h3 className="font-medium text-muted-foreground">
                 {t.landing.baseColTitle}
               </h3>
@@ -372,7 +303,7 @@ function Showdown() {
           <div className="overflow-hidden rounded-2xl bg-brand-gradient p-[1px]">
             <div className="h-full rounded-[calc(1rem-1px)] bg-surface p-5 sm:p-6">
               <div className="flex items-center gap-2">
-                <SolanaMark className="size-3.5" />
+                <CamaloteMark className="size-4" />
                 <h3 className="font-medium">{t.landing.solanaColTitle}</h3>
               </div>
               <ul className="mt-5 flex flex-col gap-3">
@@ -405,10 +336,109 @@ function Showdown() {
   );
 }
 
+function WhySolana() {
+  const { t } = useLang();
+  return (
+    <section id="por-que-solana" className="border-t border-border py-10 sm:py-20">
+      <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t.landing.whyTitle}
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
+          {t.landing.whySub}
+        </p>
+        <div className="mt-6 flex flex-col sm:mt-12">
+          {t.landing.whyItems.map((reason, i) => (
+            <div
+              key={reason.claim}
+              className="grid gap-3 border-t border-border py-5 first:border-t-0 sm:grid-cols-[80px_1fr] sm:gap-6 sm:py-8"
+            >
+              <span
+                className="hidden font-mono text-sm text-muted-foreground sm:block"
+                aria-hidden="true"
+              >
+                0{i + 1}
+              </span>
+              <div>
+                <h3 className="font-display text-xl font-semibold sm:text-2xl">
+                  {reason.claim}
+                </h3>
+                <p className="mt-2 leading-relaxed text-muted-foreground">
+                  {reason.body}
+                </p>
+                {i === t.landing.whyItems.length - 1 && (
+                  <a
+                    href="https://superteam.ar"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 rounded-md text-sm font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {t.landing.whyLink}
+                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const STEP_ICONS = [Link2, MessageCircle, Zap];
+
+function HowItWorks() {
+  const { t } = useLang();
+  return (
+    <section
+      id="como-funciona"
+      className="border-t border-border bg-muted/40 py-10 sm:py-20"
+    >
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t.landing.stepsTitle}
+        </h2>
+        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
+          {t.landing.steps.map((step, i) => {
+            const Icon = STEP_ICONS[i];
+            return (
+              <Card key={step.title} className="p-5 sm:p-6">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="font-display text-sm font-semibold text-muted-foreground">
+                    0{i + 1}
+                  </span>
+                </div>
+                <h3 className="mt-4 font-medium">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {step.body}
+                </p>
+              </Card>
+            );
+          })}
+        </div>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          {t.landing.stepsBridgeNote}{" "}
+          <Link
+            href="/app"
+            className="inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t.landing.stepsBridgeLink}
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </Link>
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function Pricing() {
   const { t } = useLang();
   return (
-    <section id="precio" className="border-t border-border bg-muted/40 py-12 sm:py-20">
+    <section id="precio" className="border-t border-border py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -427,7 +457,7 @@ const TRUST_ICONS = [ShieldCheck, Lock, HeartHandshake];
 function Trust() {
   const { t } = useLang();
   return (
-    <section className="py-12 sm:py-20">
+    <section className="py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.trustTitle}
@@ -461,7 +491,7 @@ function Trust() {
 function Faq() {
   const { t } = useLang();
   return (
-    <section className="py-12 sm:py-20">
+    <section className="py-10 sm:py-20">
       <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.faqTitle}
@@ -498,13 +528,13 @@ function FinalCta() {
         <div className="rounded-[calc(1.5rem-1px)] bg-surface px-6 py-10 text-center sm:py-14">
           <CamaloteMark className="mx-auto mb-5 size-16" />
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t.pay.viralTitle}
+            {t.landing.finalTitle1} {t.landing.finalTitle2}
           </h2>
           <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-            {t.pay.viralBody}
+            {t.landing.finalSub}
           </p>
           <Link href="/app/cobrar" className={`${ctaClasses} mt-8`}>
-            {t.landing.hero2Cta}
+            {t.landing.finalCta}
             <ArrowRight className="size-5" aria-hidden="true" />
           </Link>
           <InstallCta className="mt-4" />

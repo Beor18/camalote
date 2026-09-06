@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { computeQuote, QuoteError } from "@/lib/cctp/quote";
+import { computeQuoteForReceive, QuoteError } from "@/lib/cctp/quote";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
 /**
- * La promesa de transparencia, hecha juguete: escribís cuánto traés
- * y ves al instante cuánto llega. Misma matemática que usa la app.
+ * La promesa de transparencia, hecha juguete: escribís cuánto pedís y ves
+ * al instante que te llega ese mismo número, y cuánto pone el que te paga.
+ * Misma matemática que usa la app para los cobros.
  */
 const EXPRESS_BPS = 1.3;
 
@@ -21,8 +22,12 @@ export function MiniCalc() {
     try {
       // sin opciones: usa la misma config que la app (si la comisión está
       // apagada acá también se ve gratis; la promesa de arriba es literal)
-      const q = computeQuote(units, EXPRESS_BPS);
-      return { kind: "ok" as const, receive: q.receiveUnits };
+      const q = computeQuoteForReceive(units, EXPRESS_BPS);
+      return {
+        kind: "ok" as const,
+        receive: q.receiveUnits,
+        payer: q.amountUnits,
+      };
     } catch (err) {
       if (err instanceof QuoteError && err.code === "TOO_SMALL") {
         return { kind: "min" as const };
@@ -77,7 +82,7 @@ export function MiniCalc() {
             >
               {result.kind === "ok" ? (
                 <span className="font-mono text-3xl font-semibold tabular-nums">
-                  ~{formatUsdc(result.receive, 2, lang)}{" "}
+                  {formatUsdc(result.receive, 2, lang)}{" "}
                   <span className="text-base font-normal text-muted-foreground">
                     USDC
                   </span>
@@ -96,6 +101,17 @@ export function MiniCalc() {
         </div>
 
         <p className="mt-6 border-t border-border pt-5 text-center text-sm text-muted-foreground">
+          {result.kind === "ok" && (
+            <>
+              <span className="font-medium text-foreground">
+                {t.landing.calcPayerPuts}{" "}
+                <span className="font-mono tabular-nums">
+                  {formatUsdc(result.payer, 2, lang)}
+                </span>{" "}
+                USDC.
+              </span>{" "}
+            </>
+          )}
           {t.landing.calcFootnote}
         </p>
       </div>
