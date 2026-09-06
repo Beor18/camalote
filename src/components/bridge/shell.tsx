@@ -2,29 +2,25 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeftRight, HandCoins, LogOut, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { CamaloteLogo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BridgePanel } from "@/components/bridge/panel";
+import { CobrosPanel } from "@/components/cobros/panel";
 import { LangToggle, useLang } from "@/lib/i18n";
-import type {
-  BridgeActions,
-  BridgeBalances,
-  BridgeSession,
-} from "@/components/bridge/types";
+import type { BridgeSession, Engine } from "@/components/bridge/types";
+
+export type ShellView = "bridge" | "cobros";
 
 export function BridgeShell({
   session,
   balances,
   actions,
-}: {
-  session: BridgeSession;
-  balances: BridgeBalances;
-  actions: BridgeActions;
-}) {
+  view = "bridge",
+}: Engine & { view?: ShellView }) {
   const { t } = useLang();
   return (
     <div className="flex min-h-dvh flex-col">
@@ -61,11 +57,18 @@ export function BridgeShell({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
         {!session.ready ? (
           <LoadingState />
         ) : session.authenticated ? (
-          <BridgePanel session={session} balances={balances} actions={actions} />
+          <div className="flex flex-col gap-6">
+            <ViewTabs view={view} />
+            {view === "cobros" ? (
+              <CobrosPanel session={session} balances={balances} actions={actions} />
+            ) : (
+              <BridgePanel session={session} balances={balances} actions={actions} />
+            )}
+          </div>
         ) : (
           <LoginCard session={session} />
         )}
@@ -77,6 +80,40 @@ export function BridgeShell({
         </p>
       </footer>
     </div>
+  );
+}
+
+/** Dos caras del mismo motor: llevar tus USDC, o cobrar los de otro. */
+function ViewTabs({ view }: { view: ShellView }) {
+  const { t } = useLang();
+  const tabs: { key: ShellView; href: string; label: string; Icon: typeof HandCoins }[] = [
+    { key: "cobros", href: "/app/cobrar", label: t.app.tabCobros, Icon: HandCoins },
+    { key: "bridge", href: "/app", label: t.app.tabBridge, Icon: ArrowLeftRight },
+  ];
+  return (
+    <nav
+      aria-label="Secciones"
+      className="mx-auto grid w-full max-w-md grid-cols-2 rounded-xl border border-border bg-muted p-1"
+    >
+      {tabs.map(({ key, href, label, Icon }) => {
+        const active = key === view;
+        return (
+          <Link
+            key={key}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              active
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icon className="size-4" aria-hidden="true" />
+            {label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -92,7 +129,17 @@ function LoadingState() {
   );
 }
 
-function LoginCard({ session }: { session: BridgeSession }) {
+export function LoginCard({
+  session,
+  title,
+  sub,
+  button,
+}: {
+  session: BridgeSession;
+  title?: string;
+  sub?: string;
+  button?: string;
+}) {
   const { t } = useLang();
   const [email, setEmail] = useState("");
 
@@ -100,9 +147,9 @@ function LoginCard({ session }: { session: BridgeSession }) {
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 animate-fade-up">
       <div className="text-center">
         <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t.app.loginTitle}
+          {title ?? t.app.loginTitle}
         </h1>
-        <p className="mt-2 text-muted-foreground">{t.app.loginSub}</p>
+        <p className="mt-2 text-muted-foreground">{sub ?? t.app.loginSub}</p>
       </div>
 
       <Card className="p-6">
@@ -142,7 +189,7 @@ function LoginCard({ session }: { session: BridgeSession }) {
           <div className="flex flex-col gap-4">
             <Button size="lg" className="w-full" onClick={() => session.login()}>
               <Mail className="size-4" aria-hidden="true" />
-              {t.app.loginButton}
+              {button ?? t.app.loginButton}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
               {t.app.loginHint}

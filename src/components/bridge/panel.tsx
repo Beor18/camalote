@@ -37,7 +37,7 @@ import type {
   RunUpdate,
 } from "@/components/bridge/types";
 
-interface RunState extends RunUpdate {
+export interface RunState extends RunUpdate {
   quote?: Quote;
   startedAt?: number;
 }
@@ -167,7 +167,10 @@ export function BridgePanel({
     void (async () => {
       for (const item of pending) {
         try {
-          const sig = await actions.retryDelivery(item.baseTxHash as string);
+          const sig = await actions.retryDelivery(
+            item.baseTxHash as string,
+            item.recipient
+          );
           saveTransfer({
             ...item,
             status: "done",
@@ -187,7 +190,7 @@ export function BridgePanel({
       if (!item.baseTxHash) return;
       setRetryState({ id: item.id });
       try {
-        const sig = await actions.retryDelivery(item.baseTxHash);
+        const sig = await actions.retryDelivery(item.baseTxHash, item.recipient);
         saveTransfer({
           ...item,
           status: "done",
@@ -558,7 +561,7 @@ function BalanceCard({
   );
 }
 
-function QuoteBreakdown({
+export function QuoteBreakdown({
   quote,
   loading,
   error,
@@ -645,18 +648,30 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const STEP_ORDER: BridgeStep[] = ["sending", "attesting", "minting"];
 
-function RunProgress({
+export interface RunProgressCopy {
+  doneTitle?: string;
+  doneBody?: string;
+  again?: string;
+}
+
+export function RunProgress({
   run,
   onReset,
   demo,
   lang,
   t,
+  copy,
+  doneExtra,
 }: {
   run: RunState;
   onReset: () => void;
   demo: boolean;
   lang: Lang;
   t: Dictionary;
+  /** Textos del estado final (por defecto, los del cruce). */
+  copy?: RunProgressCopy;
+  /** Contenido extra debajo del estado final (por ejemplo, un CTA). */
+  doneExtra?: React.ReactNode;
 }) {
   const [elapsed, setElapsed] = useState(0);
 
@@ -682,12 +697,13 @@ function RunProgress({
         </span>
         <div>
           <h2 className="font-display text-2xl font-semibold">
-            {t.app.doneTitle}
+            {copy?.doneTitle ?? t.app.doneTitle}
           </h2>
           <p className="mt-1 text-muted-foreground">
-            {run.quote
-              ? t.app.doneBody(formatUsdc(run.quote.receiveUnits, 2, lang))
-              : t.app.doneBodyNoAmount}
+            {copy?.doneBody ??
+              (run.quote
+                ? t.app.doneBody(formatUsdc(run.quote.receiveUnits, 2, lang))
+                : t.app.doneBodyNoAmount)}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
@@ -707,8 +723,9 @@ function RunProgress({
         </div>
         <Button onClick={onReset} variant="secondary" className="mt-2">
           <RotateCcw className="size-4" aria-hidden="true" />
-          {t.app.doneAgain}
+          {copy?.again ?? t.app.doneAgain}
         </Button>
+        {doneExtra}
       </div>
     );
   }
@@ -778,7 +795,7 @@ function RunProgress({
   );
 }
 
-function ExplorerLink({
+export function ExplorerLink({
   href,
   children,
 }: {
@@ -860,6 +877,11 @@ function HistoryList({
                   )}
                   {item.kind === "withdraw" && item.destination
                     ? ` · ${t.app.historyWithdrawTo(truncateAddress(item.destination))}`
+                    : ""}
+                  {item.kind === "payment"
+                    ? ` · ${t.app.historyPaymentTo(
+                        item.payeeName || truncateAddress(item.recipient ?? "")
+                      )}${item.concept ? ` · ${item.concept}` : ""}`
                     : ""}
                   {item.demo ? t.app.historySim : ""}
                 </p>
