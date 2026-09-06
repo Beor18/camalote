@@ -110,7 +110,9 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
 
   const [amountText, setAmountText] = useState("");
   const typedUnits = useMemo(() => parseUsdc(amountText), [amountText]);
-  const receiveUnits = link.amountUnits ?? typedUnits;
+  // Lo que paga el pagador es el número del link, tal cual. La comisión y el
+  // envío exprés se descuentan de lo que le llega al cobrador.
+  const payUnits = link.amountUnits ?? typedUnits;
 
   const inputError =
     link.amountUnits !== null || amountText.trim() === ""
@@ -122,8 +124,8 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
           : null;
 
   const quoteKey =
-    receiveUnits !== null && receiveUnits >= MIN_TRANSFER_UNITS && !inputError
-      ? receiveUnits.toString()
+    payUnits !== null && payUnits >= MIN_TRANSFER_UNITS && !inputError
+      ? payUnits.toString()
       : null;
 
   const [quoteResult, setQuoteResult] = useState<{
@@ -137,7 +139,7 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
-        const q = await actions.getQuoteForReceive(BigInt(quoteKey));
+        const q = await actions.getQuote(BigInt(quoteKey));
         if (!cancelled) setQuoteResult({ key: quoteKey, quote: q });
       } catch {
         if (!cancelled) setQuoteResult({ key: quoteKey, error: "quote" });
@@ -234,7 +236,7 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
     balances.refresh();
   }, [balances]);
 
-  const doneAmount = formatUsdc(run.quote?.receiveUnits ?? receiveUnits ?? 0n, 2, lang);
+  const doneAmount = formatUsdc(run.quote?.receiveUnits ?? 0n, 2, lang);
 
   return (
     <>
@@ -390,10 +392,8 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
           <DirectPayCard
             link={link}
             payeeName={payeeName}
-            sendUnits={quote?.amountUnits ?? null}
             actions={actions}
             demo={session.demo}
-            hidden={false}
           />
         </>
       )}
@@ -494,26 +494,25 @@ function PayBreakdown({
   return (
     <dl className="flex flex-col gap-2 rounded-xl bg-muted p-4 text-sm">
       <div className="flex items-baseline justify-between gap-4">
-        <dt className="font-medium">{t.pay.theyReceive(payeeName)}</dt>
-        <dd className="font-mono text-base font-semibold tabular-nums">
-          {formatUsdc(quote.receiveUnits, 2, lang)} {t.common.usdc}
+        <dt className="text-muted-foreground">{t.pay.youPay}</dt>
+        <dd className="font-mono tabular-nums">
+          {formatUsdc(quote.amountUnits, 2, lang)} {t.common.usdc}
         </dd>
       </div>
-      <div className="my-1 border-t border-border" role="presentation" />
       <Row label={quote.feeBps > 0 ? t.pay.fee(pct) : t.app.rowFeeNoPct}>
-        {quote.camaloteFeeUnits === 0n ? t.common.free : `+ ${fee(quote.camaloteFeeUnits)} ${t.common.usdc}`}
+        {quote.camaloteFeeUnits === 0n ? t.common.free : `- ${fee(quote.camaloteFeeUnits)} ${t.common.usdc}`}
       </Row>
       <Row label={t.pay.express}>
-        {quote.circleFeeUnits === 0n ? t.common.free : `+ ${fee(quote.circleFeeUnits)} ${t.common.usdc}`}
+        {quote.circleFeeUnits === 0n ? t.common.free : `- ${fee(quote.circleFeeUnits)} ${t.common.usdc}`}
       </Row>
       <Row label={t.pay.network}>
         <span className="text-success">{t.pay.networkValue}</span>
       </Row>
       <div className="my-1 border-t border-border" role="presentation" />
       <div className="flex items-baseline justify-between gap-4">
-        <dt className="text-muted-foreground">{t.pay.youPay}</dt>
-        <dd className="font-mono tabular-nums">
-          {formatUsdc(quote.amountUnits, 2, lang)} {t.common.usdc}
+        <dt className="font-medium">{t.pay.theyReceive(payeeName)}</dt>
+        <dd className="font-mono text-base font-semibold tabular-nums">
+          {formatUsdc(quote.receiveUnits, 2, lang)} {t.common.usdc}
         </dd>
       </div>
     </dl>

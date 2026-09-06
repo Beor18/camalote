@@ -3,19 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import {
-  demoDepositAddress,
   demoQuote,
-  demoQuoteForReceive,
   loadDemoBalances,
-  loadDemoDeposit,
+  loadDemoBaseBalance,
   loadDemoIncoming,
   registerDemoAccount,
   runDemoBridge,
-  runDemoSweep,
   runDemoWithdraw,
   simulateDemoDeposit,
 } from "@/lib/demo";
-import { MIN_TRANSFER_UNITS } from "@/lib/config";
 import type {
   BridgeActions,
   BridgeBalances,
@@ -52,6 +48,11 @@ function demoSolanaAddress(email: string): string {
   return new PublicKey(bytes).toBase58();
 }
 
+/** Dirección de Base de muestra, estable por email (la "cuenta de cobro"). */
+function demoBaseAddress(email: string): string {
+  return `0x${pseudoRandomHex(email.trim().toLowerCase(), 40)}`;
+}
+
 /** Motor demo: misma interfaz que el real, todo simulado en el dispositivo. */
 export function useDemoEngine(): Engine {
   const [ready, setReady] = useState(false);
@@ -62,8 +63,10 @@ export function useDemoEngine(): Engine {
   useEffect(() => {
     // Lectura inicial de localStorage: sincronización con un sistema externo.
     try {
+      const stored = localStorage.getItem(EMAIL_KEY);
+      if (stored) registerDemoAccount(stored, demoSolanaAddress(stored), demoBaseAddress(stored));
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEmail(localStorage.getItem(EMAIL_KEY));
+      setEmail(stored);
     } catch {
       // sin almacenamiento seguimos sin sesión
     }
@@ -90,7 +93,7 @@ export function useDemoEngine(): Engine {
     ready,
     authenticated: email !== null,
     accountLabel: email,
-    baseAddress: email ? `0x${pseudoRandomHex(email.trim().toLowerCase(), 40)}` : null,
+    baseAddress: email ? demoBaseAddress(email) : null,
     solanaAddress,
     demo: true,
     login: (value?: string) => {
@@ -101,7 +104,7 @@ export function useDemoEngine(): Engine {
       } catch {
         // no crítico
       }
-      registerDemoAccount(clean, demoSolanaAddress(clean));
+      registerDemoAccount(clean, demoSolanaAddress(clean), demoBaseAddress(clean));
       setEmail(clean);
     },
     logout: () => {
@@ -126,7 +129,6 @@ export function useDemoEngine(): Engine {
   const actions: BridgeActions = useMemo(
     () => ({
       getQuote: async (units: bigint) => demoQuote(units),
-      getQuoteForReceive: async (units: bigint) => demoQuoteForReceive(units),
       runBridge: async (quote, onUpdate, options) => {
         if (!email || !solanaAddress) {
           throw new Error("Entrá con tu email para continuar.");
@@ -156,21 +158,8 @@ export function useDemoEngine(): Engine {
       retryDelivery: async () => null,
       listIncoming: async () =>
         solanaAddress ? loadDemoIncoming(solanaAddress) : [],
-      getDepositAddress: (owner) => demoDepositAddress(owner),
-      readDeposit: async (owner) => ({
-        balanceUnits: loadDemoDeposit(owner),
-        minUnits: MIN_TRANSFER_UNITS,
-      }),
-      sweepDeposit: async (owner, onUpdate) => {
-        const result = await runDemoSweep(owner, {
-          onSending: () => onUpdate({ step: "sending" }),
-          onAttesting: (baseTxHash) => onUpdate({ step: "attesting", baseTxHash }),
-          onMinting: () => onUpdate({ step: "minting" }),
-          onDone: (solanaSignature) => onUpdate({ step: "done", solanaSignature }),
-        });
-        return { amountUnits: result.amountUnits };
-      },
-      simulateDeposit: (owner, amountUnits) => simulateDemoDeposit(owner, amountUnits),
+      readBaseBalance: async (address) => loadDemoBaseBalance(address),
+      simulateDeposit: (address, amountUnits) => simulateDemoDeposit(address, amountUnits),
     }),
     [email, solanaAddress]
   );

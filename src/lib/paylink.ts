@@ -1,5 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
+import { isAddress } from "viem";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
+import { minReceiveUnits } from "@/lib/cctp/quote";
 import { parseUsdc } from "@/lib/format";
 
 /**
@@ -7,7 +9,7 @@ import { parseUsdc } from "@/lib/format";
  * en la URL. El cobrador guarda sus links en el dispositivo y los marca
  * pagados cuando llega un ingreso que encaja.
  *
- *   /p?to=<cuenta de Solana>&a=<monto>&c=<concepto>&n=<nombre>
+ *   /p?to=<cuenta de Solana>&a=<monto>&c=<concepto>&n=<nombre>&b=<cuenta de Base>
  */
 
 export const MAX_CONCEPT_LENGTH = 80;
@@ -20,6 +22,11 @@ export interface PayLink {
   amountUnits: bigint | null;
   concept: string;
   name: string;
+  /**
+   * Cuenta de Base del cobrador: ahí el pagador manda USDC sin registrarse.
+   * null si el link se creó antes de tener esa cuenta lista.
+   */
+  base: string | null;
 }
 
 const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
@@ -52,6 +59,7 @@ export function encodePayLink(link: PayLink, origin: string): string {
   const name = link.name.trim().slice(0, MAX_NAME_LENGTH);
   if (concept) params.set("c", concept);
   if (name) params.set("n", name);
+  if (link.base && isAddress(link.base, { strict: false })) params.set("b", link.base);
   return `${origin}/p?${params.toString()}`;
 }
 
@@ -68,11 +76,13 @@ export function decodePayLink(params: URLSearchParams): PayLink | null {
     amountUnits = parsed;
   }
 
+  const b = params.get("b")?.trim() ?? "";
   return {
     to,
     amountUnits,
     concept: (params.get("c") ?? "").trim().slice(0, MAX_CONCEPT_LENGTH),
     name: (params.get("n") ?? "").trim().slice(0, MAX_NAME_LENGTH),
+    base: b && isAddress(b, { strict: false }) ? b : null,
   };
 }
 
@@ -86,6 +96,7 @@ export interface SavedPayLink {
   concept: string;
   name: string;
   url: string;
+  base?: string;
   paidAt?: number;
   paidSignature?: string;
   paidAmountUnits?: string;
@@ -100,7 +111,9 @@ export interface IncomingPayment {
 /**
  * Cruza los ingresos de la cuenta con los links pendientes: un ingreso paga
  * un solo link (el más viejo que encaje: posterior a su creación y por al
- * menos el monto pedido). Los ingresos ya asignados no se reusan.
+ * menos lo que llega cuando el pagador manda el monto pedido, ya con la
+ * comisión y el envío exprés descontados). Los ingresos ya asignados no se
+ * reusan.
  */
 export function matchIncomingPayments(
   links: SavedPayLink[],
@@ -119,7 +132,7 @@ export function matchIncomingPayments(
       (l) =>
         !l.paidAt &&
         inc.createdAt >= l.createdAt &&
-        (l.amountUnits === null || amount >= BigInt(l.amountUnits))
+        (l.amountUnits === null || amount >= minReceiveUnits(BigInt(l.amountUnits)))
     );
     if (!target) continue;
     target.paidAt = inc.createdAt;

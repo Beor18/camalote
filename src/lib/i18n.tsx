@@ -43,7 +43,7 @@ const es = {
     heroPhotoAlt:
       "Un camalote flotando solo en el agua abierta de un río, con su reflejo",
     heroStory:
-      "El camalote baja por el río y trae hasta tu orilla lo que viene de lejos. Lo mismo hacemos con los dólares que te deben: salen de Base y llegan enteros a tu cuenta en Solana.",
+      "El camalote baja por el río y trae hasta tu orilla lo que viene de lejos. Lo mismo hacemos con los dólares que te deben: salen de Base y llegan a tu cuenta en Solana en un minuto.",
     heroPhotoCredit: "Foto",
     showdownTitle: "Seamos honestos.",
     showdownSub:
@@ -59,15 +59,15 @@ const es = {
     solanaCol: [
       "Un link con el monto, por WhatsApp",
       "El que paga entra con su mail, o manda USDC desde Coinbase sin registrarse",
-      "Te llega exactamente lo que pediste, en un minuto",
-      "Comisión 0,45 %, nunca más de medio dólar, y la paga el que paga",
+      "Te llega en un minuto, sin papeles ni esperas",
+      "Comisión 0,45 %, nunca más de medio dólar, descontada de lo que te llega",
       "Los dólares quedan tuyos, en Solana, y los movés gratis",
     ],
     letter: [
       "Nota de tus dólares:",
-      "pediste 100, llegamos 100.",
-      "La comisión, 45 centavos,",
-      "la pagó tu cliente. A la vista. 💜",
+      "salimos 100, llegamos 99,53.",
+      "Los 47 centavos los viste antes,",
+      "en el ticket. Ni uno más. 💜",
     ],
     whyTitle: "¿Y por qué a Solana?",
     whySub: "No te pedimos que nos creas. Esto es lo que hay, hoy.",
@@ -102,7 +102,7 @@ const es = {
       },
       {
         title: "Ya está",
-        body: "Un minuto después, los dólares están en tu cuenta en Solana. Exactamente los que pediste.",
+        body: "Un minuto después, los dólares están en tu cuenta en Solana. Menos la comisión, que viste antes.",
       },
     ],
     stepsBridgeNote: "¿Ya tenés USDC en Base?",
@@ -123,14 +123,13 @@ const es = {
     statsAltMinValue: "$0,50",
     pricingTitle: "Probá con tu número",
     pricingSub: "Sin letra chica: esta cuenta es la misma que hace la app.",
-    calcIfYouBring: "Si pedís",
+    calcIfYouBring: "Si te pagan",
     calcYouReceive: "te llegan",
-    calcPayerPuts: "El que te paga pone",
     calcMinHint: "desde 0,50 USDC ya podés",
     calcEmptyHint: "escribí un número y mirá",
     calcFeeLine: (fee: string, pct: string, express: string) =>
-      `De esa diferencia, ${fee} USDC son nuestra comisión (${pct} %, tope medio dólar) y ${express} USDC el envío exprés.`,
-    calcFootnote: "El costo de red lo ponemos nosotros. Lo que pediste es lo que llega.",
+      `La diferencia: ${fee} USDC de comisión (${pct} %, tope medio dólar) y ${express} USDC de envío exprés.`,
+    calcFootnote: "El costo de red lo ponemos nosotros. El número que ves es el que llega.",
     trustTitle: "Pensado para que duermas tranquilo",
     trust: [
       {
@@ -139,7 +138,7 @@ const es = {
       },
       {
         title: "Tu plata nunca pasa por nosotros",
-        body: "Viaja de la cuenta del que paga a la tuya. La dirección de cobro es un contrato que solo puede mandarla a tu cuenta de Solana: ni nosotros la podemos desviar.",
+        body: "Viaja directo de la cuenta del que paga a la tuya. No podemos tocarla, ni queriendo. Y si un día te querés ir, te la llevás toda.",
       },
       {
         title: "Si algo se demora, no se pierde",
@@ -150,7 +149,7 @@ const es = {
     faqs: [
       {
         q: "¿Quién paga la comisión?",
-        a: "El que paga: 0,45 % del monto, nunca más de medio dólar. Vos recibís exactamente el número que pediste, y el costo de red lo cubrimos nosotros. Ese es todo nuestro negocio, a la vista.",
+        a: "Sale de lo que te llega: 0,45 % del monto, nunca más de medio dólar. El que te paga manda el número que pediste, sin recargos ni sorpresas, y el costo de red lo cubrimos nosotros. Ese es todo nuestro negocio, a la vista.",
       },
       {
         q: "¿El que me paga necesita saber de cripto?",
@@ -178,7 +177,7 @@ const es = {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "Nuestra comisión nunca pasa de medio dólar por cobro, y el envío exprés suma unos centavos. Lo paga el que te paga: vos pedís un número y ese es el que llega.",
+        a: "0,45 % por cobro, nunca más de medio dólar, más unos centavos de envío exprés. Se descuenta de lo que te llega: te pagan 100, te llegan 99,53. Y ese número lo ves antes.",
       },
       {
         q: "¿Es seguro?",
@@ -299,7 +298,7 @@ const es = {
     namePlaceholder: "Fer",
     nameHint: "Así te ve el que paga.",
     exactNote:
-      "El que paga cubre la comisión (0,45 %, tope medio dólar): vos recibís el número que pediste.",
+      "El que paga manda el número que pediste. La comisión (0,45 %, tope medio dólar) se descuenta de lo que te llega.",
     create: "Crear link de cobro",
     linkReady: "Tu link está listo",
     linkReadySub: "Compartilo por donde quieras. Cuando te paguen, lo vas a ver acá mismo.",
@@ -319,20 +318,18 @@ const es = {
     viewPayment: "Ver en Solana",
     depositTitle: "Tu dirección de cobro en Base",
     depositBody:
-      "Cualquiera te puede mandar USDC acá desde Coinbase o su billetera, sin registrarse. Llegan solos a tu cuenta de Solana.",
+      "Es tu billetera de Base. Cualquiera te manda USDC acá desde Coinbase o su billetera, sin registrarse. Todo lo que llega viaja solo a tu cuenta de Solana cuando abrís Camalote.",
     depositFee: (pct: string) =>
-      `En el camino se descuenta la comisión: ${pct} %, nunca más de medio dólar.`,
+      `En el viaje se descuenta la comisión: ${pct} %, nunca más de medio dólar.`,
     depositOnly: "Solo USDC, solo por la red Base.",
-    depositContract:
-      "Es un contrato que solo puede mandar la plata a tu cuenta de Solana. Ni nosotros la podemos desviar.",
     depositQr: "Ver QR",
     depositQrHide: "Ocultar QR",
     depositQrAlt: "Código QR de tu dirección de cobro en Base",
     depositIncoming: (amount: string) =>
-      `Llegaron ${amount} USDC a tu dirección de cobro. Entregando en tu cuenta de Solana…`,
+      `Llegaron ${amount} USDC a tu dirección de cobro. Llevándolos a tu cuenta de Solana…`,
     depositDone: (amount: string) => `Entregados ${amount} USDC en tu cuenta de Solana.`,
     depositError:
-      "No pudimos completar la entrega. Los USDC siguen en tu dirección de cobro y volvemos a intentar solos.",
+      "No pudimos completar el viaje a Solana. Los USDC siguen en tu billetera de Base: reintentamos solos.",
     copyAddress: "Copiar dirección",
   },
   pay: {
@@ -373,22 +370,17 @@ const es = {
     orDivider: "o",
     directTitle: "Sin registrarte",
     directSub: (name: string) =>
-      `Mandá los USDC desde Coinbase o cualquier billetera a esta dirección. Llegan solos a la cuenta de ${name} en Solana.`,
-    directSend: (amount: string) => `Mandá exactamente ${amount} USDC`,
+      `Mandá los USDC desde Coinbase o cualquier billetera a la cuenta de Base de ${name}. Cuando abra Camalote, pasan solos a su cuenta de Solana.`,
+    directSend: (amount: string) => `Mandá ${amount} USDC`,
     directSendOpen: "Mandá lo que quieras, desde 0,50 USDC",
     directOnly: "Solo USDC, solo por la red Base. Otra moneda u otra red se pierde.",
-    directContract: (name: string) =>
-      `Esta dirección es un contrato que solo puede mandar los USDC a la cuenta de ${name}. Ni nosotros la podemos desviar.`,
     directWaiting: "Esperando que lleguen…",
     directWaitingNote: (name: string) =>
-      `Si cerrás esta página no pasa nada: se entregan igual cuando ${name} abra Camalote.`,
-    directIncoming: (amount: string, name: string) =>
-      `Llegaron ${amount} USDC. Entregando a ${name}…`,
+      `Si cerrás esta página no pasa nada: los USDC ya quedan en la cuenta de ${name}.`,
     directDoneBody: (amount: string, name: string) =>
-      `${name} ya tiene ${amount} USDC en su cuenta de Solana.`,
-    directRetry: "Reintentar la entrega",
+      `Los ${amount} USDC ya están en la cuenta de ${name}. Los va a ver en Solana cuando abra Camalote.`,
     directSimulate: "Simular el envío desde Coinbase",
-    directQrAlt: "Código QR de la dirección de cobro en Base",
+    directQrAlt: "Código QR de la cuenta de Base",
     copyAddress: "Copiar dirección",
     footer:
       "Los USDC viajan por el camino oficial de sus emisores, directo a la cuenta de quien cobra.",
@@ -444,7 +436,7 @@ const en: Dictionary = {
     heroPhotoAlt:
       "A camalote floating alone on the open water of a river, with its reflection",
     heroStory:
-      "The camalote drifts down the river carrying what comes from far away to your shore. Same with the dollars you're owed: they leave Base and land whole in your Solana account.",
+      "The camalote drifts down the river carrying what comes from far away to your shore. Same with the dollars you're owed: they leave Base and land in your Solana account within a minute.",
     heroPhotoCredit: "Photo",
     showdownTitle: "Let's be honest.",
     showdownSub:
@@ -460,15 +452,15 @@ const en: Dictionary = {
     solanaCol: [
       "One link with the amount, over WhatsApp",
       "The payer signs in with their email, or sends USDC from Coinbase with no sign-up",
-      "You get exactly what you asked for, in a minute",
-      "Fee 0.45 %, never more than half a dollar, and the payer covers it",
+      "It lands in a minute, no paperwork, no waiting",
+      "Fee 0.45 %, never more than half a dollar, taken from what arrives",
       "The dollars stay yours, on Solana, and move for free",
     ],
     letter: [
       "A note from your dollars:",
-      "you asked for 100, we arrived as 100.",
-      "The fee, 45 cents,",
-      "was paid by your client. In plain sight. 💜",
+      "we left as 100, arrived as 99.53.",
+      "You saw the 47 cents beforehand,",
+      "on the receipt. Not one more. 💜",
     ],
     whyTitle: "And why Solana?",
     whySub: "We're not asking you to trust us. This is what's there, today.",
@@ -503,7 +495,7 @@ const en: Dictionary = {
       },
       {
         title: "Done",
-        body: "A minute later, the dollars are in your Solana account. Exactly the amount you asked for.",
+        body: "A minute later, the dollars are in your Solana account. Minus the fee you saw beforehand.",
       },
     ],
     stepsBridgeNote: "Already have USDC on Base?",
@@ -524,14 +516,13 @@ const en: Dictionary = {
     statsAltMinValue: "$0.50",
     pricingTitle: "Try your own number",
     pricingSub: "No fine print: this is the same math the app runs.",
-    calcIfYouBring: "If you ask for",
+    calcIfYouBring: "If you get paid",
     calcYouReceive: "you receive",
-    calcPayerPuts: "The payer puts in",
     calcMinHint: "from 0.50 USDC you're good",
     calcEmptyHint: "type a number and see",
     calcFeeLine: (fee: string, pct: string, express: string) =>
-      `Of that difference, ${fee} USDC is our fee (${pct} %, capped at half a dollar) and ${express} USDC is express delivery.`,
-    calcFootnote: "We cover the network cost. What you asked for is what arrives.",
+      `The difference: ${fee} USDC is our fee (${pct} %, capped at half a dollar) and ${express} USDC is express delivery.`,
+    calcFootnote: "We cover the network cost. The number you see is the number that arrives.",
     trustTitle: "Built so you can sleep at night",
     trust: [
       {
@@ -540,7 +531,7 @@ const en: Dictionary = {
       },
       {
         title: "Your money never passes through us",
-        body: "It travels from the payer's account to yours. The payment address is a contract that can only send it to your Solana account: not even we can redirect it.",
+        body: "It travels straight from the payer's account to yours. We can't touch it, even if we wanted to. And if one day you want out, you take all of it with you.",
       },
       {
         title: "If it's delayed, it's not lost",
@@ -551,7 +542,7 @@ const en: Dictionary = {
     faqs: [
       {
         q: "Who pays the fee?",
-        a: "The payer: 0.45 % of the amount, never more than half a dollar. You receive exactly the number you asked for, and we cover the network cost. That's our whole business, in plain sight.",
+        a: "It comes out of what arrives: 0.45 % of the amount, never more than half a dollar. The payer sends the number you asked for, no surcharges, no surprises, and we cover the network cost. That's our whole business, in plain sight.",
       },
       {
         q: "Does the person paying me need to know crypto?",
@@ -579,7 +570,7 @@ const en: Dictionary = {
       },
       {
         q: "How much does it cost?",
-        a: "Our fee never exceeds half a dollar per payment, and express delivery adds a few cents. The payer covers it: you ask for a number and that's the number that arrives.",
+        a: "0.45 % per payment, never more than half a dollar, plus a few cents of express delivery. It's taken from what arrives: you get paid 100, you receive 99.53. And you see that number beforehand.",
       },
       {
         q: "Is it safe?",
@@ -697,7 +688,7 @@ const en: Dictionary = {
     namePlaceholder: "Fer",
     nameHint: "This is how the payer sees you.",
     exactNote:
-      "The payer covers the fee (0.45 %, capped at half a dollar): you receive exactly the number you asked for.",
+      "The payer sends the number you asked for. The fee (0.45 %, capped at half a dollar) is taken from what arrives.",
     create: "Create payment link",
     linkReady: "Your link is ready",
     linkReadySub: "Share it anywhere. When you get paid, you'll see it right here.",
@@ -717,20 +708,18 @@ const en: Dictionary = {
     viewPayment: "View on Solana",
     depositTitle: "Your payment address on Base",
     depositBody:
-      "Anyone can send you USDC here from Coinbase or their wallet, no sign-up. It lands on its own in your Solana account.",
+      "It's your Base wallet. Anyone can send you USDC here from Coinbase or their wallet, no sign-up. Whatever arrives travels to your Solana account on its own when you open Camalote.",
     depositFee: (pct: string) =>
-      `The fee is taken along the way: ${pct} %, never more than half a dollar.`,
+      `The fee is taken on the way: ${pct} %, never more than half a dollar.`,
     depositOnly: "USDC only, Base network only.",
-    depositContract:
-      "It's a contract that can only send the money to your Solana account. Not even we can redirect it.",
     depositQr: "Show QR",
     depositQrHide: "Hide QR",
     depositQrAlt: "QR code of your Base payment address",
     depositIncoming: (amount: string) =>
-      `${amount} USDC reached your payment address. Delivering to your Solana account…`,
+      `${amount} USDC reached your payment address. Bringing them to your Solana account…`,
     depositDone: (amount: string) => `${amount} USDC delivered to your Solana account.`,
     depositError:
-      "We couldn't complete the delivery. The USDC are still at your payment address and we'll retry on our own.",
+      "We couldn't complete the trip to Solana. The USDC are still in your Base wallet: we'll retry on our own.",
     copyAddress: "Copy address",
   },
   pay: {
@@ -771,22 +760,17 @@ const en: Dictionary = {
     orDivider: "or",
     directTitle: "No sign-up",
     directSub: (name: string) =>
-      `Send the USDC from Coinbase or any wallet to this address. It lands on its own in ${name}'s Solana account.`,
-    directSend: (amount: string) => `Send exactly ${amount} USDC`,
+      `Send the USDC from Coinbase or any wallet to ${name}'s Base account. When they open Camalote, it moves to their Solana account on its own.`,
+    directSend: (amount: string) => `Send ${amount} USDC`,
     directSendOpen: "Send any amount from 0.50 USDC",
     directOnly: "USDC only, Base network only. Any other coin or network is lost.",
-    directContract: (name: string) =>
-      `This address is a contract that can only send the USDC to ${name}'s account. Not even we can redirect it.`,
     directWaiting: "Waiting for it to arrive…",
     directWaitingNote: (name: string) =>
-      `If you close this page, nothing is lost: it's delivered when ${name} opens Camalote.`,
-    directIncoming: (amount: string, name: string) =>
-      `${amount} USDC arrived. Delivering to ${name}…`,
+      `If you close this page, nothing is lost: the USDC are already in ${name}'s account.`,
     directDoneBody: (amount: string, name: string) =>
-      `${name} now has ${amount} USDC in their Solana account.`,
-    directRetry: "Retry delivery",
+      `The ${amount} USDC are already in ${name}'s account. They'll see them on Solana when they open Camalote.`,
     directSimulate: "Simulate the send from Coinbase",
-    directQrAlt: "QR code of the Base payment address",
+    directQrAlt: "QR code of the Base account",
     copyAddress: "Copy address",
     footer:
       "USDC travel through their issuers' official route, straight to the account of whoever gets paid.",

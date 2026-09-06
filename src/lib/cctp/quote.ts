@@ -114,41 +114,21 @@ export function quoteFromJson(j: QuoteJson): Quote {
   };
 }
 
-/**
- * Cotización inversa, para los cobros: dado lo que TIENE que llegar a Solana,
- * devuelve la cotización del monto mínimo que el pagador manda desde Base.
- * Misma matemática que computeQuote (la comisión y el envío exprés salen del
- * monto del pagador); el cobrador recibe lo que pidió, nunca menos.
- */
-export function computeQuoteForReceive(
-  receiveUnits: bigint,
-  circleFastBps: number,
-  opts?: { feeBps?: number; feeEnabled?: boolean }
-): Quote {
-  if (receiveUnits <= 0n) {
-    throw new QuoteError("El monto tiene que ser mayor a cero.", "INVALID");
-  }
-  if (receiveUnits < MIN_TRANSFER_UNITS) {
-    throw new QuoteError("El mínimo para cobrar es 0,50 USDC.", "TOO_SMALL");
-  }
+/** Tarifa de envío exprés más alta que aceptamos (maxFee holgado), en bps. */
+export const MAX_EXPRESS_BPS = 5;
 
-  let amount = receiveUnits;
-  let quote = computeQuote(amount, circleFastBps, opts);
-  // Sumar el faltante converge en pocas vueltas: las tarifas son una fracción
-  // chica del monto, así que cada ajuste achica el déficit por 200 o más.
-  for (let i = 0; i < 16 && quote.receiveUnits < receiveUnits; i++) {
-    amount += receiveUnits - quote.receiveUnits;
-    quote = computeQuote(amount, circleFastBps, opts);
+/**
+ * Lo mínimo que llega a Solana cuando alguien manda exactamente `amountUnits`
+ * desde Base: la comisión y el envío exprés (al máximo) salen de ese monto.
+ * Sirve para reconocer un cobro por lo que llegó, sin depender del pagador.
+ */
+export function minReceiveUnits(amountUnits: bigint): bigint {
+  try {
+    return computeQuote(amountUnits, MAX_EXPRESS_BPS, {
+      feeBps: FEE_BPS,
+      feeEnabled: true,
+    }).receiveUnits;
+  } catch {
+    return amountUnits;
   }
-  // Si el redondeo nos pasó de largo, bajamos hasta el mínimo que alcanza.
-  while (amount - 1n >= MIN_TRANSFER_UNITS) {
-    const lower = computeQuote(amount - 1n, circleFastBps, opts);
-    if (lower.receiveUnits < receiveUnits) break;
-    amount -= 1n;
-    quote = lower;
-  }
-  if (quote.receiveUnits < receiveUnits) {
-    throw new QuoteError("No pudimos calcular la cotización.", "INVALID");
-  }
-  return quote;
 }

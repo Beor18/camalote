@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  computeQuote,
-  computeQuoteForReceive,
-  type Quote,
-} from "@/lib/cctp/quote";
+import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
 import type { IncomingPayment } from "@/lib/paylink";
 
@@ -17,8 +13,8 @@ import type { IncomingPayment } from "@/lib/paylink";
  */
 
 const BALANCES_PREFIX = "camalote.demo.balances.v2:";
-const DEPOSITS_KEY = "camalote.demo.deposits.v1";
 const ACCOUNTS_KEY = "camalote.demo.accounts.v1";
+const BASE_ACCOUNTS_KEY = "camalote.demo.baseAccounts.v1";
 const LEDGER_KEY = "camalote.demo.ledger.v1";
 const DEMO_CIRCLE_FAST_BPS = 1;
 const DEMO_QUOTE_OPTS = { feeBps: FEE_BPS, feeEnabled: true };
@@ -67,15 +63,45 @@ export function resetDemoBalances(email: string): DemoBalances {
   return { ...DEFAULT_BALANCES };
 }
 
-/** Cuentas vistas en este dispositivo: dirección de Solana → email. */
-export function registerDemoAccount(email: string, solanaAddress: string): void {
+/** Cuentas vistas en este dispositivo: dirección (Solana y Base) → email. */
+export function registerDemoAccount(
+  email: string,
+  solanaAddress: string,
+  baseAddress: string
+): void {
+  const clean = email.trim().toLowerCase();
   const accounts = readJson<Record<string, string>>(ACCOUNTS_KEY, {});
-  accounts[solanaAddress] = email.trim().toLowerCase();
+  accounts[solanaAddress] = clean;
   writeJson(ACCOUNTS_KEY, accounts);
+  const baseAccounts = readJson<Record<string, string>>(BASE_ACCOUNTS_KEY, {});
+  baseAccounts[baseAddress.toLowerCase()] = clean;
+  writeJson(BASE_ACCOUNTS_KEY, baseAccounts);
 }
 
 function emailForAddress(solanaAddress: string): string | null {
   return readJson<Record<string, string>>(ACCOUNTS_KEY, {})[solanaAddress] ?? null;
+}
+
+function emailForBaseAddress(baseAddress: string): string | null {
+  return (
+    readJson<Record<string, string>>(BASE_ACCOUNTS_KEY, {})[baseAddress.toLowerCase()] ??
+    null
+  );
+}
+
+/** Saldo en Base de una cuenta del demo, buscada por su dirección de Base. */
+export function loadDemoBaseBalance(baseAddress: string): bigint {
+  const email = emailForBaseAddress(baseAddress);
+  return email ? BigInt(loadDemoBalances(email).baseUnits) : 0n;
+}
+
+/** Simula que alguien mandó USDC desde Coinbase a esa dirección de Base. */
+export function simulateDemoDeposit(baseAddress: string, amountUnits: bigint): void {
+  const email = emailForBaseAddress(baseAddress);
+  if (!email) return;
+  const balances = loadDemoBalances(email);
+  balances.baseUnits = (BigInt(balances.baseUnits) + amountUnits).toString();
+  saveDemoBalances(email, balances);
 }
 
 type LedgerEntry = IncomingPayment & { to: string };
@@ -98,10 +124,6 @@ function appendDemoIncoming(entry: LedgerEntry): void {
 
 export function demoQuote(amountUnits: bigint): Quote {
   return computeQuote(amountUnits, DEMO_CIRCLE_FAST_BPS, DEMO_QUOTE_OPTS);
-}
-
-export function demoQuoteForReceive(receiveUnits: bigint): Quote {
-  return computeQuoteForReceive(receiveUnits, DEMO_CIRCLE_FAST_BPS, DEMO_QUOTE_OPTS);
 }
 
 function randomHex(bytes: number): string {
@@ -202,73 +224,3 @@ export async function runDemoBridge(
   return { baseTxHash, solanaSignature };
 }
 
-/** Dirección de cobro en Base de muestra, estable por cuenta de Solana. */
-export function demoDepositAddress(owner: string): string {
-  let hash = 5381;
-  let out = "";
-  for (let i = 0; out.length < 40; i++) {
-    hash = ((hash << 5) + hash + owner.charCodeAt(i % owner.length) + i * 7) | 0;
-    out += Math.abs(hash).toString(16);
-  }
-  return `0x${out.slice(0, 40)}`;
-}
-
-/** USDC "esperando" en la dirección de cobro de una cuenta (simulados). */
-export function loadDemoDeposit(owner: string): bigint {
-  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
-  return BigInt(deposits[owner] ?? "0");
-}
-
-/** Simula que alguien mandó USDC desde Coinbase a la dirección de cobro. */
-export function simulateDemoDeposit(owner: string, amountUnits: bigint): void {
-  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
-  deposits[owner] = (BigInt(deposits[owner] ?? "0") + amountUnits).toString();
-  writeJson(DEPOSITS_KEY, deposits);
-}
-
-function clearDemoDeposit(owner: string): void {
-  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
-  delete deposits[owner];
-  writeJson(DEPOSITS_KEY, deposits);
-}
-
-/**
- * Simula el envío de la dirección de cobro a Solana: el contrato descuenta la
- * comisión del saldo y el resto llega a la cuenta del cobrador.
- */
-export async function runDemoSweep(
-  owner: string,
-  callbacks: DemoRunCallbacks
-): Promise<{ amountUnits: bigint; baseTxHash: string; solanaSignature: string }> {
-  const balance = loadDemoDeposit(owner);
-  if (balance <= 0n) {
-    throw new Error("Todavía no llegaron USDC a la dirección de cobro.");
-  }
-  const quote = demoQuote(balance);
-
-  callbacks.onSending();
-  await wait(1800);
-  const baseTxHash = `0x${randomHex(32)}`;
-  clearDemoDeposit(owner);
-  callbacks.onAttesting(baseTxHash);
-
-  await wait(3200);
-  callbacks.onMinting();
-  await wait(2000);
-
-  const solanaSignature = randomBase58(88);
-  const recipientEmail = emailForAddress(owner);
-  if (recipientEmail) {
-    const after = loadDemoBalances(recipientEmail);
-    after.solanaUnits = (BigInt(after.solanaUnits) + quote.receiveUnits).toString();
-    saveDemoBalances(recipientEmail, after);
-  }
-  appendDemoIncoming({
-    signature: solanaSignature,
-    to: owner,
-    amountUnits: quote.receiveUnits.toString(),
-    createdAt: Date.now(),
-  });
-  callbacks.onDone(solanaSignature);
-  return { amountUnits: balance, baseTxHash, solanaSignature };
-}

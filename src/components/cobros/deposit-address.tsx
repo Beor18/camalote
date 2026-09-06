@@ -6,14 +6,33 @@ import { Check, Clock, Info, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { CopyButton } from "@/components/copy-button";
 import { BaseMark } from "@/components/chain-logos";
-import { estimateDeliveredUnits } from "@/lib/forwarder";
 import { formatUsdc } from "@/lib/format";
-import { FEE_BPS } from "@/lib/config";
+import { FEE_BPS, MIN_TRANSFER_UNITS } from "@/lib/config";
+import { saveTransfer, type TransferRecord } from "@/lib/history";
 import { useLang } from "@/lib/i18n";
 import type { BridgeActions } from "@/components/bridge/types";
 
-const POLL_MS = 15_000;
+const POLL_MS = 12_000;
 const DONE_VISIBLE_MS = 10_000;
+const SEEN_PREFIX = "camalote.cobros.baseSeen.v1:";
+
+/** Último saldo en Base que ya consideramos "del usuario" (no un cobro nuevo). */
+function loadSeen(address: string): bigint | null {
+  try {
+    const raw = localStorage.getItem(SEEN_PREFIX + address.toLowerCase());
+    return raw ? BigInt(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSeen(address: string, units: bigint): void {
+  try {
+    localStorage.setItem(SEEN_PREFIX + address.toLowerCase(), units.toString());
+  } catch {
+    // sin almacenamiento, la próxima apertura vuelve a fijar el punto de partida
+  }
+}
 
 type Status =
   | { phase: "idle" }
@@ -22,21 +41,22 @@ type Status =
   | { phase: "error" };
 
 /**
- * La dirección de cobro en Base del que cobra: cualquiera le manda USDC ahí
- * sin registrarse. Esta tarjeta la muestra y, si aparecen USDC esperando,
- * dispara la entrega a Solana desde la propia app del cobrador.
+ * La cuenta de Base del que cobra es su dirección de cobro: cualquiera le
+ * manda USDC ahí sin registrarse. Esta tarjeta la muestra y, cuando el saldo
+ * sube, lleva lo que llegó a Solana por el cruce de siempre (sin tocar nada).
  */
 export function DepositAddressCard({
-  owner,
+  address,
   actions,
+  demo,
   onDelivered,
 }: {
-  owner: string;
+  address: string;
   actions: BridgeActions;
+  demo: boolean;
   onDelivered: () => void;
 }) {
   const { lang, t } = useLang();
-  const address = actions.getDepositAddress(owner);
   const [status, setStatus] = useState<Status>({ phase: "idle" });
   const [showQr, setShowQr] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,40 +69,63 @@ export function DepositAddressCard({
   });
 
   const deliver = useCallback(
-    async (amountUnits: bigint) => {
+    async (deltaUnits: bigint, balanceUnits: bigint) => {
       if (busy.current) return;
       busy.current = true;
-      setStatus({ phase: "delivering", amountUnits });
+      setStatus({ phase: "delivering", amountUnits: deltaUnits });
+      let record: TransferRecord | null = null;
       try {
-        await actionsRef.current.sweepDeposit(owner, () => {
-          // los pasos intermedios no cambian el texto de esta tarjeta
+        const quote = await actionsRef.current.getQuote(deltaUnits);
+        record = {
+          id: `cobro-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+          createdAt: Date.now(),
+          kind: "bridge",
+          amountUnits: quote.amountUnits.toString(),
+          receiveUnits: quote.receiveUnits.toString(),
+          status: "sending",
+          demo,
+        };
+        saveTransfer(record);
+        await actionsRef.current.runBridge(quote, (update) => {
+          if (!record) return;
+          record = {
+            ...record,
+            baseTxHash: update.baseTxHash ?? record.baseTxHash,
+            solanaSignature: update.solanaSignature ?? record.solanaSignature,
+            status: update.step === "idle" ? "sending" : update.step,
+          };
+          saveTransfer(record);
         });
-        setStatus({ phase: "done", amountUnits: estimateDeliveredUnits(amountUnits) });
+        saveSeen(address, balanceUnits - deltaUnits);
+        setStatus({ phase: "done", amountUnits: quote.receiveUnits });
         onDeliveredRef.current();
       } catch {
-        // Si el pagador ya la disparó desde el link, no es un error.
-        const state = await actionsRef.current.readDeposit(owner).catch(() => null);
-        if (state && state.balanceUnits < state.minUnits) {
-          setStatus({ phase: "done", amountUnits: estimateDeliveredUnits(amountUnits) });
-          onDeliveredRef.current();
-        } else {
-          setStatus({ phase: "error" });
-        }
+        // Si los USDC ya salieron de Base, la app los reconcilia al volver a abrir.
+        if (record?.baseTxHash) saveSeen(address, balanceUnits - deltaUnits);
+        setStatus({ phase: "error" });
       } finally {
         busy.current = false;
       }
     },
-    [owner]
+    [address, demo]
   );
 
   useEffect(() => {
-    if (!address || status.phase === "delivering") return;
+    if (status.phase === "delivering") return;
     let cancelled = false;
     const tick = async () => {
       try {
-        const state = await actionsRef.current.readDeposit(owner);
+        const balance = await actionsRef.current.readBaseBalance(address);
         if (cancelled) return;
-        if (state.balanceUnits >= state.minUnits) void deliver(state.balanceUnits);
+        const seen = loadSeen(address);
+        if (seen === null) {
+          // primera vez: lo que ya había es del usuario, no un cobro
+          saveSeen(address, balance);
+          return;
+        }
+        const delta = balance - seen;
+        if (delta >= MIN_TRANSFER_UNITS) void deliver(delta, balance);
+        else if (delta < 0n) saveSeen(address, balance); // movió plata por su cuenta
       } catch {
         // el RPC público puede limitar: probamos en la próxima vuelta
       }
@@ -93,7 +136,7 @@ export function DepositAddressCard({
       cancelled = true;
       clearInterval(id);
     };
-  }, [address, owner, status.phase, deliver]);
+  }, [address, status.phase, deliver]);
 
   useEffect(() => {
     if (status.phase !== "done") return;
@@ -102,7 +145,7 @@ export function DepositAddressCard({
   }, [status.phase]);
 
   useEffect(() => {
-    if (!showQr || !address || !canvasRef.current) return;
+    if (!showQr || !canvasRef.current) return;
     QRCode.toCanvas(canvasRef.current, address, {
       width: 160,
       margin: 1,
@@ -111,8 +154,6 @@ export function DepositAddressCard({
       // sin QR igual queda la dirección en texto
     });
   }, [showQr, address]);
-
-  if (!address) return null;
 
   const pct = (FEE_BPS / 100).toLocaleString(lang === "es" ? "es" : "en", {
     minimumFractionDigits: 2,
@@ -153,7 +194,6 @@ export function DepositAddressCard({
       <ul className="mt-3 flex flex-col gap-1 text-xs text-muted-foreground">
         <li>{t.cobros.depositOnly}</li>
         <li>{t.cobros.depositFee(pct)}</li>
-        <li>{t.cobros.depositContract}</li>
       </ul>
 
       {status.phase !== "idle" && (

@@ -11,12 +11,7 @@ import {
 import { createPublicClient, erc20Abi, http } from "viem";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { ADDRESSES, BASE_RPC_URL, MIN_TRANSFER_UNITS, SOLANA_RPC_URL } from "@/lib/config";
-import {
-  FORWARDER_FACTORY,
-  forwarderAddressFor,
-  forwarderFactoryAbi,
-} from "@/lib/forwarder";
+import { ADDRESSES, BASE_RPC_URL, SOLANA_RPC_URL } from "@/lib/config";
 import { base64ToBytes, bytesToBase64 } from "@/lib/base64";
 import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
@@ -136,8 +131,6 @@ export function useRealEngine(): Engine {
   const actions: BridgeActions = useMemo(
     () => ({
       getQuote: (units: bigint) => fetchQuote(`units=${units.toString()}`),
-      getQuoteForReceive: (units: bigint) =>
-        fetchQuote(`receive=${units.toString()}`),
       runBridge: async (quote, onUpdate, options) => {
         const recipientOwner = options?.recipientOwner ?? solanaAddress;
         if (!smartWalletClient || !recipientOwner) {
@@ -250,49 +243,13 @@ export function useRealEngine(): Engine {
             createdAt: r.createdAt,
           }));
       },
-      getDepositAddress: (owner) => forwarderAddressFor(owner),
-      readDeposit: async (owner) => {
-        const address = forwarderAddressFor(owner);
-        if (!address || !FORWARDER_FACTORY) {
-          return { balanceUnits: 0n, minUnits: MIN_TRANSFER_UNITS };
-        }
-        const [balanceUnits, minUnits] = await Promise.all([
-          publicClient.readContract({
-            address: ADDRESSES.base.usdc,
-            abi: erc20Abi,
-            functionName: "balanceOf",
-            args: [address],
-          }),
-          publicClient.readContract({
-            address: FORWARDER_FACTORY,
-            abi: forwarderFactoryAbi,
-            functionName: "minAmount",
-          }),
-        ]);
-        return { balanceUnits, minUnits };
-      },
-      sweepDeposit: async (owner, onUpdate) => {
-        onUpdate({ step: "sending" });
-        const res = await fetch("/api/sweep", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ owner }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error ?? "No pudimos disparar el envío desde Base.");
-        }
-        if (data.status !== "swept") {
-          throw new Error("Todavía no llegaron USDC a la dirección de cobro.");
-        }
-        const txHash = data.txHash as string;
-        onUpdate({ step: "attesting", baseTxHash: txHash });
-        await waitForAttestation(txHash);
-        onUpdate({ step: "minting", baseTxHash: txHash });
-        const result = await relayWithRetries(txHash, owner);
-        onUpdate({ step: "done", baseTxHash: txHash, solanaSignature: result.signature });
-        return { amountUnits: BigInt(data.amountUnits) };
-      },
+      readBaseBalance: (address) =>
+        publicClient.readContract({
+          address: ADDRESSES.base.usdc,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [address as `0x${string}`],
+        }),
     }),
     [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
   );

@@ -33,10 +33,11 @@ Loop de crecimiento sin presupuesto: cada pantalla de "¡Pagado!" termina con
 
 ## Alcance de este sprint
 
-1. `computeQuoteForReceive`: cotización inversa. Dado lo que tiene que llegar,
-   calcula lo que paga el pagador (comisión + envío exprés incluidos).
+1. Comisión sobre lo que llega: el pagador manda el número del link tal cual,
+   sin recargos. `computeQuote` desglosa comisión y envío exprés;
+   `minReceiveUnits` reconoce el cobro por lo que llega.
 2. Links de cobro sin base de datos: todo viaja en la URL
-   (`/p?to=<solana>&a=<monto>&c=<concepto>&n=<nombre>`). El cobrador guarda sus
+   (`/p?to=<solana>&a=<monto>&c=<concepto>&n=<nombre>&b=<base>`). El cobrador guarda sus
    links en el dispositivo y los marca "Pagado" cuando llega un ingreso que
    coincide (en red real: historial de la cuenta USDC; en demo: libro local).
 3. Pestaña "Cobrar" en la app: formulario, link + QR + compartir, lista de links.
@@ -58,7 +59,7 @@ montos en otra moneda, hookData de CCTP para identificar pagos on-chain.
 
 ## Componentes
 
-- `src/lib/cctp/quote.ts`: `computeQuoteForReceive(receiveUnits, circleFastBps)`.
+- `src/lib/cctp/quote.ts`: `computeQuote` (existente) y `minReceiveUnits(amountUnits)`.
 - `src/lib/paylink.ts`: `encodePayLink`, `decodePayLink`, `savePayLink`,
   `loadPayLinks`, `markPaidFromIncoming`.
 - `src/lib/demo.ts`: saldos por cuenta, `runDemoPayment`, libro `camalote.demo.ledger`.
@@ -73,13 +74,16 @@ montos en otra moneda, hookData de CCTP para identificar pagos on-chain.
 ## Flujo de datos del pago real
 
 1. Pagador entra en `/p?to=…&a=…`. `decodePayLink` valida `to` como pubkey.
-2. `computeQuoteForReceive(a)` → `quote.amountUnits` es lo que sale de Base.
+2. `computeQuote(a)`: `a` es lo que manda el pagador (sale de Base tal cual);
+   `receiveUnits` es lo que llega al cobrador, ya con comisión y envío exprés
+   descontados.
 3. `runBridge(quote, onUpdate, { recipientOwner: to })`: `mintRecipient` =
    ATA(USDC, to). Lote patrocinado: approve + transfer(comisión) + depositForBurn.
 4. Circle certifica. `/api/relay { txHash, solanaOwner: to }`: el relayer valida
    que `mintRecipient` del mensaje sea ATA(to), crea la cuenta si falta y acuña.
 5. El cobrador, al abrir la app, sincroniza su historial desde la cadena: un
-   ingreso ≥ monto y posterior a la creación marca el link como pagado.
+   ingreso ≥ `minReceiveUnits(monto)` y posterior a la creación marca el link
+   como pagado.
 
 ## Errores
 
@@ -90,51 +94,42 @@ montos en otra moneda, hookData de CCTP para identificar pagos on-chain.
 
 ## Tests
 
-- Unit: cotización inversa (redondeos, tope, mínimo), codificación de links,
-  matching de pagos.
+- Unit: `minReceiveUnits` (piso de lo que llega), codificación de links,
+  matching de pagos con la comisión descontada.
 - Existentes: calldata, mensaje CCTP, validación de retiro, PDAs (devnet).
 - Manual/Playwright: flujo demo completo grabado en video.
 
-## Agregado (2026-09-06, tarde): dirección de cobro no custodial
+## Agregado (2026-09-06, tarde): pagar sin registrarse
 
 **Por qué.** El pago con email exige que el pagador se registre. Un cliente
 con Coinbase ya puede mandar USDC a cualquier dirección; el diferenciador es
-que pueda pagar **sin registrarse en nada** y que la plata igual llegue sola a
-la cuenta de Solana del cobrador, sin que nadie (ni Camalote) la pueda desviar.
+que pueda pagar **sin registrarse en nada** y que la plata igual termine en la
+cuenta de Solana del cobrador sin que este toque nada.
+
+**Decisiones de Fernando.** Nada de contratos en el medio (una primera versión
+con un forwarder CREATE2 se descartó: "al pedo"). Y nada de recargos al que
+paga: la comisión sale de lo que llega.
 
 **Diseño.**
-- `CamaloteForwarderFactory` (Base): `forwarderFor(mintRecipient)` calcula por
-  CREATE2 la dirección de cobro de una token account de USDC en Solana; el
-  salt es el propio `mintRecipient`, así la dirección fija el destino.
-  `forward(mintRecipient)` despliega el `CamaloteForwarder` si no existe y
-  llama a `sweep()`: descuenta la comisión (bps con piso y techo, techos
-  absolutos grabados: 1 % y 1 USDC), aprueba al TokenMessengerV2 y hace
-  `depositForBurn` rápido con `destinationCaller = 0`.
-- Cualquiera puede llamar a `forward()`. El servidor lo hace con una cuenta
-  que solo paga gas (`BASE_SWEEPER_PRIVATE_KEY`); si no está configurada, la
-  función queda apagada y no cambia nada más.
-- `src/lib/forwarder/`: misma cuenta CREATE2 en TypeScript con el hash del
-  código de creación generado desde el artefacto de Foundry
-  (`scripts/forwarder-artifact.mjs`). Test contra el vector de `forge test`.
-- Motor (`BridgeActions`): `getDepositAddress(owner)`, `readDeposit(owner)`,
-  `sweepDeposit(owner, onUpdate)` y, solo en demo, `simulateDeposit`.
-- UI: tarjeta "Sin registrarte" en `/p` (dirección, QR, monto exacto a
-  mandar, espera, entrega, comprobante y CTA viral) y tarjeta "Tu dirección de
-  cobro en Base" en el panel del cobrador (dirección, QR, avisos y entrega
-  automática si aparecen USDC esperando).
+- El link lleva la cuenta de Base del cobrador (`b`), que es la billetera
+  embebida que Privy ya le da. `decodePayLink` la valida como dirección EVM.
+- `/p` muestra esa cuenta con QR y el monto a mandar. Lee el saldo con
+  `actions.readBaseBalance`; la primera lectura es el punto de partida y, si
+  después sube por lo menos el monto pedido, muestra "¡Pagado!" y el CTA
+  viral. En demo hay un botón que simula el envío desde Coinbase.
+- El panel de Cobrar muestra la misma cuenta ("Tu dirección de cobro en Base")
+  y guarda el último saldo que ya era del usuario. Si el saldo sube por lo
+  menos el mínimo, cotiza la diferencia con `getQuote` y la lleva a Solana con
+  `runBridge` (la misma operación patrocinada del cruce), guardando el
+  movimiento en el historial. La comisión se descuenta en ese viaje.
+- Motor (`BridgeActions`): `readBaseBalance(address)` y, solo en demo,
+  `simulateDeposit(address, units)`.
 
-**Flujo real.** Pagador manda USDC → `/p` o el panel del cobrador ven saldo ≥
-mínimo → `POST /api/sweep` → `forward()` → esperar certificación de Circle →
-`POST /api/relay` → USDC en la cuenta del cobrador → el link se marca
-"Pagado" por el mismo cruce de ingresos que el pago con email.
+**Errores.** Si el cruce automático falla después de salir de Base, el
+historial lo reconcilia al volver a abrir la app (mismo camino que el cruce
+manual). Si el cobrador movió plata por su cuenta, el punto de partida se
+vuelve a fijar. Otra moneda u otra red: se pierde, y el link lo avisa.
 
-**Errores.** Saldo bajo el mínimo: se espera. Dos disparos a la vez: el
-segundo falla y la UI lo trata como "ya entregado" si la dirección quedó en
-cero. Otro token o red equivocada: se pierde o lo devuelve el dueño
-(`rescueToken`, nunca USDC). Sweeper sin configurar: 503 y la tarjeta no
-aparece en real (sí en demo).
-
-**Tests.** 12 unitarios en Foundry (dirección determinista, despliegue y
-envío, reutilización, matemática de comisión, mínimo, techos, permisos,
-rescate) + fork test opcional contra Base Sepolia + vitest del vector CREATE2
-+ recorrido E2E en demo (`scripts/e2e-demo.mjs`, pasos 5 y 6).
+**Tests.** Vitest: `minReceiveUnits`, links con `b`, matching con comisión
+descontada. Recorrido E2E en demo (`scripts/e2e-demo.mjs`, pasos 5 y 6): el
+cliente manda 25 a la cuenta de Base de Fer y la app de Fer los lleva a Solana.

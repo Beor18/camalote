@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Clock, Info, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, Clock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CopyButton } from "@/components/copy-button";
-import { RunProgress, type RunState } from "@/components/bridge/panel";
 import { ViralCta } from "@/components/pay/viral-cta";
-import { estimateDeliveredUnits } from "@/lib/forwarder";
 import { formatUsdc } from "@/lib/format";
+import { MIN_TRANSFER_UNITS } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 import type { PayLink } from "@/lib/paylink";
 import type { BridgeActions } from "@/components/bridge/types";
@@ -19,75 +18,47 @@ const DEMO_OPEN_AMOUNT = 25_000_000n;
 
 /**
  * Pagar sin registrarse: el que paga manda USDC desde Coinbase o cualquier
- * billetera a la dirección de cobro del link (un contrato en Base que solo
- * puede enviarlos a la cuenta de Solana del cobrador). Esta tarjeta espera
- * que lleguen y completa la entrega desde acá mismo.
+ * billetera a la cuenta de Base del cobrador (la que ya tiene en Camalote).
+ * Esta tarjeta espera que lleguen. Cuando el cobrador abre su app, los USDC
+ * pasan solos a su cuenta de Solana.
  */
 export function DirectPayCard({
   link,
   payeeName,
-  sendUnits,
   actions,
   demo,
-  hidden,
 }: {
   link: PayLink;
   payeeName: string;
-  /** Lo que tiene que mandar para que llegue lo pedido (null = monto abierto). */
-  sendUnits: bigint | null;
   actions: BridgeActions;
   demo: boolean;
-  hidden: boolean;
 }) {
   const { lang, t } = useLang();
-  const address = actions.getDepositAddress(link.to);
-  const [run, setRun] = useState<RunState>({ step: "idle" });
-  const [arrivedUnits, setArrivedUnits] = useState<bigint | null>(null);
+  const address = link.base;
+  const expected = link.amountUnits ?? MIN_TRANSFER_UNITS;
+  const [arrived, setArrived] = useState<bigint | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const busy = useRef(false);
+  const baselineRef = useRef<bigint | null>(null);
   const actionsRef = useRef(actions);
   useEffect(() => {
     actionsRef.current = actions;
   });
 
-  const deliver = useCallback(
-    async (balanceUnits: bigint) => {
-      if (busy.current) return;
-      busy.current = true;
-      setArrivedUnits(balanceUnits);
-      let latest: RunState = { step: "sending", startedAt: Date.now() };
-      setRun(latest);
-      try {
-        await actionsRef.current.sweepDeposit(link.to, (update) => {
-          latest = { ...latest, ...update };
-          setRun(latest);
-        });
-      } catch (err) {
-        // Si el cobrador ya disparó la entrega desde su app, no es un error.
-        const state = await actionsRef.current.readDeposit(link.to).catch(() => null);
-        if (state && state.balanceUnits < state.minUnits && !latest.baseTxHash) {
-          setRun({ ...latest, step: "done" });
-        } else {
-          const message =
-            err instanceof Error && err.message ? err.message : t.app.genericRunError;
-          setRun({ ...latest, step: "error", errorMessage: message });
-        }
-      } finally {
-        busy.current = false;
-      }
-    },
-    [link.to, t]
-  );
-
-  // Mientras espera, mira la dirección cada pocos segundos.
+  // La primera lectura fija el saldo de partida; después, si sube por lo
+  // menos el monto pedido, el pago llegó.
   useEffect(() => {
-    if (hidden || !address || run.step !== "idle") return;
+    if (!address || arrived !== null) return;
     let cancelled = false;
     const tick = async () => {
       try {
-        const state = await actionsRef.current.readDeposit(link.to);
+        const balance = await actionsRef.current.readBaseBalance(address);
         if (cancelled) return;
-        if (state.balanceUnits >= state.minUnits) void deliver(state.balanceUnits);
+        if (baselineRef.current === null) {
+          baselineRef.current = balance;
+          return;
+        }
+        const delta = balance - baselineRef.current;
+        if (delta >= expected) setArrived(delta);
       } catch {
         // el RPC público puede limitar: probamos en la próxima vuelta
       }
@@ -98,10 +69,10 @@ export function DirectPayCard({
       cancelled = true;
       clearInterval(id);
     };
-  }, [hidden, address, run.step, link.to, deliver]);
+  }, [address, arrived, expected]);
 
   useEffect(() => {
-    if (hidden || !address || run.step !== "idle" || !canvasRef.current) return;
+    if (!address || arrived !== null || !canvasRef.current) return;
     QRCode.toCanvas(canvasRef.current, address, {
       width: 160,
       margin: 1,
@@ -109,65 +80,22 @@ export function DirectPayCard({
     }).catch(() => {
       // sin QR igual queda la dirección en texto
     });
-  }, [hidden, address, run.step]);
+  }, [address, arrived]);
 
-  if (hidden || !address) return null;
+  if (!address) return null;
 
-  const reset = () => {
-    setRun({ step: "idle" });
-    setArrivedUnits(null);
-  };
-
-  if (run.step === "error") {
+  if (arrived !== null) {
     return (
-      <Card className="p-6 sm:p-8">
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
-        >
-          <Info className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
-          <div>
-            <p className="font-medium text-destructive">{t.app.errorTitle}</p>
-            <p className="mt-1 text-muted-foreground">
-              {run.errorMessage}
-              {run.baseTxHash ? t.app.errorAfterBurn : ""}
-            </p>
-          </div>
-        </div>
-        <Button
-          type="button"
-          size="lg"
-          className="mt-4 w-full"
-          onClick={() => void deliver(arrivedUnits ?? 0n)}
-        >
-          <RefreshCw className="size-4" aria-hidden="true" />
-          {t.pay.directRetry}
-        </Button>
-      </Card>
-    );
-  }
-
-  if (run.step !== "idle") {
-    const delivered =
-      link.amountUnits ?? (arrivedUnits ? estimateDeliveredUnits(arrivedUnits) : null);
-    return (
-      <Card className="p-6 sm:p-8">
-        <RunProgress
-          run={run}
-          onReset={reset}
-          demo={demo}
-          lang={lang}
-          t={t}
-          copy={{
-            doneTitle: t.pay.doneTitle,
-            doneBody: t.pay.directDoneBody(
-              delivered ? formatUsdc(delivered, 2, lang) : "…",
-              payeeName
-            ),
-            again: t.pay.again,
-          }}
-          doneExtra={<ViralCta />}
-        />
+      <Card className="p-6 text-center sm:p-8 animate-pop">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-gradient">
+          <Check className="size-7 text-white" strokeWidth={3} aria-hidden="true" />
+        </span>
+        <h2 className="mt-4 font-display text-2xl font-semibold">{t.pay.doneTitle}</h2>
+        <p className="mt-2 text-muted-foreground">
+          {t.pay.directDoneBody(formatUsdc(arrived, 2, lang), payeeName)}
+        </p>
+        {demo && <p className="mt-3 text-xs text-muted-foreground">{t.common.demoNote}</p>}
+        <ViralCta />
       </Card>
     );
   }
@@ -181,7 +109,9 @@ export function DirectPayCard({
       <p className="mt-1 text-sm text-muted-foreground">{t.pay.directSub(payeeName)}</p>
 
       <p className="mt-5 text-center text-lg font-medium">
-        {sendUnits !== null ? t.pay.directSend(formatUsdc(sendUnits, 2, lang)) : t.pay.directSendOpen}
+        {link.amountUnits !== null
+          ? t.pay.directSend(formatUsdc(link.amountUnits, 2, lang))
+          : t.pay.directSendOpen}
       </p>
 
       <div className="mx-auto mt-4 w-fit rounded-2xl bg-white p-3">
@@ -193,10 +123,7 @@ export function DirectPayCard({
         </span>
         <CopyButton value={address} label={t.pay.copyAddress} />
       </div>
-      <ul className="mt-3 flex flex-col gap-1.5 text-xs text-muted-foreground">
-        <li>{t.pay.directOnly}</li>
-        <li>{t.pay.directContract(payeeName)}</li>
-      </ul>
+      <p className="mt-3 text-xs text-muted-foreground">{t.pay.directOnly}</p>
 
       <div
         className="mt-5 flex items-start gap-3 rounded-xl border border-border p-3 text-sm"
@@ -216,9 +143,9 @@ export function DirectPayCard({
           variant="secondary"
           className="mt-4 w-full"
           onClick={() => {
-            const units = sendUnits ?? DEMO_OPEN_AMOUNT;
-            actions.simulateDeposit?.(link.to, units);
-            void deliver(units);
+            const units = link.amountUnits ?? DEMO_OPEN_AMOUNT;
+            actions.simulateDeposit?.(address, units);
+            setArrived(units);
           }}
         >
           <Sparkles className="size-4" aria-hidden="true" />

@@ -55,12 +55,12 @@ tiene un email. Camalote sí.
    (lee los ingresos de su cuenta)                            receive_message → USDC
 ```
 
-- **Links de cobro**: `/p?to=<cuenta>&a=<monto>&c=<concepto>&n=<nombre>`.
+- **Links de cobro**: `/p?to=<cuenta>&a=<monto>&c=<concepto>&n=<nombre>&b=<cuenta de Base>`.
   El monto es opcional (el pagador elige). `src/lib/paylink.ts` codifica,
   valida y cruza los ingresos de la cuenta con los links pendientes.
-- **Cotización inversa**: dado lo que tiene que llegar, calculamos lo que
-  paga el pagador (`computeQuoteForReceive`). Comisión y envío exprés salen
-  del pagador; el cobrador recibe el número que pidió.
+- **La comisión sale de lo que llega**: el pagador manda el número del link
+  tal cual, sin recargos. `computeQuote` desglosa comisión y envío exprés, y
+  `minReceiveUnits` reconoce un cobro por lo que llega (nunca menos que eso).
 - **Un solo motor** (`useEngine`): demo o real, alimenta la app y la página
   de pago. El pago real es el mismo `depositForBurn` del cruce, con el
   `mintRecipient` apuntando a la token account del cobrador.
@@ -76,61 +76,40 @@ tiene un email. Camalote sí.
   devnet (`pnpm test:integration`), con los IDLs oficiales de Circle vendoreados
   en `src/lib/cctp/idl/`.
 
-## Dirección de cobro no custodial: pagar sin registrarse
+## Pagar sin registrarse: la cuenta de Base del cobrador
 
-Además del pago con email, cada cuenta de Solana tiene **una dirección de
-cobro en Base**. El que paga manda USDC ahí desde Coinbase o cualquier
-billetera, sin crear cuenta en ningún lado, y los USDC llegan solos a la
-cuenta de Solana del cobrador.
+Además del pago con email, el link lleva la **cuenta de Base del cobrador**
+(la billetera embebida que Privy ya le da, parámetro `b`). El que paga manda
+USDC ahí desde Coinbase o cualquier billetera, sin crear cuenta en ningún
+lado. Cuando el cobrador abre Camalote, la app ve el saldo nuevo y lo lleva a
+Solana sola, por el mismo cruce de siempre (una operación patrocinada, sin
+tocar nada). Nada en el medio: es la billetera del cobrador desde el primer
+segundo.
 
-```
- Pagador (Coinbase, cualquier billetera)      Contrato en Base (CREATE2)
-   manda USDC a la dirección del link ─────►  CamaloteForwarder: solo puede
-                                               hacer depositForBurn hacia UNA
-                                               token account de Solana, fijada
-                                               por la propia dirección
-                                                  │  forward() lo dispara cualquiera
-                                                  │  (nuestro sweeper paga el gas;
-                                                  │   no puede cambiar el destino)
-                                                  ▼
-                                    Circle certifica ──► relayer entrega en Solana
-```
-
-- `contracts/src/CamaloteForwarder.sol`: la fábrica calcula la dirección de
-  cada cuenta (`forwarderFor(mintRecipient)`) antes de que exista; `forward()`
-  la despliega si hace falta y manda el saldo. La comisión (0,45 %, tope
-  medio dólar) se descuenta en el contrato, con **techos grabados**: el dueño
-  no puede subirla por encima de 1 % ni de 1 USDC, nunca.
-- Los USDC no se pueden desviar: el destino está fijado por la dirección.
-  Si alguien manda otro token por error, el dueño puede devolverlo
-  (`rescueToken`); los USDC no, solo viajan a Solana.
-- `src/lib/forwarder/`: la misma cuenta CREATE2 en TypeScript (test contra el
-  vector de Foundry) y la estimación de lo que llega.
-- `POST /api/sweep { owner }`: lee el saldo de la dirección y, si supera el
-  mínimo, dispara `forward()` con `BASE_SWEEPER_PRIVATE_KEY` (centavos de gas).
-  Después la entrega en Solana sigue el camino normal (certificación + relayer).
-- La página de pago (`/p`) y el panel del cobrador miran la dirección cada
-  pocos segundos: cualquiera de los dos completa la entrega. Si el pagador
-  cierra la página, se entrega cuando el cobrador abre Camalote.
-- Tests: `pnpm contracts:test` (12 unitarios con mocks) y, con
-  `BASE_SEPOLIA_RPC_URL`, un test de fork contra el USDC y el TokenMessengerV2
-  reales de Base Sepolia. Sin `NEXT_PUBLIC_FORWARDER_FACTORY` la función
-  queda apagada y el link solo se paga con email.
+- `/p` muestra la cuenta con QR y monto, y avisa cuando el saldo subió por lo
+  menos ese monto ("¡Pagado!").
+- El panel de Cobrar recuerda el último saldo en Base que ya era del usuario
+  (`camalote.cobros.baseSeen.v1:<cuenta>`). Lo que aparece de más se lleva a
+  Solana automáticamente; la comisión se descuenta en ese viaje, como en
+  cualquier cruce.
+- El link se marca "Pagado" con el mismo cruce de ingresos que el pago con
+  email: llega por lo menos `minReceiveUnits(monto)`.
 
 ## Comisión
 
 Regla vigente: **0,45 % con tope de $0,50 por cobro o cruce** (piso 0,01;
-mínimo 0,50 USDC; retiros gratis). La paga quien manda. Aparte, Circle cobra
-su envío exprés (~0,013 %). Todo configurable por env: `NEXT_PUBLIC_FEE_BPS`,
+mínimo 0,50 USDC; retiros gratis). Se descuenta de lo que llega: el que paga
+manda el número del link tal cual, sin recargos. Aparte, Circle cobra su
+envío exprés (~0,013 %). Todo configurable por env: `NEXT_PUBLIC_FEE_BPS`,
 `NEXT_PUBLIC_FEE_MIN_UNITS`, `NEXT_PUBLIC_FEE_MAX_UNITS`,
 `NEXT_PUBLIC_MIN_TRANSFER_UNITS`.
 
-| Cobro | Paga el pagador | Comisión | % efectivo |
+| Te pagan | Te llegan | Comisión | % efectivo |
 |---|---|---|---|
-| $20 | $20,09 | $0,09 | 0,45 % |
-| $100 | $100,46 | $0,45 | 0,45 % |
-| $500 | $500,57 | $0,50 (tope) | 0,10 % |
-| $1.000 | $1.000,63 | $0,50 (tope) | 0,05 % |
+| $20 | $19,91 | $0,09 | 0,45 % |
+| $100 | $99,53 | $0,45 | 0,45 % |
+| $500 | $499,44 | $0,50 (tope) | 0,10 % |
+| $1.000 | $999,37 | $0,50 (tope) | 0,05 % |
 
 Contra las alternativas para mover USDC a Solana (estimaciones 2026):
 Phantom cobra 0,85 % (1,5 % sin gas) y exige seed phrase; deBridge 0,50 fijo
@@ -182,16 +161,11 @@ Prueba de punta a punta con dos personas: A entra en `/app/cobrar` y crea un
 link; B abre el link en otro dispositivo, entra con su email, carga USDC de
 prueba y paga. La pantalla de A marca el cobro "Pagado" sola.
 
-### Dirección de cobro en testnet
+### Pagar sin registrarse, en testnet
 
-1. `pnpm contracts:build` (necesita [Foundry](https://getfoundry.sh); clona
-   `forge-std` en `contracts/lib` con `git clone --depth 1 https://github.com/foundry-rs/forge-std contracts/lib/forge-std`).
-2. `DEPLOYER_PRIVATE_KEY=0x… pnpm contracts:deploy:testnet` con una cuenta con
-   algo de ETH de Base Sepolia. Imprime la dirección de la fábrica.
-3. En `.env.local`: `NEXT_PUBLIC_FORWARDER_FACTORY=<fábrica>` y
-   `BASE_SWEEPER_PRIVATE_KEY=<cuenta con centavos de ETH>` (puede ser la misma).
-4. Abrí un link de cobro, mandá USDC de prueba a la dirección que muestra y
-   mirá cómo llegan a Solana sin tocar nada.
+Abrí un link de cobro sin entrar con email, mandá USDC de prueba (faucet de
+Circle) a la cuenta de Base que muestra, y después abrí Camalote con la cuenta
+del cobrador: la pestaña Cobrar los ve y los lleva a Solana sola.
 
 ## Checklist para mainnet
 

@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { computeQuoteForReceive, QuoteError } from "@/lib/cctp/quote";
+import { computeQuote, QuoteError } from "@/lib/cctp/quote";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { FEE_BPS } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 
 /**
- * La promesa de transparencia, hecha juguete: escribís cuánto pedís y ves
- * al instante que te llega ese mismo número, y cuánto pone el que te paga.
- * Misma matemática que usa la app para los cobros.
+ * La promesa de transparencia, hecha juguete: escribís cuánto te pagan y ves
+ * al instante cuánto te llega y de dónde sale la diferencia. Misma
+ * matemática que usa la app.
  */
 const EXPRESS_BPS = 1.3;
 
@@ -23,11 +23,10 @@ export function MiniCalc() {
     try {
       // sin opciones: usa la misma config que la app (si la comisión está
       // apagada acá también se ve gratis; la promesa de arriba es literal)
-      const q = computeQuoteForReceive(units, EXPRESS_BPS);
+      const q = computeQuote(units, EXPRESS_BPS);
       return {
         kind: "ok" as const,
         receive: q.receiveUnits,
-        payer: q.amountUnits,
         fee: q.camaloteFeeUnits,
         express: q.circleFeeUnits,
       };
@@ -38,6 +37,11 @@ export function MiniCalc() {
       return { kind: "empty" as const };
     }
   }, [text]);
+
+  const pct = (FEE_BPS / 100).toLocaleString(lang === "es" ? "es" : "en", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   return (
     <div className="mx-auto mt-10 max-w-xl overflow-hidden rounded-3xl bg-brand-gradient p-[1px]">
@@ -107,20 +111,12 @@ export function MiniCalc() {
           {result.kind === "ok" && (
             <>
               <span className="font-medium text-foreground">
-                {t.landing.calcPayerPuts}{" "}
-                <span className="font-mono tabular-nums">
-                  {formatUsdc(result.payer, 2, lang)}
-                </span>{" "}
-                USDC.
+                {t.landing.calcFeeLine(
+                  formatUsdc(result.fee, 2, lang),
+                  pct,
+                  formatUsdc(result.express, 2, lang)
+                )}
               </span>{" "}
-              {t.landing.calcFeeLine(
-                formatUsdc(result.fee, 2, lang),
-                (FEE_BPS / 100).toLocaleString(lang === "es" ? "es" : "en", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }),
-                formatUsdc(result.express, 2, lang)
-              )}{" "}
             </>
           )}
           {t.landing.calcFootnote}

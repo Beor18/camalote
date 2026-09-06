@@ -111,10 +111,11 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
   return (
     <div className="flex w-full flex-col gap-6">
       <SolanaBalance session={session} balances={balances} />
-      {session.solanaAddress && (
+      {session.baseAddress && (
         <DepositAddressCard
-          owner={session.solanaAddress}
+          address={session.baseAddress}
           actions={actions}
+          demo={session.demo}
           onDelivered={() => {
             balances.refresh();
             void check();
@@ -129,6 +130,7 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
           {links.length > 0 && <LinksList links={links} demo={session.demo} />}
           <CreateLinkForm
             solanaAddress={session.solanaAddress}
+            baseAddress={session.baseAddress}
             defaultName={defaultName}
             onCreate={onCreate}
           />
@@ -179,10 +181,12 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
 
 function CreateLinkForm({
   solanaAddress,
+  baseAddress,
   defaultName,
   onCreate,
 }: {
   solanaAddress: string | null;
+  baseAddress: string | null;
   defaultName: string;
   onCreate: (link: SavedPayLink) => void;
 }) {
@@ -219,7 +223,13 @@ function CreateLinkForm({
           if (!canSubmit || !solanaAddress) return;
           const finalName = name.trim() || defaultName;
           const url = encodePayLink(
-            { to: solanaAddress, amountUnits, concept: concept.trim(), name: finalName },
+            {
+              to: solanaAddress,
+              amountUnits,
+              concept: concept.trim(),
+              name: finalName,
+              base: baseAddress,
+            },
             window.location.origin
           );
           onCreate({
@@ -230,6 +240,7 @@ function CreateLinkForm({
             concept: concept.trim(),
             name: finalName,
             url,
+            base: baseAddress ?? undefined,
           });
           setAmountText("");
           setConcept("");
