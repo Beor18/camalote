@@ -34,6 +34,14 @@ native USDC in the payee's Solana account, gas-free on both sides, in under a
 minute. The number you asked for is the number that arrives: the payer covers
 the fee, capped at 50 cents.
 
+What makes it different: the payer doesn't need an account at all. Every
+payment link also shows a **non-custodial payment address on Base**. Send USDC
+there from Coinbase or any wallet and it lands on its own in the payee's
+Solana account. The address is a CREATE2 contract that can only forward funds
+to that one Solana token account, through Circle's official path. Nobody can
+redirect it, not even us; our server only pays the gas to trigger it, and the
+fee caps (1%, 1 USDC) are hard-coded so they can never be raised.
+
 Under the hood, every payment is a Circle CCTP v2 fast transfer from Base to
 Solana: burn on Base inside a Coinbase-Paymaster-sponsored smart wallet
 operation, Circle attestation, and a mint on Solana executed by our relayer,
@@ -53,9 +61,10 @@ an email.
 Growth is built into the product: every "Paid!" screen ends with "Create your
 own payment link". Every payer is tomorrow's payee. No ad budget needed.
 
-Roadmap for the sprint: mainnet launch with Coinbase Paymaster on Base,
-"Fund with Base" embeddable widget for Solana apps (the Mayan playbook), and
-pay-with-QR from any Coinbase account.
+Roadmap for the sprint: mainnet launch with Coinbase Paymaster on Base and
+the payment-address factory deployed, card and Apple Pay for payers without
+crypto (Coinbase Onramp delivering straight into the payment address), and a
+"Fund with Base" embeddable widget for Solana apps (the Mayan playbook).
 
 **Country**: Argentina
 
@@ -121,14 +130,21 @@ cualquier editor, o grabá la pantalla de tu teléfono con la PWA instalada.
 - **¿Y si Circle lo hace?** Circle tiene Programmable Wallets y Gateway.
   Nuestra ventaja es la distribución: español primero, WhatsApp primero, y
   el loop pagador → cobrador. Somos el "vehículo" sobre su "ruta".
-- **¿Cómo ganan plata?** 0,45 % con tope de 0,50 por cobro. El bridge solo
-  no es negocio; el negocio es el volumen de cobros recurrentes y, después,
-  el widget "Fondeá con Base" como API para apps de Solana.
+- **¿Qué tiene de distinto de mandar USDC a Lemon o belo?** Que el que paga
+  no se registra en nada y el que cobra no necesita un exchange ni
+  verificación: la dirección de cobro es un contrato que solo puede mandar la
+  plata a su cuenta de Solana. Y el link le dice al cliente cuánto y por qué.
+- **¿Cómo ganan plata?** 0,45 % con tope de 0,50 por cobro, a la vista en el
+  link, en la landing y grabado en el contrato (nunca más de 1 % ni de 1 USDC,
+  ni queriendo). El bridge solo no es negocio; el negocio es el volumen de
+  cobros recurrentes y, después, el widget "Fondeá con Base" para apps de
+  Solana.
 - **¿Regulación?** Sin rampas fiat. Self-custody, no tocamos fondos. En
   Argentina el registro PSAV aplica a custodia e intermediación; un relayer
   no custodial es zona gris que vamos a consultar antes de mainnet.
 - **¿Riesgo del relayer?** `destinationCaller` en cero: cualquiera completa
-  la entrega. Los fondos nunca quedan atrapados.
+  la entrega. Los fondos nunca quedan atrapados. Lo mismo en Base: cualquiera
+  puede disparar `forward()` en la dirección de cobro.
 
 ## Plan de GTM sin presupuesto (primeras 4 semanas)
 

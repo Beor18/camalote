@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { computeQuoteForReceive, QuoteError } from "@/lib/cctp/quote";
 import { formatUsdc, parseUsdc } from "@/lib/format";
+import { FEE_BPS } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 
 /**
@@ -27,6 +28,8 @@ export function MiniCalc() {
         kind: "ok" as const,
         receive: q.receiveUnits,
         payer: q.amountUnits,
+        fee: q.camaloteFeeUnits,
+        express: q.circleFeeUnits,
       };
     } catch (err) {
       if (err instanceof QuoteError && err.code === "TOO_SMALL") {
@@ -110,6 +113,14 @@ export function MiniCalc() {
                 </span>{" "}
                 USDC.
               </span>{" "}
+              {t.landing.calcFeeLine(
+                formatUsdc(result.fee, 2, lang),
+                (FEE_BPS / 100).toLocaleString(lang === "es" ? "es" : "en", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }),
+                formatUsdc(result.express, 2, lang)
+              )}{" "}
             </>
           )}
           {t.landing.calcFootnote}

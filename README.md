@@ -76,6 +76,47 @@ tiene un email. Camalote sí.
   devnet (`pnpm test:integration`), con los IDLs oficiales de Circle vendoreados
   en `src/lib/cctp/idl/`.
 
+## Dirección de cobro no custodial: pagar sin registrarse
+
+Además del pago con email, cada cuenta de Solana tiene **una dirección de
+cobro en Base**. El que paga manda USDC ahí desde Coinbase o cualquier
+billetera, sin crear cuenta en ningún lado, y los USDC llegan solos a la
+cuenta de Solana del cobrador.
+
+```
+ Pagador (Coinbase, cualquier billetera)      Contrato en Base (CREATE2)
+   manda USDC a la dirección del link ─────►  CamaloteForwarder: solo puede
+                                               hacer depositForBurn hacia UNA
+                                               token account de Solana, fijada
+                                               por la propia dirección
+                                                  │  forward() lo dispara cualquiera
+                                                  │  (nuestro sweeper paga el gas;
+                                                  │   no puede cambiar el destino)
+                                                  ▼
+                                    Circle certifica ──► relayer entrega en Solana
+```
+
+- `contracts/src/CamaloteForwarder.sol`: la fábrica calcula la dirección de
+  cada cuenta (`forwarderFor(mintRecipient)`) antes de que exista; `forward()`
+  la despliega si hace falta y manda el saldo. La comisión (0,45 %, tope
+  medio dólar) se descuenta en el contrato, con **techos grabados**: el dueño
+  no puede subirla por encima de 1 % ni de 1 USDC, nunca.
+- Los USDC no se pueden desviar: el destino está fijado por la dirección.
+  Si alguien manda otro token por error, el dueño puede devolverlo
+  (`rescueToken`); los USDC no, solo viajan a Solana.
+- `src/lib/forwarder/`: la misma cuenta CREATE2 en TypeScript (test contra el
+  vector de Foundry) y la estimación de lo que llega.
+- `POST /api/sweep { owner }`: lee el saldo de la dirección y, si supera el
+  mínimo, dispara `forward()` con `BASE_SWEEPER_PRIVATE_KEY` (centavos de gas).
+  Después la entrega en Solana sigue el camino normal (certificación + relayer).
+- La página de pago (`/p`) y el panel del cobrador miran la dirección cada
+  pocos segundos: cualquiera de los dos completa la entrega. Si el pagador
+  cierra la página, se entrega cuando el cobrador abre Camalote.
+- Tests: `pnpm contracts:test` (12 unitarios con mocks) y, con
+  `BASE_SEPOLIA_RPC_URL`, un test de fork contra el USDC y el TokenMessengerV2
+  reales de Base Sepolia. Sin `NEXT_PUBLIC_FORWARDER_FACTORY` la función
+  queda apagada y el link solo se paga con email.
+
 ## Comisión
 
 Regla vigente: **0,45 % con tope de $0,50 por cobro o cruce** (piso 0,01;
@@ -118,13 +159,13 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
 
 ## Pasar a testnet real (Base Sepolia + Solana devnet)
 
-1. **Privy** — [dashboard.privy.io](https://dashboard.privy.io)
+1. **Privy**: [dashboard.privy.io](https://dashboard.privy.io)
    - Creá una app y copiá el App ID → `NEXT_PUBLIC_PRIVY_APP_ID`.
    - Login methods: Email (y Google si querés).
    - Embedded wallets: activá **Ethereum** y **Solana**, "create on login".
    - **Smart wallets**: activá (Coinbase Smart Wallet o Kernel) y pegá las URLs
      del paso 2. Elegí la red **Base Sepolia**.
-2. **Coinbase Developer Platform** — [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com)
+2. **Coinbase Developer Platform**: [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com)
    - Creá un proyecto → "Paymaster & Bundler" → red **Base Sepolia**.
    - Copiá la **RPC URL** (sirve de bundler y paymaster) en la config de smart
      wallets de Privy. Activá la gas policy (los límites que quieras).
@@ -140,6 +181,17 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
 Prueba de punta a punta con dos personas: A entra en `/app/cobrar` y crea un
 link; B abre el link en otro dispositivo, entra con su email, carga USDC de
 prueba y paga. La pantalla de A marca el cobro "Pagado" sola.
+
+### Dirección de cobro en testnet
+
+1. `pnpm contracts:build` (necesita [Foundry](https://getfoundry.sh); clona
+   `forge-std` en `contracts/lib` con `git clone --depth 1 https://github.com/foundry-rs/forge-std contracts/lib/forge-std`).
+2. `DEPLOYER_PRIVATE_KEY=0x… pnpm contracts:deploy:testnet` con una cuenta con
+   algo de ETH de Base Sepolia. Imprime la dirección de la fábrica.
+3. En `.env.local`: `NEXT_PUBLIC_FORWARDER_FACTORY=<fábrica>` y
+   `BASE_SWEEPER_PRIVATE_KEY=<cuenta con centavos de ETH>` (puede ser la misma).
+4. Abrí un link de cobro, mandá USDC de prueba a la dirección que muestra y
+   mirá cómo llegan a Solana sin tocar nada.
 
 ## Checklist para mainnet
 

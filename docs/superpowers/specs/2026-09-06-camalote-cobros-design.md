@@ -94,3 +94,47 @@ montos en otra moneda, hookData de CCTP para identificar pagos on-chain.
   matching de pagos.
 - Existentes: calldata, mensaje CCTP, validación de retiro, PDAs (devnet).
 - Manual/Playwright: flujo demo completo grabado en video.
+
+## Agregado (2026-09-06, tarde): dirección de cobro no custodial
+
+**Por qué.** El pago con email exige que el pagador se registre. Un cliente
+con Coinbase ya puede mandar USDC a cualquier dirección; el diferenciador es
+que pueda pagar **sin registrarse en nada** y que la plata igual llegue sola a
+la cuenta de Solana del cobrador, sin que nadie (ni Camalote) la pueda desviar.
+
+**Diseño.**
+- `CamaloteForwarderFactory` (Base): `forwarderFor(mintRecipient)` calcula por
+  CREATE2 la dirección de cobro de una token account de USDC en Solana; el
+  salt es el propio `mintRecipient`, así la dirección fija el destino.
+  `forward(mintRecipient)` despliega el `CamaloteForwarder` si no existe y
+  llama a `sweep()`: descuenta la comisión (bps con piso y techo, techos
+  absolutos grabados: 1 % y 1 USDC), aprueba al TokenMessengerV2 y hace
+  `depositForBurn` rápido con `destinationCaller = 0`.
+- Cualquiera puede llamar a `forward()`. El servidor lo hace con una cuenta
+  que solo paga gas (`BASE_SWEEPER_PRIVATE_KEY`); si no está configurada, la
+  función queda apagada y no cambia nada más.
+- `src/lib/forwarder/`: misma cuenta CREATE2 en TypeScript con el hash del
+  código de creación generado desde el artefacto de Foundry
+  (`scripts/forwarder-artifact.mjs`). Test contra el vector de `forge test`.
+- Motor (`BridgeActions`): `getDepositAddress(owner)`, `readDeposit(owner)`,
+  `sweepDeposit(owner, onUpdate)` y, solo en demo, `simulateDeposit`.
+- UI: tarjeta "Sin registrarte" en `/p` (dirección, QR, monto exacto a
+  mandar, espera, entrega, comprobante y CTA viral) y tarjeta "Tu dirección de
+  cobro en Base" en el panel del cobrador (dirección, QR, avisos y entrega
+  automática si aparecen USDC esperando).
+
+**Flujo real.** Pagador manda USDC → `/p` o el panel del cobrador ven saldo ≥
+mínimo → `POST /api/sweep` → `forward()` → esperar certificación de Circle →
+`POST /api/relay` → USDC en la cuenta del cobrador → el link se marca
+"Pagado" por el mismo cruce de ingresos que el pago con email.
+
+**Errores.** Saldo bajo el mínimo: se espera. Dos disparos a la vez: el
+segundo falla y la UI lo trata como "ya entregado" si la dirección quedó en
+cero. Otro token o red equivocada: se pierde o lo devuelve el dueño
+(`rescueToken`, nunca USDC). Sweeper sin configurar: 503 y la tarjeta no
+aparece en real (sí en demo).
+
+**Tests.** 12 unitarios en Foundry (dirección determinista, despliegue y
+envío, reutilización, matemática de comisión, mínimo, techos, permisos,
+rescate) + fork test opcional contra Base Sepolia + vitest del vector CREATE2
++ recorrido E2E en demo (`scripts/e2e-demo.mjs`, pasos 5 y 6).

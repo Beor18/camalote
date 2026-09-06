@@ -17,6 +17,7 @@ import type { IncomingPayment } from "@/lib/paylink";
  */
 
 const BALANCES_PREFIX = "camalote.demo.balances.v2:";
+const DEPOSITS_KEY = "camalote.demo.deposits.v1";
 const ACCOUNTS_KEY = "camalote.demo.accounts.v1";
 const LEDGER_KEY = "camalote.demo.ledger.v1";
 const DEMO_CIRCLE_FAST_BPS = 1;
@@ -199,4 +200,75 @@ export async function runDemoBridge(
 
   callbacks.onDone(solanaSignature);
   return { baseTxHash, solanaSignature };
+}
+
+/** Dirección de cobro en Base de muestra, estable por cuenta de Solana. */
+export function demoDepositAddress(owner: string): string {
+  let hash = 5381;
+  let out = "";
+  for (let i = 0; out.length < 40; i++) {
+    hash = ((hash << 5) + hash + owner.charCodeAt(i % owner.length) + i * 7) | 0;
+    out += Math.abs(hash).toString(16);
+  }
+  return `0x${out.slice(0, 40)}`;
+}
+
+/** USDC "esperando" en la dirección de cobro de una cuenta (simulados). */
+export function loadDemoDeposit(owner: string): bigint {
+  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
+  return BigInt(deposits[owner] ?? "0");
+}
+
+/** Simula que alguien mandó USDC desde Coinbase a la dirección de cobro. */
+export function simulateDemoDeposit(owner: string, amountUnits: bigint): void {
+  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
+  deposits[owner] = (BigInt(deposits[owner] ?? "0") + amountUnits).toString();
+  writeJson(DEPOSITS_KEY, deposits);
+}
+
+function clearDemoDeposit(owner: string): void {
+  const deposits = readJson<Record<string, string>>(DEPOSITS_KEY, {});
+  delete deposits[owner];
+  writeJson(DEPOSITS_KEY, deposits);
+}
+
+/**
+ * Simula el envío de la dirección de cobro a Solana: el contrato descuenta la
+ * comisión del saldo y el resto llega a la cuenta del cobrador.
+ */
+export async function runDemoSweep(
+  owner: string,
+  callbacks: DemoRunCallbacks
+): Promise<{ amountUnits: bigint; baseTxHash: string; solanaSignature: string }> {
+  const balance = loadDemoDeposit(owner);
+  if (balance <= 0n) {
+    throw new Error("Todavía no llegaron USDC a la dirección de cobro.");
+  }
+  const quote = demoQuote(balance);
+
+  callbacks.onSending();
+  await wait(1800);
+  const baseTxHash = `0x${randomHex(32)}`;
+  clearDemoDeposit(owner);
+  callbacks.onAttesting(baseTxHash);
+
+  await wait(3200);
+  callbacks.onMinting();
+  await wait(2000);
+
+  const solanaSignature = randomBase58(88);
+  const recipientEmail = emailForAddress(owner);
+  if (recipientEmail) {
+    const after = loadDemoBalances(recipientEmail);
+    after.solanaUnits = (BigInt(after.solanaUnits) + quote.receiveUnits).toString();
+    saveDemoBalances(recipientEmail, after);
+  }
+  appendDemoIncoming({
+    signature: solanaSignature,
+    to: owner,
+    amountUnits: quote.receiveUnits.toString(),
+    createdAt: Date.now(),
+  });
+  callbacks.onDone(solanaSignature);
+  return { amountUnits: balance, baseTxHash, solanaSignature };
 }

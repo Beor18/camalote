@@ -20,6 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DepositModal } from "@/components/bridge/deposit-modal";
 import { LoginCard } from "@/components/bridge/shell";
 import { RunProgress, type RunState } from "@/components/bridge/panel";
+import { DirectPayCard } from "@/components/pay/direct-pay";
+import { ViralCta } from "@/components/pay/viral-cta";
 import { useEngine } from "@/components/engine";
 import { formatUsdc, parseUsdc, truncateAddress } from "@/lib/format";
 import { MIN_TRANSFER_UNITS } from "@/lib/config";
@@ -376,6 +378,26 @@ function PayPanel({ link, session, balances, actions }: { link: PayLink } & Engi
         </Card>
       )}
 
+      {(run.step === "idle" || run.step === "error") && (
+        <>
+          <div className="flex items-center gap-3" role="separator" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+              {t.pay.orDivider}
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <DirectPayCard
+            link={link}
+            payeeName={payeeName}
+            sendUnits={quote?.amountUnits ?? null}
+            actions={actions}
+            demo={session.demo}
+            hidden={false}
+          />
+        </>
+      )}
+
       <DepositModal
         open={depositOpen}
         onClose={() => {
@@ -503,26 +525,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <div className="flex items-baseline justify-between gap-4">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="font-mono tabular-nums">{children}</dd>
-    </div>
-  );
-}
-
-/** Cada pago termina con una invitación a cobrar: así crece Camalote. */
-function ViralCta() {
-  const { t } = useLang();
-  return (
-    <div className="mt-4 w-full overflow-hidden rounded-2xl bg-brand-gradient p-[1px]">
-      <div className="rounded-[calc(1rem-1px)] bg-surface p-5 text-center">
-        <p className="font-display text-lg font-semibold">{t.pay.viralTitle}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t.pay.viralBody}</p>
-        <Link
-          href="/app/cobrar"
-          className="mt-4 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-100 hover:bg-primary-hover active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-        >
-          <HandCoins className="size-4" aria-hidden="true" />
-          {t.pay.viralCta}
-        </Link>
-      </div>
     </div>
   );
 }

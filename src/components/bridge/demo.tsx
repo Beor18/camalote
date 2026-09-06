@@ -3,14 +3,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import {
+  demoDepositAddress,
   demoQuote,
   demoQuoteForReceive,
   loadDemoBalances,
+  loadDemoDeposit,
   loadDemoIncoming,
   registerDemoAccount,
   runDemoBridge,
+  runDemoSweep,
   runDemoWithdraw,
+  simulateDemoDeposit,
 } from "@/lib/demo";
+import { MIN_TRANSFER_UNITS } from "@/lib/config";
 import type {
   BridgeActions,
   BridgeBalances,
@@ -151,6 +156,21 @@ export function useDemoEngine(): Engine {
       retryDelivery: async () => null,
       listIncoming: async () =>
         solanaAddress ? loadDemoIncoming(solanaAddress) : [],
+      getDepositAddress: (owner) => demoDepositAddress(owner),
+      readDeposit: async (owner) => ({
+        balanceUnits: loadDemoDeposit(owner),
+        minUnits: MIN_TRANSFER_UNITS,
+      }),
+      sweepDeposit: async (owner, onUpdate) => {
+        const result = await runDemoSweep(owner, {
+          onSending: () => onUpdate({ step: "sending" }),
+          onAttesting: (baseTxHash) => onUpdate({ step: "attesting", baseTxHash }),
+          onMinting: () => onUpdate({ step: "minting" }),
+          onDone: (solanaSignature) => onUpdate({ step: "done", solanaSignature }),
+        });
+        return { amountUnits: result.amountUnits };
+      },
+      simulateDeposit: (owner, amountUnits) => simulateDemoDeposit(owner, amountUnits),
     }),
     [email, solanaAddress]
   );

@@ -11,7 +11,12 @@ import {
 import { createPublicClient, erc20Abi, http } from "viem";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { ADDRESSES, BASE_RPC_URL, SOLANA_RPC_URL } from "@/lib/config";
+import { ADDRESSES, BASE_RPC_URL, MIN_TRANSFER_UNITS, SOLANA_RPC_URL } from "@/lib/config";
+import {
+  FORWARDER_FACTORY,
+  forwarderAddressFor,
+  forwarderFactoryAbi,
+} from "@/lib/forwarder";
 import { base64ToBytes, bytesToBase64 } from "@/lib/base64";
 import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
@@ -160,27 +165,7 @@ export function useRealEngine(): Engine {
           timeout: 120_000,
         });
         onUpdate({ step: "attesting", baseTxHash: txHash });
-
-        // Circle certifica el mensaje (fast transfer ≈ segundos).
-        const deadline = Date.now() + ATTESTATION_TIMEOUT_MS;
-        let attested = false;
-        while (Date.now() < deadline) {
-          const res = await fetch(`/api/attestation?txHash=${txHash}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.status === "complete") {
-              attested = true;
-              break;
-            }
-          }
-          await wait(3000);
-        }
-        if (!attested) {
-          throw new Error(
-            "Circle está tardando más de lo esperado en certificar la transferencia."
-          );
-        }
-
+        await waitForAttestation(txHash);
         onUpdate({ step: "minting", baseTxHash: txHash });
         const result = await relayWithRetries(txHash, recipientOwner);
         onUpdate({
@@ -265,6 +250,49 @@ export function useRealEngine(): Engine {
             createdAt: r.createdAt,
           }));
       },
+      getDepositAddress: (owner) => forwarderAddressFor(owner),
+      readDeposit: async (owner) => {
+        const address = forwarderAddressFor(owner);
+        if (!address || !FORWARDER_FACTORY) {
+          return { balanceUnits: 0n, minUnits: MIN_TRANSFER_UNITS };
+        }
+        const [balanceUnits, minUnits] = await Promise.all([
+          publicClient.readContract({
+            address: ADDRESSES.base.usdc,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [address],
+          }),
+          publicClient.readContract({
+            address: FORWARDER_FACTORY,
+            abi: forwarderFactoryAbi,
+            functionName: "minAmount",
+          }),
+        ]);
+        return { balanceUnits, minUnits };
+      },
+      sweepDeposit: async (owner, onUpdate) => {
+        onUpdate({ step: "sending" });
+        const res = await fetch("/api/sweep", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ owner }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error ?? "No pudimos disparar el envío desde Base.");
+        }
+        if (data.status !== "swept") {
+          throw new Error("Todavía no llegaron USDC a la dirección de cobro.");
+        }
+        const txHash = data.txHash as string;
+        onUpdate({ step: "attesting", baseTxHash: txHash });
+        await waitForAttestation(txHash);
+        onUpdate({ step: "minting", baseTxHash: txHash });
+        const result = await relayWithRetries(txHash, owner);
+        onUpdate({ step: "done", baseTxHash: txHash, solanaSignature: result.signature });
+        return { amountUnits: BigInt(data.amountUnits) };
+      },
     }),
     [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
   );
@@ -286,6 +314,22 @@ async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {
     // la token account todavía no existe: saldo cero
     return 0n;
   }
+}
+
+/** Circle certifica el mensaje (fast transfer ≈ segundos; esperamos con paciencia). */
+async function waitForAttestation(txHash: string): Promise<void> {
+  const deadline = Date.now() + ATTESTATION_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const res = await fetch(`/api/attestation?txHash=${txHash}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === "complete") return;
+    }
+    await wait(3000);
+  }
+  throw new Error(
+    "Circle está tardando más de lo esperado en certificar la transferencia."
+  );
 }
 
 async function relayWithRetries(

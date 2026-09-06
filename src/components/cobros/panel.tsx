@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CopyButton } from "@/components/copy-button";
 import { SolanaMark } from "@/components/chain-logos";
+import { DepositAddressCard } from "@/components/cobros/deposit-address";
 import { formatUsdc, parseUsdc, truncateAddress } from "@/lib/format";
 import { MIN_TRANSFER_UNITS, solanaExplorerTx } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
@@ -110,6 +111,16 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
   return (
     <div className="flex w-full flex-col gap-6">
       <SolanaBalance session={session} balances={balances} />
+      {session.solanaAddress && (
+        <DepositAddressCard
+          owner={session.solanaAddress}
+          actions={actions}
+          onDelivered={() => {
+            balances.refresh();
+            void check();
+          }}
+        />
+      )}
 
       {created ? (
         <LinkReady link={created} onNew={() => setCreated(null)} />

@@ -65,6 +65,28 @@ export interface BridgeActions {
   ) => Promise<string | null>;
   /** Ingresos de USDC en la cuenta Solana del usuario (para marcar cobros). */
   listIncoming: () => Promise<IncomingPayment[]>;
+  /**
+   * Dirección de cobro en Base de una cuenta de Solana: ahí cualquiera manda
+   * USDC sin registrarse. null si la función no está disponible en esta red.
+   */
+  getDepositAddress: (owner: string) => string | null;
+  /** USDC esperando en la dirección de cobro de esa cuenta, y el mínimo para enviar. */
+  readDeposit: (owner: string) => Promise<DepositState>;
+  /**
+   * Manda a Solana lo que espera en la dirección de cobro (el contrato fija
+   * el destino). Mismos pasos que runBridge. Devuelve lo que salió de Base.
+   */
+  sweepDeposit: (
+    owner: string,
+    onUpdate: (update: RunUpdate) => void
+  ) => Promise<{ amountUnits: bigint }>;
+  /** Solo demo: simula que alguien mandó USDC a la dirección de cobro. */
+  simulateDeposit?: (owner: string, amountUnits: bigint) => void;
+}
+
+export interface DepositState {
+  balanceUnits: bigint;
+  minUnits: bigint;
 }
 
 export interface Engine {
