@@ -1,13 +1,10 @@
 "use client";
 
-import { DEMO_MODE } from "@/lib/config";
-import { DemoBridgeApp } from "@/components/bridge/demo";
-import { RealBridgeApp } from "@/components/bridge/real";
+import { useEngine } from "@/components/engine";
+import { BridgeShell, type ShellView } from "@/components/bridge/shell";
 
-/**
- * DEMO_MODE se resuelve en build (variables NEXT_PUBLIC), así que esta
- * elección es estable: nunca cambia de rama en runtime.
- */
-export function BridgeApp() {
-  return DEMO_MODE ? <DemoBridgeApp /> : <RealBridgeApp />;
+/** La app completa: un motor (demo o real) y la vista elegida por la ruta. */
+export function BridgeApp({ view = "bridge" }: { view?: ShellView }) {
+  const engine = useEngine();
+  return <BridgeShell {...engine} view={view} />;
 }

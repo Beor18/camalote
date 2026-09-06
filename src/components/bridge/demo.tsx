@@ -1,10 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BridgeShell } from "@/components/bridge/shell";
+import { PublicKey } from "@solana/web3.js";
 import {
   demoQuote,
+  demoQuoteForReceive,
   loadDemoBalances,
+  loadDemoIncoming,
+  registerDemoAccount,
   runDemoBridge,
   runDemoWithdraw,
 } from "@/lib/demo";
@@ -12,6 +15,7 @@ import type {
   BridgeActions,
   BridgeBalances,
   BridgeSession,
+  Engine,
 } from "@/components/bridge/types";
 
 const EMAIL_KEY = "camalote.demo.email";
@@ -28,19 +32,23 @@ function pseudoRandomHex(seed: string, length: number): string {
   return out.slice(0, length);
 }
 
-function pseudoBase58(seed: string, length: number): string {
-  const alphabet =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+/**
+ * Clave pública de Solana válida (32 bytes) derivada del email: así los
+ * links de cobro del demo pasan la misma validación que los reales.
+ */
+function demoSolanaAddress(email: string): string {
+  const seed = email.trim().toLowerCase();
+  const bytes = new Uint8Array(32);
   let hash = 5381;
-  let out = "";
-  for (let i = 0; out.length < length; i++) {
-    hash = ((hash << 5) + hash + seed.charCodeAt(i % seed.length) + i) | 0;
-    out += alphabet[Math.abs(hash) % alphabet.length];
+  for (let i = 0; i < 32; i++) {
+    hash = ((hash << 5) + hash + seed.charCodeAt(i % seed.length) + i * 31) | 0;
+    bytes[i] = Math.abs(hash) % 256;
   }
-  return out;
+  return new PublicKey(bytes).toBase58();
 }
 
-export function DemoBridgeApp() {
+/** Motor demo: misma interfaz que el real, todo simulado en el dispositivo. */
+export function useDemoEngine(): Engine {
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [baseUnits, setBaseUnits] = useState<bigint | null>(null);
@@ -58,33 +66,38 @@ export function DemoBridgeApp() {
   }, []);
 
   const refresh = useCallback(() => {
+    if (!email) return;
     // Pequeña espera para que los esqueletos se vean como en el flujo real.
     setTimeout(() => {
-      const balances = loadDemoBalances();
+      const balances = loadDemoBalances(email);
       setBaseUnits(BigInt(balances.baseUnits));
       setSolanaUnits(BigInt(balances.solanaUnits));
     }, 600);
-  }, []);
+  }, [email]);
 
   useEffect(() => {
     if (email) refresh();
   }, [email, refresh]);
 
+  const solanaAddress = email ? demoSolanaAddress(email) : null;
+
   const session: BridgeSession = {
     ready,
     authenticated: email !== null,
     accountLabel: email,
-    baseAddress: email ? `0x${pseudoRandomHex(email, 40)}` : null,
-    solanaAddress: email ? pseudoBase58(email, 44) : null,
+    baseAddress: email ? `0x${pseudoRandomHex(email.trim().toLowerCase(), 40)}` : null,
+    solanaAddress,
     demo: true,
     login: (value?: string) => {
       if (!value) return;
+      const clean = value.trim().toLowerCase();
       try {
-        localStorage.setItem(EMAIL_KEY, value);
+        localStorage.setItem(EMAIL_KEY, clean);
       } catch {
         // no crítico
       }
-      setEmail(value);
+      registerDemoAccount(clean, demoSolanaAddress(clean));
+      setEmail(clean);
     },
     logout: () => {
       try {
@@ -108,24 +121,40 @@ export function DemoBridgeApp() {
   const actions: BridgeActions = useMemo(
     () => ({
       getQuote: async (units: bigint) => demoQuote(units),
-      runBridge: async (quote, onUpdate) => {
-        await runDemoBridge(quote, {
-          onSending: () => onUpdate({ step: "sending" }),
-          onAttesting: (baseTxHash) =>
-            onUpdate({ step: "attesting", baseTxHash }),
-          onMinting: () => onUpdate({ step: "minting" }),
-          onDone: (solanaSignature) =>
-            onUpdate({ step: "done", solanaSignature }),
-        });
+      getQuoteForReceive: async (units: bigint) => demoQuoteForReceive(units),
+      runBridge: async (quote, onUpdate, options) => {
+        if (!email || !solanaAddress) {
+          throw new Error("Entrá con tu email para continuar.");
+        }
+        await runDemoBridge(
+          quote,
+          {
+            onSending: () => onUpdate({ step: "sending" }),
+            onAttesting: (baseTxHash) =>
+              onUpdate({ step: "attesting", baseTxHash }),
+            onMinting: () => onUpdate({ step: "minting" }),
+            onDone: (solanaSignature) =>
+              onUpdate({ step: "done", solanaSignature }),
+          },
+          {
+            email,
+            ownSolanaAddress: solanaAddress,
+            recipientOwner: options?.recipientOwner,
+          }
+        );
       },
       withdrawSolana: async (destination, amountUnits) => {
-        return runDemoWithdraw(destination, amountUnits);
+        if (!email) throw new Error("Entrá con tu email para continuar.");
+        return runDemoWithdraw(email, destination, amountUnits);
       },
       // En el demo nada queda a medias: el reintento siempre "completa".
       retryDelivery: async () => null,
+      listIncoming: async () =>
+        solanaAddress ? loadDemoIncoming(solanaAddress) : [],
     }),
-    []
+    [email, solanaAddress]
   );
 
-  return <BridgeShell session={session} balances={balances} actions={actions} />;
+  return { session, balances, actions };
 }
+

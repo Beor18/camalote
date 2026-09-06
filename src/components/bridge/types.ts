@@ -1,4 +1,5 @@
 import type { Quote } from "@/lib/cctp/quote";
+import type { IncomingPayment } from "@/lib/paylink";
 
 export interface BridgeSession {
   ready: boolean;
@@ -34,11 +35,22 @@ export interface RunUpdate {
   errorMessage?: string;
 }
 
+export interface RunOptions {
+  /**
+   * Dueño de la cuenta de Solana que recibe los USDC. Por defecto es el
+   * propio usuario (cruce); en un cobro es quien creó el link.
+   */
+  recipientOwner?: string;
+}
+
 export interface BridgeActions {
   getQuote: (units: bigint) => Promise<Quote>;
+  /** Cotización inversa: lo que hay que mandar para que llegue `receiveUnits`. */
+  getQuoteForReceive: (receiveUnits: bigint) => Promise<Quote>;
   runBridge: (
     quote: Quote,
-    onUpdate: (update: RunUpdate) => void
+    onUpdate: (update: RunUpdate) => void,
+    options?: RunOptions
   ) => Promise<void>;
   /** Retira USDC de la cuenta Solana del usuario a otra dirección. Devuelve la firma. */
   withdrawSolana: (destination: string, amountUnits: bigint) => Promise<string>;
@@ -47,5 +59,16 @@ export interface BridgeActions {
    * (los USDC ya salieron de Base). Devuelve la firma, o null si otra
    * entrega ya la había completado.
    */
-  retryDelivery: (baseTxHash: string) => Promise<string | null>;
+  retryDelivery: (
+    baseTxHash: string,
+    recipientOwner?: string
+  ) => Promise<string | null>;
+  /** Ingresos de USDC en la cuenta Solana del usuario (para marcar cobros). */
+  listIncoming: () => Promise<IncomingPayment[]>;
+}
+
+export interface Engine {
+  session: BridgeSession;
+  balances: BridgeBalances;
+  actions: BridgeActions;
 }

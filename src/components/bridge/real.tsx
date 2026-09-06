@@ -16,11 +16,12 @@ import { base64ToBytes, bytesToBase64 } from "@/lib/base64";
 import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
-import { BridgeShell } from "@/components/bridge/shell";
+import { syncSolanaHistory } from "@/lib/solana/historySync";
 import type {
   BridgeActions,
   BridgeBalances,
   BridgeSession,
+  Engine,
 } from "@/components/bridge/types";
 
 const publicClient = createPublicClient({ transport: http(BASE_RPC_URL) });
@@ -30,7 +31,19 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Espera de la certificación de Circle: rápida al principio, paciente después. */
 const ATTESTATION_TIMEOUT_MS = 25 * 60 * 1000;
 
-export function RealBridgeApp() {
+async function fetchQuote(query: string): Promise<Quote> {
+  const res = await fetch(`/api/quote?${query}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Error de cotización");
+  return quoteFromJson(data.quote);
+}
+
+/**
+ * Motor real: Privy (email → billeteras embebidas + smart wallet en Base),
+ * CCTP v2 de Circle y nuestro relayer en Solana. Sirve para cruces propios
+ * y para pagar links de cobro (mismo camino, otro destinatario).
+ */
+export function useRealEngine(): Engine {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { client: smartWalletClient } = useSmartWallets();
   const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets();
@@ -117,21 +130,20 @@ export function RealBridgeApp() {
 
   const actions: BridgeActions = useMemo(
     () => ({
-      getQuote: async (units: bigint): Promise<Quote> => {
-        const res = await fetch(`/api/quote?units=${units.toString()}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Error de cotización");
-        return quoteFromJson(data.quote);
-      },
-      runBridge: async (quote, onUpdate) => {
-        if (!smartWalletClient || !solanaAddress) {
+      getQuote: (units: bigint) => fetchQuote(`units=${units.toString()}`),
+      getQuoteForReceive: (units: bigint) =>
+        fetchQuote(`receive=${units.toString()}`),
+      runBridge: async (quote, onUpdate, options) => {
+        const recipientOwner = options?.recipientOwner ?? solanaAddress;
+        if (!smartWalletClient || !recipientOwner) {
           throw new Error(
             "Tu cuenta todavía se está preparando. Esperá unos segundos y probá de nuevo."
           );
         }
 
-        // La cuenta de destino es tu token account de USDC en Solana.
-        const owner = new PublicKey(solanaAddress);
+        // La cuenta de destino es la token account de USDC del receptor en
+        // Solana (la del propio usuario en un cruce; la del cobrador en un pago).
+        const owner = new PublicKey(recipientOwner);
         const usdcMint = new PublicKey(ADDRESSES.solana.usdcMint);
         const ata = getAssociatedTokenAddressSync(usdcMint, owner, true);
         const mintRecipient = bytesToHex(ata.toBytes());
@@ -170,15 +182,16 @@ export function RealBridgeApp() {
         }
 
         onUpdate({ step: "minting", baseTxHash: txHash });
-        const result = await relayWithRetries(txHash, solanaAddress);
+        const result = await relayWithRetries(txHash, recipientOwner);
         onUpdate({
           step: "done",
           baseTxHash: txHash,
           solanaSignature: result.signature,
         });
       },
-      retryDelivery: async (baseTxHash) => {
-        if (!solanaAddress) {
+      retryDelivery: async (baseTxHash, recipientOwner) => {
+        const owner = recipientOwner ?? solanaAddress;
+        if (!owner) {
           throw new Error(
             "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos."
           );
@@ -190,7 +203,7 @@ export function RealBridgeApp() {
             "Circle todavía está certificando la transferencia. Probá en un rato."
           );
         }
-        const result = await relayWithRetries(baseTxHash, solanaAddress);
+        const result = await relayWithRetries(baseTxHash, owner);
         return result.signature ?? null;
       },
       withdrawSolana: async (destination, amountUnits) => {
@@ -241,11 +254,22 @@ export function RealBridgeApp() {
         }
         return result.signature as string;
       },
+      listIncoming: async () => {
+        if (!solanaAddress) return [];
+        const records = await syncSolanaHistory(solanaAddress);
+        return records
+          .filter((r) => r.kind === "bridge" && r.solanaSignature)
+          .map((r) => ({
+            signature: r.solanaSignature as string,
+            amountUnits: r.amountUnits,
+            createdAt: r.createdAt,
+          }));
+      },
     }),
     [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
   );
 
-  return <BridgeShell session={session} balances={balances} actions={actions} />;
+  return { session, balances, actions };
 }
 
 async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {

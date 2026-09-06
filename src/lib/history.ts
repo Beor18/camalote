@@ -4,11 +4,19 @@
 export interface TransferRecord {
   id: string;
   createdAt: number;
-  /** "bridge" (cruce Base→Solana, default) o "withdraw" (retiro en Solana). */
-  kind?: "bridge" | "withdraw";
+  /**
+   * "bridge" (cruce Base→Solana, default), "withdraw" (retiro en Solana) o
+   * "payment" (pago de un link de cobro: los USDC van a otra persona).
+   */
+  kind?: "bridge" | "withdraw" | "payment";
   amountUnits: string;
   receiveUnits: string;
   destination?: string;
+  /** Dueño de la cuenta Solana que recibió (pagos): sirve para reintentar. */
+  recipient?: string;
+  /** Concepto y nombre del cobrador, si vinieron en el link. */
+  concept?: string;
+  payeeName?: string;
   baseTxHash?: string;
   solanaSignature?: string;
   status: "sending" | "attesting" | "minting" | "done" | "error";
