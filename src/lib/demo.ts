@@ -274,7 +274,7 @@ export function demoQuoteStock(
   usdcUnits: bigint,
   priceUsd: number
 ): StockQuote {
-  const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS, enabled: true });
+  const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS });
   const swapUnits = usdcUnits - camaloteFeeUnits;
   const expectedTokenUnits = tokensForUsdc(swapUnits, priceUsd, DEMO_SWAP_FEE_BPS);
   if (expectedTokenUnits <= 0n) throw new Error("No pudimos cotizar la compra.");

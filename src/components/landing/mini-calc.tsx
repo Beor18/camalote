@@ -19,8 +19,7 @@ export function MiniCalc() {
     const units = parseUsdc(text);
     if (units === null || units === 0n) return { kind: "empty" as const };
     if (units < INVEST_MIN_UNITS) return { kind: "min" as const };
-    // sin opciones: usa la misma config que la app (si la comisión está
-    // apagada acá también se ve gratis; la promesa de arriba es literal)
+    // sin opciones: la misma comisión que cobra la app
     const fee = investFee(units);
     return { kind: "ok" as const, fee, buy: units - fee };
   }, [text]);
@@ -82,9 +81,7 @@ export function MiniCalc() {
           {result.kind === "ok" && (
             <>
               <span className="font-medium text-foreground">
-                {result.fee > 0n
-                  ? t.landing.calcFeeLine(formatUsdc(result.fee, 2, lang), pct)
-                  : t.landing.calcFeeFree}
+                {t.landing.calcFeeLine(formatUsdc(result.fee, 2, lang), pct)}
               </span>{" "}
             </>
           )}

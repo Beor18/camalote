@@ -115,7 +115,7 @@ export function BuyCard({
           <p className="text-xs text-muted-foreground">
             {camaloteFee > 0n
               ? t.invest.camaloteFeeLine(fee(camaloteFee))
-              : t.invest.camaloteFeeFree}{" "}
+              : t.invest.camaloteFeeSkipped}{" "}
             {t.invest.feeLine(pct(p.feeBps))}
           </p>
           {demo ? (
@@ -139,8 +139,7 @@ export function BuyCard({
   }
 
   if (state.phase === "running") {
-    const steps = state.quote.camaloteFeeUnits > 0n ? STEPS : STEPS.slice(0, 2);
-    const activeIndex = steps.indexOf(state.step);
+    const activeIndex = STEPS.indexOf(state.step);
     const labels: Record<BuyStep, string> = {
       quoting: t.invest.quoteLoading,
       signing: t.invest.stepSigning,
@@ -150,7 +149,7 @@ export function BuyCard({
     return (
       <Card className="p-6" data-testid="invest-buy" aria-live="polite">
         <ol className="flex flex-col gap-3">
-          {steps.map((step, i) => {
+          {STEPS.map((step, i) => {
             const s = i < activeIndex ? "done" : i === activeIndex ? "active" : "pending";
             return (
               <li key={step} className="flex items-center gap-3">
@@ -255,16 +254,8 @@ export function BuyCard({
             <Row label={t.invest.rowSpend}>
               {formatUsdc(quoted.usdcUnits, 2, lang)} {t.common.usdc}
             </Row>
-            <Row
-              label={
-                quoted.camaloteFeeUnits > 0n
-                  ? t.invest.rowCamaloteFee(pct(FEE_BPS))
-                  : t.invest.rowCamaloteFeeOff
-              }
-            >
-              {quoted.camaloteFeeUnits > 0n
-                ? `− ${fee(quoted.camaloteFeeUnits)} ${t.common.usdc}`
-                : t.common.free}
+            <Row label={t.invest.rowCamaloteFee(pct(FEE_BPS))}>
+              − {fee(quoted.camaloteFeeUnits)} {t.common.usdc}
             </Row>
             <Row label={t.invest.rowJupiter(pct(quoted.jupiterFeeBps))}>{t.invest.rowIncluded}</Row>
             <div className="my-1 border-t border-border" role="presentation" />

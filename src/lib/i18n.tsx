@@ -39,30 +39,28 @@ const es = {
     heroLine2Pre: "¿Cuánto ",
     heroLine2Highlight: "te quedó",
     heroLine2Post: " el mes pasado?",
-    heroSub:
-      "Si tenés que pensarlo, ya sabés la respuesta. No es falta de ganas: es que nadie lo aparta antes de que lo gastes.",
+    heroSub: "Si lo tenés que pensar, ya sabés. Nadie lo aparta antes de que lo gastes.",
     heroCta: "Quiero que se aparte solo",
     heroSecondary: "¿Cómo?",
     heroShoreLeft: "USDC",
     heroShoreRight: "Acciones",
     heroStory:
-      "El camalote baja por el río y lleva a la otra orilla una parte de lo que te llega. Cada vez que cobrás en USDC, el porcentaje que elegiste se convierte en acciones. Solo, antes de que lo gastes.",
+      "Cada vez que cobrás en USDC, la parte que elegiste se convierte en acciones. Sola, antes de que la gastes.",
     showdownTitle: "Seamos honestos.",
-    showdownSub:
-      "Invertir «cuando sobre» no pasa nunca. Y abrir un broker desde acá es otro trámite que tampoco pasa.",
+    showdownSub: "Invertir «cuando sobre» no pasa nunca.",
     oldWayTitle: "Invertir como hasta ahora",
     oldWay: [
-      "Un broker, papeles, días de espera",
-      "Mínimos que no llegás y comisiones que no ves",
-      "Acordarte cada mes. Y no acordarte",
-      "Lo que sobra se gasta antes de invertirse",
+      "Broker, papeles, días de espera",
+      "Mínimos que no llegás",
+      "Acordarte cada mes",
+      "Lo que sobra se gasta",
     ],
     newWayTitle: "Con Camalote",
     newWay: [
-      "Una regla, una sola vez: «el 20 % de lo que me llega, al S&P 500»",
+      "Una regla: «el 20 % de lo que me llega, al S&P 500»",
       "Se compra sola cuando te pagan, desde 10 dólares",
-      "Comisión 0,45 % por compra, nunca más de medio dólar, a la vista",
-      "Las acciones quedan en tu cuenta. Las vendés gratis cuando quieras",
+      "0,45 % por compra, tope medio dólar, a la vista",
+      "Las acciones son tuyas. Vender es gratis",
     ],
     letter: [
       "Nota de tus dólares:",
@@ -71,23 +69,23 @@ const es = {
       "gastes. Vos lo elegiste. 💜",
     ],
     whyTitle: "¿Y por qué en Solana?",
-    whySub: "No te pedimos que nos creas. Esto es lo que hay, hoy.",
+    whySub: "Lo que hay, hoy.",
     whyItems: [
       {
         claim: "Acá viven las acciones tokenizadas",
-        body: "Más de 60 acciones y ETFs de Estados Unidos ya existen en Solana como tokens, y cerca del 95 % de lo que se opera en el mundo se opera acá. Comprás una fracción, desde 10 dólares, y queda en tu cuenta.",
+        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana. Comprás una fracción desde 10 dólares.",
       },
       {
         claim: "Mover plata cuesta una fracción de centavo",
-        body: "Por eso una compra de 10 dólares tiene sentido y por eso vender no cuesta nada. En un broker tradicional, ese monto no existe.",
+        body: "Por eso una compra de 10 dólares tiene sentido y vender no cuesta nada.",
       },
       {
         claim: "Hay laburo que paga en dólares acá",
-        body: "Protocolos de todo el mundo publican bounties y changas pagadas en USDC. Te pagan en Solana y la parte que elegiste se invierte en Solana, sin pasar por ningún lado.",
+        body: "Bounties y changas pagadas en USDC. Te pagan en Solana y la parte que elegiste se invierte ahí mismo.",
       },
       {
         claim: "Argentina juega de local",
-        body: "Una de las comunidades más activas del mundo está acá: un bootcamp que termina con demo day frente a fondos, un estudio para grabar tu pitch, un directorio para encontrar socio. La puerta se abre desde adentro.",
+        body: "Una de las comunidades más activas del mundo está acá. La puerta se abre desde adentro.",
       },
     ],
     whyLink: "Golpeá: Superteam Argentina",
@@ -95,15 +93,15 @@ const es = {
     steps: [
       {
         title: "Entrá con tu email",
-        body: "Tu cuenta en Solana se crea sola. Sin extensiones, sin frases secretas, sin instalar nada.",
+        body: "Tu cuenta en Solana se crea sola. Sin instalar nada.",
       },
       {
         title: "Elegí cuánto y en qué",
-        body: "Un porcentaje y una acción: S&P 500, Nasdaq 100, Apple, NVIDIA o Tesla. Lo cambiás o lo apagás cuando quieras.",
+        body: "Un porcentaje y una acción. Lo cambiás cuando quieras.",
       },
       {
         title: "Cobrá como siempre",
-        body: "Cada vez que te llegan USDC a tu cuenta, esa parte se compra sola. Cuando junta 10 dólares, para que la red salga gratis.",
+        body: "Cada vez que te llegan USDC, esa parte se compra sola desde 10 dólares.",
       },
     ],
     stepsNote: "¿Todavía no te pagan en Solana?",
@@ -114,79 +112,69 @@ const es = {
     factsTitle: "Lo que hay, en números.",
     facts: [
       { label: "Compra mínima", value: "$10" },
+      { label: "Comisión por compra", value: "0,45 %" },
       { label: "Tope de comisión", value: "$0,50" },
       { label: "Vender", value: "Gratis" },
-      { label: "Acciones para empezar", value: "5" },
     ],
     pricingTitle: "Probá con tu número",
-    pricingSub: "Sin letra chica: esta cuenta es la misma que hace la app.",
+    pricingSub: "La misma cuenta que hace la app.",
     calcIfYouInvest: "Si invertís",
     calcYouBuy: "van al mercado",
     calcMinHint: "desde 10 USDC por compra",
     calcEmptyHint: "escribí un número y mirá",
     calcFeeLine: (fee: string, pct: string) =>
-      `La diferencia: ${fee} USDC de comisión (${pct} %, tope medio dólar).`,
-    calcFeeFree: "En esta versión no hay comisión.",
+      `${fee} USDC de comisión (${pct} %, tope medio dólar).`,
     calcFootnote:
-      "Aparte, Jupiter (donde se compran) cobra su tarifa y, si no tenés SOL, descuenta la red de la compra: cerca de 2 % en compras de 10 dólares, menos en montos más grandes. Lo ves antes de confirmar.",
+      "Aparte va la tarifa de Jupiter y la red: cerca de 2 % en compras de 10 dólares, menos en montos más grandes. Lo ves antes de confirmar.",
     trustTitle: "Pensado para que duermas tranquilo",
     trust: [
       {
         title: "Tu cuenta es tuya",
-        body: "Las acciones quedan en tu cuenta de Solana. Nosotros no podemos moverlas, ni queriendo. Y si un día te querés ir, te las llevás.",
+        body: "Las acciones quedan en tu cuenta de Solana. Nosotros no podemos moverlas.",
       },
       {
         title: "Sin letra chica",
-        body: "La comisión la ves antes de cada compra. Vender no cuesta nada. Y no hay rendimiento prometido: es el mercado, para arriba y para abajo.",
+        body: "La comisión la ves antes de cada compra. No hay rendimiento prometido.",
       },
       {
         title: "Lo apagás cuando quieras",
-        body: "La regla se apaga con un toque. Las acciones las vendés cuando quieras y los USDC los retirás gratis a donde quieras.",
+        body: "Un toque y la regla se apaga. Vendés y retirás gratis.",
       },
     ],
     faqTitle: "Preguntas frecuentes",
     faqs: [
       {
         q: "¿Qué compro exactamente?",
-        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Cada token está respaldado por la acción real y sigue su precio. No es la acción: no votás en la empresa. Y Backed puede congelarlas si la ley se lo exige.",
+        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real, pero no son la acción: no votás, y Backed puede congelarlas si la ley lo exige.",
       },
       {
         q: "¿Puede bajar?",
-        a: "Sí. Es el S&P 500, Apple o la que elijas: sube y baja como en cualquier lado. Camalote no promete rendimiento ni recomienda activos. La regla la elegís vos.",
+        a: "Sí. Sube y baja como en cualquier lado. Camalote no promete rendimiento ni recomienda activos.",
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "0,45 % por compra, nunca más de medio dólar, descontado de la compra y a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter cobra su tarifa y la red: cerca de 2 % en compras de 10 dólares y menos en montos más grandes.",
-      },
-      {
-        q: "¿Puedo vender?",
-        a: "Cuando quieras, desde la app, sin costo de Camalote. Los USDC vuelven a tu cuenta y los retirás gratis a donde quieras.",
+        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter y la red: cerca de 2 % en compras de 10 dólares.",
       },
       {
         q: "¿Y si no me pagan en Solana?",
-        a: "Mandá USDC a tu cuenta desde cualquier billetera o exchange y comprá a mano. La regla sirve cuando los cobros te llegan a esta cuenta: por ejemplo, si le pasás esta dirección a quien te paga.",
+        a: "Mandá USDC a tu cuenta desde cualquier billetera o exchange y comprá a mano. Para que la regla trabaje, pasale esta cuenta a quien te paga.",
       },
       {
         q: "¿Cuándo se compra?",
-        a: "La compra tarda segundos. La regla mira tu cuenta mientras Camalote está abierta: si te llegan USDC con la app cerrada, se compra cuando la abrís. Y los cobros chicos se van juntando hasta 10 dólares.",
-      },
-      {
-        q: "¿Qué es Solana?",
-        a: "Una red donde mover plata cuesta una fracción de centavo y donde hoy viven casi todas las acciones tokenizadas. Tu cuenta se crea con tu email; no tenés que instalar nada.",
+        a: "En segundos, mientras la app está abierta. Si te llegan USDC con la app cerrada, se compra cuando la abrís. Los cobros chicos se juntan hasta 10 dólares.",
       },
       {
         q: "¿Es legal desde Argentina?",
-        a: "xStocks no está disponible para residentes de Estados Unidos, Reino Unido, Canadá y Australia. En Argentina, Backed no lo restringe. Camalote no custodia ni intermedia: vos firmás cada compra desde tu propia cuenta. Para impuestos, hablá con tu contador.",
+        a: "xStocks no está disponible en Estados Unidos, Reino Unido, Canadá y Australia. En Argentina, Backed no lo restringe. Camalote no custodia: vos firmás cada compra. Para impuestos, tu contador.",
       },
     ],
     finalTitle1: "Que la próxima vez que cobres,",
     finalTitle2: "una parte ya esté invertida.",
     finalSub: "Armá tu regla una vez. Después, cobrá como siempre.",
     finalCta: "Armar mi regla",
-    footerMadeIn:
-      "Hecho en Argentina 🇦🇷 para que cobrar en dólares también sea invertir, junto a",
+    footerMadeIn: "Hecho en Argentina 🇦🇷 junto a",
     footerNote:
-      "Las acciones tokenizadas las emite Backed (xStocks) y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Camalote no da consejos de inversión.",
+      "xStocks las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Camalote no da consejos de inversión.",
   },
   app: {
     loginTitle: "Entrá con tu email",
@@ -470,7 +458,6 @@ const es = {
     quoteLoading: "Buscando el mejor precio…",
     rowSpend: "Invertís",
     rowCamaloteFee: (pct: string) => `Comisión Camalote (${pct} %)`,
-    rowCamaloteFeeOff: "Comisión Camalote",
     rowJupiter: (pct: string) => `Jupiter y red (${pct} %)`,
     rowIncluded: "en el precio",
     rowFeeShort: (fee: string) => `comisión ${fee}`,
@@ -488,7 +475,7 @@ const es = {
     doneBody: (tokens: string, asset: string, usdc: string) =>
       `${tokens} ${asset} por ${usdc} USDC ya están en tu cuenta de Solana.`,
     camaloteFeeLine: (fee: string) => `Comisión de Camalote: ${fee} USDC.`,
-    camaloteFeeFree: "Comisión de Camalote: gratis en esta versión.",
+    camaloteFeeSkipped: "Comisión de Camalote: esta vez no se pudo cobrar.",
     feeLine: (pct: string) => `Jupiter y red: ${pct} %, ya en el precio.`,
     viewOnSolana: "Ver en Solana",
     buyAgain: "Comprar otra vez",
@@ -548,30 +535,28 @@ const en: Dictionary = {
     heroLine2Pre: "How much did you ",
     heroLine2Highlight: "keep",
     heroLine2Post: " last month?",
-    heroSub:
-      "If you have to think about it, you already know the answer. It's not a lack of will: nobody sets it aside before you spend it.",
+    heroSub: "If you have to think about it, you already know. Nobody sets it aside before you spend it.",
     heroCta: "I want it set aside for me",
     heroSecondary: "How?",
     heroShoreLeft: "USDC",
     heroShoreRight: "Stocks",
     heroStory:
-      "The camalote drifts down the river carrying a part of what reaches you to the other shore. Every time you get paid in USDC, the share you chose turns into stocks. On its own, before you spend it.",
+      "Every time you get paid in USDC, the share you chose turns into stocks. On its own, before you spend it.",
     showdownTitle: "Let's be honest.",
-    showdownSub:
-      "Investing «whatever is left» never happens. And opening a broker from here is one more errand that doesn't happen either.",
+    showdownSub: "Investing «whatever is left» never happens.",
     oldWayTitle: "Investing the usual way",
     oldWay: [
       "A broker, paperwork, days of waiting",
-      "Minimums you never reach and fees you never see",
-      "Remembering every month. And not remembering",
-      "What's left gets spent before it gets invested",
+      "Minimums you never reach",
+      "Remembering every month",
+      "What's left gets spent",
     ],
     newWayTitle: "With Camalote",
     newWay: [
-      "One rule, set once: «20% of what comes in, to the S&P 500»",
+      "One rule: «20% of what comes in, to the S&P 500»",
       "It buys itself when you get paid, from 10 dollars",
-      "Fee 0.45% per purchase, never more than half a dollar, in plain sight",
-      "The stocks stay in your account. Sell them for free whenever you like",
+      "0.45% per purchase, capped at half a dollar, in plain sight",
+      "The stocks are yours. Selling is free",
     ],
     letter: [
       "A note from your dollars:",
@@ -580,23 +565,23 @@ const en: Dictionary = {
       "spent us. You chose it. 💜",
     ],
     whyTitle: "And why on Solana?",
-    whySub: "We're not asking you to trust us. This is what's there, today.",
+    whySub: "What's there, today.",
     whyItems: [
       {
         claim: "This is where tokenized stocks live",
-        body: "More than 60 US stocks and ETFs already exist on Solana as tokens, and close to 95% of the world's trading in them happens here. You buy a fraction, from 10 dollars, and it stays in your account.",
+        body: "More than 60 US stocks and ETFs already exist on Solana as tokens. You buy a fraction from 10 dollars.",
       },
       {
         claim: "Moving money costs a fraction of a cent",
-        body: "That's why a 10-dollar purchase makes sense and why selling costs nothing. At a traditional broker, that amount doesn't exist.",
+        body: "That's why a 10-dollar purchase makes sense and selling costs nothing.",
       },
       {
         claim: "There's work that pays in dollars here",
-        body: "Protocols from around the world post bounties and gigs paid in USDC. You get paid on Solana and the share you chose gets invested on Solana, without going anywhere else.",
+        body: "Bounties and gigs paid in USDC. You get paid on Solana and the share you chose is invested right there.",
       },
       {
         claim: "Argentina plays at home",
-        body: "One of the most active communities in the world is here: a bootcamp that ends with a demo day in front of funds, a studio to record your pitch, a directory to find a co-founder. The door opens from the inside.",
+        body: "One of the most active communities in the world is here. The door opens from the inside.",
       },
     ],
     whyLink: "Knock: Superteam Argentina",
@@ -604,15 +589,15 @@ const en: Dictionary = {
     steps: [
       {
         title: "Sign in with your email",
-        body: "Your Solana account creates itself. No extensions, no secret phrases, nothing to install.",
+        body: "Your Solana account creates itself. Nothing to install.",
       },
       {
         title: "Pick how much and what",
-        body: "A percentage and a stock: S&P 500, Nasdaq 100, Apple, NVIDIA or Tesla. Change it or switch it off whenever you like.",
+        body: "A percentage and a stock. Change it whenever you like.",
       },
       {
         title: "Get paid as usual",
-        body: "Every time USDC land in your account, that part buys itself. Once it adds up to 10 dollars, so the network comes free.",
+        body: "Every time USDC land, that part buys itself from 10 dollars.",
       },
     ],
     stepsNote: "Not getting paid on Solana yet?",
@@ -623,79 +608,69 @@ const en: Dictionary = {
     factsTitle: "What's there, in numbers.",
     facts: [
       { label: "Minimum purchase", value: "$10" },
+      { label: "Fee per purchase", value: "0.45%" },
       { label: "Fee cap", value: "$0.50" },
       { label: "Selling", value: "Free" },
-      { label: "Stocks to start", value: "5" },
     ],
     pricingTitle: "Try your own number",
-    pricingSub: "No fine print: this is the same math the app runs.",
+    pricingSub: "The same math the app runs.",
     calcIfYouInvest: "If you invest",
     calcYouBuy: "goes to market",
     calcMinHint: "from 10 USDC per purchase",
     calcEmptyHint: "type a number and see",
     calcFeeLine: (fee: string, pct: string) =>
-      `The difference: ${fee} USDC is our fee (${pct}%, capped at half a dollar).`,
-    calcFeeFree: "There's no fee in this version.",
+      `${fee} USDC is our fee (${pct}%, capped at half a dollar).`,
     calcFootnote:
-      "On top, Jupiter (where the purchase happens) charges its fee and, if you hold no SOL, takes the network cost out of the purchase: around 2% on 10-dollar purchases, less on larger amounts. You see it before confirming.",
+      "On top comes Jupiter's fee and the network: around 2% on 10-dollar purchases, less on larger amounts. You see it before confirming.",
     trustTitle: "Built so you can sleep at night",
     trust: [
       {
         title: "Your account is yours",
-        body: "The stocks stay in your Solana account. We can't move them, even if we wanted to. And if one day you want out, you take them with you.",
+        body: "The stocks stay in your Solana account. We can't move them.",
       },
       {
         title: "No fine print",
-        body: "You see the fee before every purchase. Selling costs nothing. And there's no promised return: it's the market, up and down.",
+        body: "You see the fee before every purchase. No promised return.",
       },
       {
         title: "Switch it off whenever you like",
-        body: "The rule turns off with one tap. Sell the stocks whenever you want and withdraw the USDC for free, wherever you want.",
+        body: "One tap and the rule is off. Sell and withdraw for free.",
       },
     ],
     faqTitle: "Frequently asked questions",
     faqs: [
       {
         q: "What exactly am I buying?",
-        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. Each token is backed by the real stock and tracks its price. It isn't the stock: you don't vote in the company. And Backed can freeze them if the law requires it.",
+        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price, but they aren't the stock: you don't vote, and Backed can freeze them if the law requires it.",
       },
       {
         q: "Can it go down?",
-        a: "Yes. It's the S&P 500, Apple or whatever you pick: it goes up and down like anywhere else. Camalote doesn't promise returns or recommend assets. You choose the rule.",
+        a: "Yes. It goes up and down like anywhere else. Camalote doesn't promise returns or recommend assets.",
       },
       {
         q: "How much does it cost?",
-        a: "0.45% per purchase, never more than half a dollar, taken from the purchase and shown before you confirm. Selling is free. On top, Jupiter charges its fee and the network: around 2% on 10-dollar purchases and less on larger amounts.",
-      },
-      {
-        q: "Can I sell?",
-        a: "Whenever you like, from the app, at no cost from Camalote. The USDC come back to your account and you withdraw them for free, wherever you want.",
+        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter and the network: around 2% on 10-dollar purchases.",
       },
       {
         q: "What if I don't get paid on Solana?",
-        a: "Send USDC to your account from any wallet or exchange and buy by hand. The rule works when payments land in this account: for example, if you give this address to whoever pays you.",
+        a: "Send USDC to your account from any wallet or exchange and buy by hand. For the rule to work, give this account to whoever pays you.",
       },
       {
         q: "When does it buy?",
-        a: "A purchase takes seconds. The rule watches your account while Camalote is open: if USDC land while the app is closed, it buys when you open it. And small payments add up until they reach 10 dollars.",
-      },
-      {
-        q: "What is Solana?",
-        a: "A network where moving money costs a fraction of a cent and where almost all tokenized stocks live today. Your account is created with your email; nothing to install.",
+        a: "In seconds, while the app is open. If USDC land while it's closed, it buys when you open it. Small payments add up to 10 dollars.",
       },
       {
         q: "Is it legal from Argentina?",
-        a: "xStocks aren't available to residents of the United States, United Kingdom, Canada and Australia. In Argentina, Backed doesn't restrict them. Camalote neither holds nor brokers: you sign every purchase from your own account. For taxes, talk to your accountant.",
+        a: "xStocks aren't available in the United States, United Kingdom, Canada and Australia. In Argentina, Backed doesn't restrict them. Camalote doesn't hold your funds: you sign every purchase. For taxes, ask your accountant.",
       },
     ],
     finalTitle1: "Next time you get paid,",
     finalTitle2: "let part of it already be invested.",
     finalSub: "Set your rule once. Then get paid as usual.",
     finalCta: "Set my rule",
-    footerMadeIn:
-      "Made in Argentina 🇦🇷 so that getting paid in dollars is also investing, with",
+    footerMadeIn: "Made in Argentina 🇦🇷 with",
     footerNote:
-      "Tokenized stocks are issued by Backed (xStocks) and aren't available to residents of the United States, United Kingdom, Canada and Australia. Camalote doesn't give investment advice.",
+      "xStocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Camalote doesn't give investment advice.",
   },
   app: {
     loginTitle: "Sign in with your email",
@@ -976,7 +951,6 @@ const en: Dictionary = {
     quoteLoading: "Finding the best price…",
     rowSpend: "You invest",
     rowCamaloteFee: (pct: string) => `Camalote fee (${pct}%)`,
-    rowCamaloteFeeOff: "Camalote fee",
     rowJupiter: (pct: string) => `Jupiter and network (${pct}%)`,
     rowIncluded: "in the price",
     rowFeeShort: (fee: string) => `fee ${fee}`,
@@ -994,7 +968,7 @@ const en: Dictionary = {
     doneBody: (tokens: string, asset: string, usdc: string) =>
       `${tokens} ${asset} for ${usdc} USDC are now in your Solana account.`,
     camaloteFeeLine: (fee: string) => `Camalote fee: ${fee} USDC.`,
-    camaloteFeeFree: "Camalote fee: free in this version.",
+    camaloteFeeSkipped: "Camalote fee: couldn't be collected this time.",
     feeLine: (pct: string) => `Jupiter and network: ${pct}%, already in the price.`,
     viewOnSolana: "View on Solana",
     buyAgain: "Buy again",

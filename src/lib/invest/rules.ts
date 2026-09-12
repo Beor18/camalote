@@ -1,10 +1,4 @@
-import {
-  FEE_BPS,
-  FEE_MAX_UNITS,
-  FEE_MIN_UNITS,
-  INVEST_FEE_ENABLED,
-  INVEST_MIN_UNITS,
-} from "@/lib/config";
+import { FEE_BPS, FEE_MAX_UNITS, FEE_MIN_UNITS, INVEST_MIN_UNITS } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
 import { XSTOCK_DECIMALS, type XStockSymbol } from "@/lib/invest/catalog";
 import type { Holding, InvestRule, PriceMap, Purchase } from "@/lib/invest/types";
@@ -27,13 +21,9 @@ const PRICE_SCALE = 1_000_000;
  * piso y tope, descontada antes de ir al mercado. Vender no tiene comisión.
  * Es el mismo modelo de siempre: chica, con techo y a la vista.
  */
-export function investFee(
-  usdcUnits: bigint,
-  opts?: { feeBps?: number; enabled?: boolean }
-): bigint {
-  const enabled = opts?.enabled ?? INVEST_FEE_ENABLED;
+export function investFee(usdcUnits: bigint, opts?: { feeBps?: number }): bigint {
   const feeBps = opts?.feeBps ?? FEE_BPS;
-  if (!enabled || feeBps <= 0 || usdcUnits <= 0n) return 0n;
+  if (feeBps <= 0 || usdcUnits <= 0n) return 0n;
   let fee = (usdcUnits * BigInt(feeBps)) / 10000n;
   if (fee < FEE_MIN_UNITS) fee = FEE_MIN_UNITS;
   if (FEE_MAX_UNITS > 0n && fee > FEE_MAX_UNITS) fee = FEE_MAX_UNITS;

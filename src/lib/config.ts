@@ -60,11 +60,12 @@ export const FEE_RECIPIENT_BASE = (process.env.NEXT_PUBLIC_FEE_RECIPIENT_BASE ??
 
 /**
  * Cuenta de Solana que cobra la comisión de cada compra de acciones
- * (misma regla: FEE_BPS con piso y tope). Vacía = sin comisión, y así se
- * muestra. En demo la comisión siempre se simula.
+ * (misma regla: FEE_BPS con piso y tope). La comisión es el modelo de
+ * negocio y siempre está encendida; en demo se simula.
  */
-export const FEE_RECIPIENT_SOLANA = process.env.NEXT_PUBLIC_FEE_RECIPIENT_SOLANA ?? "";
-export const INVEST_FEE_ENABLED = DEMO_MODE || FEE_RECIPIENT_SOLANA !== "";
+export const FEE_RECIPIENT_SOLANA =
+  process.env.NEXT_PUBLIC_FEE_RECIPIENT_SOLANA ??
+  "9b66VaiZWtVnXVJ8ekXA99i8CaPuPp8CdPxV4kAHk786";
 
 export const SOLANA_RPC_URL =
   process.env.SOLANA_RPC_URL ??

@@ -301,7 +301,7 @@ export function useRealEngine(): Engine {
         // La comisión se cobra después de que la compra salió bien: si esto
         // falla, la pierde Camalote, no el usuario.
         let feeSignature: string | undefined;
-        if (quote.camaloteFeeUnits > 0n && FEE_RECIPIENT_SOLANA) {
+        if (quote.camaloteFeeUnits > 0n) {
           onStep?.("fee");
           try {
             feeSignature = await collectFee(owner, quote.camaloteFeeUnits, sign);

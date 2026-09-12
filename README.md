@@ -120,8 +120,8 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
    la comisión (~0,00001 SOL cada uno).
 3. **Mainnet**: `NEXT_PUBLIC_NETWORK=mainnet` (las acciones tokenizadas
    existen solo ahí). Fondeá el relayer con algo de SOL.
-4. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>`. Vacía =
-   sin comisión, y la app lo muestra.
+4. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>` (si falta,
+   usa la cuenta por defecto de `src/lib/config.ts`). Siempre se cobra.
 5. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
    `api.jup.ag`; sin clave usa `lite-api.jup.ag`.
 6. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.

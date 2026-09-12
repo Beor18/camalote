@@ -217,7 +217,7 @@ describe("cuentas de la cartera", () => {
 });
 
 describe("investFee: la comisión de Camalote por compra", () => {
-  const opts = { feeBps: 45, enabled: true };
+  const opts = { feeBps: 45 };
 
   it("0,45 % de lo que se invierte, descontado antes de comprar", () => {
     expect(investFee(10_000_000n, opts)).toBe(45_000n); // 10 → 0,045
@@ -229,10 +229,13 @@ describe("investFee: la comisión de Camalote por compra", () => {
     expect(investFee(120_000_000n, opts)).toBe(500_000n); // 120 → 0,54 se topea en 0,50
   });
 
-  it("piso de un centavo, y cero si está apagada", () => {
+  it("piso de un centavo, y cero sobre cero", () => {
     expect(investFee(1_000_000n, opts)).toBe(10_000n); // 1 → 0,0045 sube a 0,01
-    expect(investFee(10_000_000n, { ...opts, enabled: false })).toBe(0n);
     expect(investFee(0n, opts)).toBe(0n);
+  });
+
+  it("no se puede apagar: sin opciones usa la config y siempre cobra", () => {
+    expect(investFee(10_000_000n)).toBeGreaterThan(0n);
   });
 
   it("formatTokens muestra 4 decimales por debajo de 1 y 2 desde 1", () => {
