@@ -6,12 +6,15 @@ import {
   demoQuote,
   loadDemoBalances,
   loadDemoBaseBalance,
+  loadDemoHoldings,
   loadDemoIncoming,
   registerDemoAccount,
   runDemoBridge,
+  runDemoBuy,
   runDemoWithdraw,
   simulateDemoDeposit,
 } from "@/lib/demo";
+import { fetchPrices } from "@/lib/invest/prices";
 import type {
   BridgeActions,
   BridgeBalances,
@@ -160,6 +163,13 @@ export function useDemoEngine(): Engine {
         solanaAddress ? loadDemoIncoming(solanaAddress) : [],
       readBaseBalance: async (address) => loadDemoBaseBalance(address),
       simulateDeposit: (address, amountUnits) => simulateDemoDeposit(address, amountUnits),
+      listHoldings: async () => (email ? loadDemoHoldings(email) : []),
+      buyStock: async (asset, usdcUnits, onStep) => {
+        if (!email) throw new Error("Entrá con tu email para continuar.");
+        const { prices } = await fetchPrices();
+        const result = await runDemoBuy(email, asset, usdcUnits, prices[asset] ?? 0, onStep);
+        return { ...result, usdcUnits };
+      },
     }),
     [email, solanaAddress]
   );

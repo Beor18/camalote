@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeftRight, HandCoins, LogOut, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeftRight,
+  HandCoins,
+  LogOut,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { CamaloteLogo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,10 +18,12 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BridgePanel } from "@/components/bridge/panel";
 import { CobrosPanel } from "@/components/cobros/panel";
+import { InvestPanel } from "@/components/invest/panel";
+import { useAutoInvest } from "@/components/invest/use-auto-invest";
 import { LangToggle, useLang } from "@/lib/i18n";
 import type { BridgeSession, Engine } from "@/components/bridge/types";
 
-export type ShellView = "bridge" | "cobros";
+export type ShellView = "bridge" | "cobros" | "invest";
 
 export function BridgeShell({
   session,
@@ -22,6 +32,8 @@ export function BridgeShell({
   view = "bridge",
 }: Engine & { view?: ShellView }) {
   const { t } = useLang();
+  // La regla de inversión corre en cualquier pestaña mientras la app está abierta.
+  useAutoInvest({ session, balances, actions });
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-border">
@@ -65,6 +77,8 @@ export function BridgeShell({
             <ViewTabs view={view} />
             {view === "cobros" ? (
               <CobrosPanel session={session} balances={balances} actions={actions} />
+            ) : view === "invest" ? (
+              <InvestPanel session={session} balances={balances} actions={actions} />
             ) : (
               <BridgePanel session={session} balances={balances} actions={actions} />
             )}
@@ -83,33 +97,53 @@ export function BridgeShell({
   );
 }
 
-/** Dos caras del mismo motor: llevar tus USDC, o cobrar los de otro. */
+/** Tres caras del mismo motor: cobrar, invertir una parte, o llevar tus USDC. */
 function ViewTabs({ view }: { view: ShellView }) {
   const { t } = useLang();
-  const tabs: { key: ShellView; href: string; label: string; Icon: typeof HandCoins }[] = [
+  const tabs: {
+    key: ShellView;
+    href: string;
+    label: string;
+    shortLabel?: string;
+    Icon: typeof HandCoins;
+  }[] = [
     { key: "cobros", href: "/app/cobrar", label: t.app.tabCobros, Icon: HandCoins },
-    { key: "bridge", href: "/app", label: t.app.tabBridge, Icon: ArrowLeftRight },
+    { key: "invest", href: "/app/invertir", label: t.app.tabInvest, Icon: TrendingUp },
+    {
+      key: "bridge",
+      href: "/app",
+      label: t.app.tabBridge,
+      shortLabel: t.app.tabBridgeShort,
+      Icon: ArrowLeftRight,
+    },
   ];
   return (
     <nav
       aria-label="Secciones"
-      className="mx-auto grid w-full max-w-md grid-cols-2 rounded-xl border border-border bg-muted p-1"
+      className="mx-auto grid w-full max-w-lg grid-cols-3 rounded-xl border border-border bg-muted p-1"
     >
-      {tabs.map(({ key, href, label, Icon }) => {
+      {tabs.map(({ key, href, label, shortLabel, Icon }) => {
         const active = key === view;
         return (
           <Link
             key={key}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-2 sm:text-sm ${
               active
                 ? "bg-surface text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Icon className="size-4" aria-hidden="true" />
-            {label}
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
+            {shortLabel ? (
+              <>
+                <span className="sm:hidden">{shortLabel}</span>
+                <span className="hidden sm:inline">{label}</span>
+              </>
+            ) : (
+              <span>{label}</span>
+            )}
           </Link>
         );
       })}

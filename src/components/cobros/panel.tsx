@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 import {
+  ArrowRight,
   Check,
   Clock,
   ExternalLink,
@@ -10,6 +12,7 @@ import {
   MessageCircle,
   Plus,
   Share2,
+  TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +24,8 @@ import { DepositAddressCard } from "@/components/cobros/deposit-address";
 import { formatUsdc, parseUsdc, truncateAddress } from "@/lib/format";
 import { MIN_TRANSFER_UNITS, solanaExplorerTx } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
+import { INVEST_EVENT, loadRule, notifyIncoming } from "@/lib/invest/storage";
+import type { InvestRule } from "@/lib/invest/types";
 import {
   encodePayLink,
   loadPayLinks,
@@ -77,6 +82,7 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
         replacePayLinks(next);
         setLinks(next);
         refreshRef.current();
+        notifyIncoming(); // la regla de inversión lo evalúa ya
       }
     } catch {
       // el RPC público puede limitar: probamos de nuevo en la próxima vuelta
@@ -119,9 +125,11 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
           onDelivered={() => {
             balances.refresh();
             void check();
+            notifyIncoming();
           }}
         />
       )}
+      <RuleHint solanaAddress={session.solanaAddress} />
 
       {created ? (
         <LinkReady link={created} onNew={() => setCreated(null)} />
@@ -177,6 +185,46 @@ export function CobrosPanel({ session, balances, actions }: Engine) {
       </Card>
     );
   }
+}
+
+/** Una línea que cuenta si hay regla de inversión y lleva a Invertir. */
+function RuleHint({ solanaAddress }: { solanaAddress: string | null }) {
+  const { t } = useLang();
+  const [rule, setRule] = useState<InvestRule | null>(null);
+
+  useEffect(() => {
+    if (!solanaAddress) return;
+    const reload = () => setRule(loadRule(solanaAddress));
+    reload();
+    window.addEventListener(INVEST_EVENT, reload);
+    window.addEventListener("storage", reload);
+    return () => {
+      window.removeEventListener(INVEST_EVENT, reload);
+      window.removeEventListener("storage", reload);
+    };
+  }, [solanaAddress]);
+
+  const active = rule?.enabled === true;
+  return (
+    <Link
+      href="/app/invertir"
+      data-testid="rule-hint"
+      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm transition-colors duration-100 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <span className="flex min-w-0 items-start gap-2">
+        <TrendingUp className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+        <span className="leading-snug">
+          {active && rule
+            ? t.cobros.ruleActive(String(rule.percent), rule.asset)
+            : t.cobros.ruleOff}
+        </span>
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1 font-medium text-primary">
+        {active ? t.cobros.ruleLinkOn : t.cobros.ruleLinkOff}
+        <ArrowRight className="size-3.5" aria-hidden="true" />
+      </span>
+    </Link>
+  );
 }
 
 function CreateLinkForm({

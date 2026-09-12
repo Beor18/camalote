@@ -34,13 +34,24 @@ await hold(1800);
 await page.mouse.wheel(0, 500);
 await hold(1400);
 
-// Escena 2: Fer crea un link de cobro
-await page.goto(`${BASE}/app/cobrar`, { waitUntil: "networkidle" });
+// Escena 2: Fer entra y arma su regla: el 30 % de cada cobro va al S&P 500
+await page.goto(`${BASE}/app/invertir`, { waitUntil: "networkidle" });
 await hold(700);
 await page.click("#email");
 await type("#email", "fer@camalote.xyz");
 await hold(400);
 await page.click("button[type=submit]");
+await page.waitForSelector("[data-testid=rule-toggle]", { timeout: 15000 });
+await hold(1200);
+await page.click("[data-testid=rule-toggle]");
+await hold(900);
+await page.click("[data-testid=rule-percent-30]");
+await hold(700);
+await page.click("[data-testid=rule-asset-SPYx]");
+await hold(2200);
+
+// Escena 2b: y crea un link de cobro
+await page.goto(`${BASE}/app/cobrar`, { waitUntil: "networkidle" });
 await page.waitForSelector("#cobro-amount", { timeout: 15000 });
 await hold(900);
 await page.click("#cobro-amount");
@@ -85,6 +96,19 @@ await type("#email", "fer@camalote.xyz");
 await page.click("button[type=submit]");
 await page.waitForSelector("text=Pagado", { timeout: 20000 });
 await hold(3200);
+// la compra por regla corre en esta misma pestaña: la dejamos terminar
+await page.waitForFunction(
+  () => Object.entries(localStorage).some(
+    ([k, v]) => k.startsWith("camalote.invest.purchases.v1:") && v.includes('"status":"done"')
+  ),
+  null,
+  { timeout: 40000 }
+);
+
+// Escena 6: el 30 % de ese cobro ya se compró solo
+await page.goto(`${BASE}/app/invertir`, { waitUntil: "networkidle" });
+await page.waitForSelector("text=Comprada", { timeout: 20000 });
+await hold(3600);
 
 await context.close();
 await browser.close();

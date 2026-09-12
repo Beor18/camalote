@@ -22,6 +22,9 @@ El número que pediste es el que llega.
   recibe exactamente lo que pidió.
 - **Y también podés llevar tus propios USDC** de Base a Solana: es el
   mismo motor, pagándote a vos mismo.
+- **Invertí una parte de cada cobro**: una regla («el 20 % va al S&P 500»)
+  y, cada vez que te llegan USDC, esa parte compra acciones tokenizadas
+  (xStocks) por Jupiter, sin gas. Cartera, rendimiento y comprobantes.
 
 Cada pantalla de "¡Pagado!" termina con "Creá tu propio link": cada persona
 que paga es alguien que mañana cobra. Así crece Camalote sin presupuesto.
@@ -95,6 +98,38 @@ segundo.
 - El link se marca "Pagado" con el mismo cruce de ingresos que el pago con
   email: llega por lo menos `minReceiveUnits(monto)`.
 
+## Invertir una parte de cada cobro (Camalote Invest)
+
+Pestaña **Invertir**: armás una regla («de cada cobro, el 20 % va al
+S&P 500») y, cada vez que te llegan USDC a Solana, esa parte se aparta.
+Cuando junta 10 USDC, Camalote compra la acción tokenizada por **Jupiter
+Ultra** en modo sin gas (el costo de red sale de la misma compra: el usuario
+no necesita SOL) y la deja en su cuenta. Cartera con valor de hoy y
+rendimiento, compra a mano y comprobantes en Solscan.
+
+- Catálogo: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks de Backed, Token-2022,
+  8 decimales; `src/lib/invest/catalog.ts`, mints verificados contra Jupiter).
+- La regla y las compras viven en el dispositivo, por cuenta de Solana
+  (`camalote.invest.rule.v1:<cuenta>`, `camalote.invest.purchases.v1:<cuenta>`).
+  Las tenencias se leen de la cadena (cuentas Token-2022 del usuario).
+- `planInvestments` (`src/lib/invest/rules.ts`) cruza los ingresos con la
+  regla: solo cuentan los posteriores a prenderla, cada uno una sola vez, y
+  los cobros chicos se juntan hasta el mínimo.
+- Flujo real: `GET /api/invest/order` (orden Ultra, solo nuestros pares) →
+  firma con la billetera embebida de Solana (Privy) → `POST /api/invest/execute`.
+  Precios por `GET /api/invest/prices` (cache 30 s, con precios de referencia
+  si Jupiter no responde). Clave opcional: `JUPITER_API_KEY`.
+- Las acciones tokenizadas existen solo en mainnet: en testnet real se puede
+  armar la regla y ver la pantalla, y las compras se activan con
+  `NEXT_PUBLIC_NETWORK=mainnet`. En demo todo se simula con precios reales.
+- Camalote no cobra por invertir. Jupiter cobra su tarifa y, en modo sin gas,
+  descuenta la red de la compra (cerca del 2 % en compras de 10 USDC, menos
+  en compras más grandes): se muestra en el ticket.
+- Lo que hay que saber (y la app lo dice): xStocks tienen *permanent
+  delegate* de Backed (puede congelar o retirar tokens si la ley lo exige),
+  no son la acción ni dan voto, y no están disponibles para residentes de
+  EE. UU., Reino Unido, Canadá y Australia. No es un consejo de inversión.
+
 ## Comisión
 
 Regla vigente: **0,45 % con tope de $0,50 por cobro o cruce** (piso 0,01;
@@ -129,7 +164,7 @@ producto sin depender de faucets ni terceros. Para forzarlo aunque haya
 claves: `NEXT_PUBLIC_DEMO_MODE=true`.
 
 ```bash
-pnpm test              # unit tests (cotización, links de cobro, mensajes CCTP, calldata, retiros)
+pnpm test              # unit tests (cotización, links de cobro, regla de inversión, mensajes CCTP, calldata, retiros)
 pnpm test:integration  # verifica los PDAs contra Solana devnet (requiere red)
 pnpm build             # build de producción
 node scripts/e2e-demo.mjs <carpeta>   # recorre el cobro completo en demo con Playwright y saca capturas
@@ -203,5 +238,6 @@ del cobrador: la pestaña Cobrar los ve y los lleva a Solana sola.
 
 Next.js 16 (App Router) · Tailwind v4 · Privy (auth + embedded + smart
 wallets) · viem · @solana/web3.js + Anchor (IDLs oficiales de Circle) ·
-CCTP v2 (fast transfers) · PWA (manifest + service worker) · Vitest ·
-Playwright para el recorrido de demo.
+CCTP v2 (fast transfers) · Jupiter Ultra y Price API (acciones tokenizadas
+xStocks) · PWA (manifest + service worker) · Vitest · Playwright para el
+recorrido de demo.

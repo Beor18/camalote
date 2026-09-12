@@ -116,5 +116,79 @@ await shot("14-cobrar-dos-pagados");
 console.log("PAID BADGES:", await page.getByText("Pagado", { exact: true }).count());
 console.log("FER SOLANA BALANCE 2:", await page.locator("span.font-mono.text-2xl").first().textContent());
 
+// 7. Fer arma su regla: el 30 % de cada cobro va al S&P 500
+await page.goto(`${BASE}/app/invertir`, { waitUntil: "networkidle" });
+await page.waitForSelector("[data-testid=invest-rule]", { timeout: 15000 });
+await page.click("[data-testid=rule-toggle]");
+await page.click("[data-testid=rule-percent-30]");
+await page.click("[data-testid=rule-asset-SPYx]");
+await page.waitForTimeout(1000);
+await shot("15-invertir-regla");
+console.log("RULE:", await page.locator("[data-testid=invest-rule] p").first().textContent());
+console.log("PORTFOLIO BEFORE:", await page.locator("[data-testid=portfolio-value]").textContent());
+
+// 8. Un cliente paga 40 con su email: el 30 % se compra solo
+await page.goto(`${BASE}/app/cobrar`, { waitUntil: "networkidle" });
+await page.waitForSelector("#cobro-amount", { timeout: 15000 });
+console.log("RULE HINT:", await page.locator("[data-testid=rule-hint]").textContent());
+await page.fill("#cobro-amount", "40");
+await page.fill("#cobro-concept", "Sitio web");
+await page.click("button[type=submit]");
+await page.waitForSelector("text=Tu link está listo", { timeout: 10000 });
+const saved3 = JSON.parse(await page.evaluate(() => localStorage.getItem("camalote.paylinks.v1")));
+const url3 = saved3.find((l) => l.concept === "Sitio web").url;
+await page.goto(url3, { waitUntil: "networkidle" });
+await page.click("header button:has(svg.lucide-log-out)");
+await page.waitForSelector("#email", { timeout: 10000 });
+await page.fill("#email", "cliente@gmail.com");
+await page.click("button[type=submit]");
+await page.waitForSelector("button[type=submit]:has-text('Pagar')", { timeout: 15000 });
+await page.waitForTimeout(1200);
+await page.locator("button[type=submit]:has-text('Pagar')").click();
+await page.waitForSelector("text=¡Pagado!", { timeout: 25000 });
+
+// 9. Fer vuelve: el cobro está pagado y la compra ya se hizo sola
+await page.goto(`${BASE}/app/cobrar`, { waitUntil: "networkidle" });
+await page.click("header button:has(svg.lucide-log-out)");
+await page.waitForSelector("#email", { timeout: 10000 });
+await page.fill("#email", "fer@camalote.xyz");
+await page.click("button[type=submit]");
+await page.waitForSelector("text=Regla activa", { timeout: 20000 });
+await page.waitForTimeout(1200);
+await shot("16-cobrar-regla-activa");
+// la compra por regla corre en cualquier pestaña: esperamos a que termine antes de cambiar de página
+await page.waitForFunction(
+  () => Object.entries(localStorage).some(
+    ([k, v]) => k.startsWith("camalote.invest.purchases.v1:") && v.includes('"status":"done"')
+  ),
+  null,
+  { timeout: 40000 }
+);
+await page.goto(`${BASE}/app/invertir`, { waitUntil: "networkidle" });
+await page.waitForSelector("[data-testid=invest-purchases]", { timeout: 20000 });
+await page.waitForFunction(
+  () => document.querySelector("[data-testid=invest-purchases]")?.textContent?.includes("Comprada"),
+  null,
+  { timeout: 40000 }
+);
+await page.waitForTimeout(1200);
+await shot("17-invertir-compra-por-regla");
+console.log("PURCHASE:", (await page.locator("[data-testid=invest-purchases] p").first().textContent())?.trim());
+console.log("PORTFOLIO AFTER:", await page.locator("[data-testid=portfolio-value]").textContent());
+console.log("PENDING:", await page.locator("[data-testid=rule-pending]").textContent());
+
+// 10. Compra a mano: 10 USDC de NVIDIA
+await page.click("[data-testid=buy-asset-NVDAx]");
+await page.fill("#buy-amount", "10");
+await page.click("[data-testid=buy-submit]");
+await page.waitForTimeout(1500);
+await shot("18-invertir-comprando");
+await page.waitForSelector("text=¡Compraste!", { timeout: 30000 });
+await page.waitForTimeout(800);
+await shot("19-invertir-comprado");
+console.log("MANUAL BUY:", (await page.locator("[data-testid=invest-buy] p").first().textContent())?.trim());
+console.log("PORTFOLIO FINAL:", await page.locator("[data-testid=portfolio-value]").textContent());
+console.log("FER SOLANA BALANCE 3:", await page.evaluate(() => localStorage.getItem("camalote.demo.balances.v2:fer@camalote.xyz")));
+
 await browser.close();
 console.log(errors.length ? "CONSOLE ERRORS:\n - " + errors.join("\n - ") : "Sin errores de consola.");

@@ -1,18 +1,68 @@
-# Camalote: paquete de submission (Colosseum)
+# Camalote: paquete de submission
 
-Preparado el 2026-09-06 con datos de Colosseum Copilot, The Grid y web.
-Dos vías, las dos desde tu cuenta de Arena (colosseum.com/arena):
+Preparado el 2026-09-06 con datos de Colosseum Copilot, The Grid y web;
+actualizado el 2026-09-11 con Camalote Invest. Dos eventos, en este orden:
 
-1. **Eternal sprint (hoy mismo)**: apretás el cronómetro y tenés 4 semanas.
-   Los ganadores entran a la consideración del acelerador junto con los del
-   hackathon. No hay que esperar a nadie.
-2. **Hackathon de otoño: 28 de septiembre al 2 de noviembre de 2026.** Sin
-   tracks. 30.000 al Grand Champion, 10.000 a los siguientes 20, 10.000 al
-   mejor proyecto de bienes públicos, y hasta 10 ganadores con 250.000 de
-   pre-seed del acelerador (así fue en Frontier, abril-mayo 2026).
+1. **Stocklana** (Solana Foundation, hackathons.solana.com/hackathons/stocklana):
+   100.000 en premios, cierra el **viernes 18 de septiembre de 2026 a las
+   16:00 ET**, judging hasta el 2 de octubre. Categoría: **Investing**
+   (compras recurrentes, carteras automáticas). Criterio: "¿esto puede ser
+   una app real que la gente use?". Hace falta al menos un link (GitHub,
+   demo o video). La propia página nombra al World's Fair como lo que sigue.
+2. **Crypto World's Fair** (Colosseum, colosseum.com/worldsfair): del 14 de
+   septiembre al 12 de octubre de 2026, multi-chain (Solana, Ethereum,
+   Base, Arbitrum, Hyperliquid, Tempo, Zcash, Robinhood Chain). Tracks y
+   premios se publican el 14 de septiembre. Camalote va a las pistas de
+   Solana y de Base: la plata entra por Base y vive en Solana.
 
-Registrate ya en las dos. El código de Camalote ya existe: lo que se juzga es
-el producto y el progreso durante el sprint.
+Registrate ya en los dos. El código existe: lo que se juzga es el producto.
+
+## Stocklana: campos (en inglés, listos para pegar)
+
+**Project name**: Camalote Invest
+
+**Category**: Investing
+
+**One-liner** (100 caracteres):
+Get paid in dollars by link, and let a rule you set turn part of every payment into tokenized stocks.
+
+**Description**:
+
+Camalote is a payment link for freelancers in Argentina and Latin America:
+you share a link, the client pays from Coinbase or Base with an email or no
+sign-up at all, and native USDC lands in your Solana account. Camalote Invest
+adds one rule on top of that link: "20% of every payment goes to the S&P 500".
+
+Freelancers don't earn on a schedule, they earn when they get paid. Calendar
+DCA (Jupiter Recurring, SIP apps) assumes a salary. Camalote invests on the
+income event instead: every time USDC arrive, the chosen share is set aside;
+once it adds up to 10 USDC, Camalote buys the tokenized stock (xStocks by
+Backed: SPYx, QQQx, AAPLx, NVDAx, TSLAx) through Jupiter Ultra in gasless
+mode and leaves it in the user's own Solana account. No broker, no SOL, no
+seed phrase: an email. Small payments accumulate, so a 25-dollar gig still
+invests. A portfolio shows today's value and return with Jupiter prices; every
+purchase has a Solscan receipt; there's a "buy now" for manual buys; and the
+rule switches off in one tap.
+
+Why it can be a real app: Argentina already moves 94% of its crypto volume in
+stablecoins; Solana carries ~95% of tokenized-equity volume ($4.9B in H1 2026,
+300k+ holders); Bitso just launched xStocks in Argentina but custodial and
+non-transferable. Camalote is self-custodied (Privy embedded wallets), open
+24/7, and starts from the moment you get paid.
+
+Honest about the limits: xStocks carry Backed's permanent delegate (the app
+says so), they aren't available to US/UK/CA/AU residents, and Camalote takes
+no fee on investing (its business is the 0.45% payment fee, capped at 50
+cents, shown before you share the link).
+
+**Links**: repo https://github.com/Beor18/camalote · demo (Vercel, demo mode)
+→ completar · video → completar.
+
+**Tech**: Next.js 16, Privy (email login, embedded Solana wallet), Jupiter
+Ultra (gasless swap) and Price API, Token-2022 (xStocks), Circle CCTP v2 for
+the Base→Solana leg, Coinbase Paymaster on Base.
+
+## World's Fair: campos (en inglés, listos para pegar)
 
 ## Campos del formulario (en inglés, listos para pegar)
 
@@ -60,6 +110,12 @@ an email.
 
 Growth is built into the product: every "Paid!" screen ends with "Create your
 own payment link". Every payer is tomorrow's payee. No ad budget needed.
+
+And the part that makes the dollars work: Camalote Invest. One rule on the
+payment link ("20% of every payment goes to the S&P 500"), executed on the
+income event through Jupiter Ultra (gasless) into xStocks, with a portfolio,
+returns and on-chain receipts. Submitted to Stocklana; it lives in the same
+app.
 
 Roadmap for the sprint: mainnet launch with Coinbase Paymaster on Base, card
 and Apple Pay for payers without crypto (Coinbase Onramp delivering straight
@@ -143,6 +199,16 @@ cualquier editor, o grabá la pantalla de tu teléfono con la PWA instalada.
   no custodial es zona gris que vamos a consultar antes de mainnet.
 - **¿Riesgo del relayer?** `destinationCaller` en cero: cualquiera completa
   la entrega. Los fondos nunca quedan atrapados.
+- **¿Invertir no es un broker encubierto?** No custodiamos ni recomendamos:
+  el usuario arma la regla, firma cada compra con su propia billetera y los
+  tokens quedan en su cuenta. Jupiter arma la orden, Backed emite el token.
+  Camalote no cobra por esto.
+- **¿Y el permanent delegate de Backed?** Lo decimos en la app: esa parte no
+  es self-custody pleno. Es el precio de que la acción tenga respaldo real y
+  cumpla la regulación europea bajo la que se emite.
+- **¿Por qué por evento y no por calendario?** Porque el freelancer no cobra
+  por calendario. Jupiter Recurring ya existe para el que tiene sueldo; nadie
+  atendía al que cobra por link.
 
 ## Plan de GTM sin presupuesto (primeras 4 semanas)
 

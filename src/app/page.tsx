@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Fragment } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -35,6 +36,7 @@ export default function LandingPage() {
         <Showdown />
         <WhySolana />
         <HowItWorks />
+        <Invest />
         <StatsBand />
         <Pricing />
         <Trust />
@@ -430,6 +432,55 @@ function HowItWorks() {
             <ArrowRight className="size-3.5" aria-hidden="true" />
           </Link>
         </p>
+      </div>
+    </section>
+  );
+}
+
+/** Camalote Invest: la regla "de cada cobro, una parte a acciones", en una mirada. */
+function Invest() {
+  const { t } = useLang();
+  const last = t.landing.investFlow.length - 1;
+  return (
+    <section id="invertir" className="border-t border-border py-8 sm:py-20">
+      <div className="mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
+        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t.landing.investTitle}
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground sm:mt-4">
+          {t.landing.investSub}
+        </p>
+        <div
+          className="mx-auto mt-6 flex max-w-lg items-center justify-center gap-2 sm:mt-8 sm:gap-3"
+          aria-hidden="true"
+        >
+          {t.landing.investFlow.map((step, i) => (
+            <Fragment key={step}>
+              {i > 0 && (
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+              )}
+              <span
+                className={`whitespace-nowrap rounded-xl border px-3 py-2 font-mono text-xs tabular-nums sm:px-4 sm:text-sm ${
+                  i === last
+                    ? "border-primary bg-primary/10 font-semibold"
+                    : "border-border bg-surface"
+                }`}
+              >
+                {step}
+              </span>
+            </Fragment>
+          ))}
+        </div>
+        <p className="mx-auto mt-4 max-w-md text-xs text-muted-foreground sm:mt-5">
+          {t.landing.investNote}
+        </p>
+        <Link
+          href="/app/invertir"
+          className="mt-4 inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:mt-6"
+        >
+          {t.landing.investCta}
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );

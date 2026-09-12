@@ -9,13 +9,18 @@ import {
   useWallets as useSolanaWallets,
 } from "@privy-io/react-auth/solana";
 import { createPublicClient, erc20Abi, http } from "viem";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { Connection, PublicKey, type ParsedAccountData } from "@solana/web3.js";
+import {
+  TOKEN_2022_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import { ADDRESSES, BASE_RPC_URL, SOLANA_RPC_URL } from "@/lib/config";
 import { base64ToBytes, bytesToBase64 } from "@/lib/base64";
 import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
+import { xStockByMint } from "@/lib/invest/catalog";
+import type { Holding } from "@/lib/invest/types";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
 import type {
   BridgeActions,
@@ -250,6 +255,66 @@ export function useRealEngine(): Engine {
           functionName: "balanceOf",
           args: [address as `0x${string}`],
         }),
+      listHoldings: async () => {
+        // Las acciones tokenizadas existen solo en mainnet: en devnet no hay nada que leer.
+        if (!solanaAddress || ADDRESSES.solana.cluster !== "mainnet-beta") return [];
+        return fetchXStockHoldings(solanaAddress);
+      },
+      buyStock: async (asset, usdcUnits, onStep) => {
+        const wallet = solanaWallets[0];
+        if (!wallet || !solanaAddress) {
+          throw new Error(
+            "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos."
+          );
+        }
+        if (ADDRESSES.solana.cluster !== "mainnet-beta") {
+          throw new Error(
+            "Las acciones tokenizadas existen solo en la red principal de Solana. Esta versión corre en la red de prueba."
+          );
+        }
+
+        onStep?.("quoting");
+        const orderRes = await fetch(
+          `/api/invest/order?asset=${asset}&units=${usdcUnits.toString()}&taker=${solanaAddress}`
+        );
+        const orderData = await orderRes.json().catch(() => ({}));
+        if (!orderRes.ok || !orderData.order?.transaction) {
+          throw new Error(orderData.error ?? "No pudimos cotizar la compra.");
+        }
+        const order = orderData.order as {
+          transaction: string;
+          requestId: string;
+          outAmount: string;
+          feeBps: number;
+        };
+
+        onStep?.("signing");
+        const { signedTransaction } = await signTransaction({
+          transaction: base64ToBytes(order.transaction),
+          wallet,
+          chain: "solana:mainnet",
+        });
+
+        onStep?.("sending");
+        const execRes = await fetch("/api/invest/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            signedTransaction: bytesToBase64(signedTransaction),
+            requestId: order.requestId,
+          }),
+        });
+        const result = await execRes.json().catch(() => ({}));
+        if (!execRes.ok || !result.signature) {
+          throw new Error(result.error ?? "No pudimos completar la compra.");
+        }
+        return {
+          signature: result.signature as string,
+          usdcUnits,
+          tokenUnits: BigInt(result.outputAmountResult ?? order.outAmount ?? "0"),
+          feeBps: Number(order.feeBps ?? 0),
+        };
+      },
     }),
     [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
   );
@@ -271,6 +336,30 @@ async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {
     // la token account todavía no existe: saldo cero
     return 0n;
   }
+}
+
+/**
+ * Acciones tokenizadas (Token-2022) en la cuenta del usuario: una sola
+ * lectura de todas sus cuentas de ese programa, filtrada por nuestro catálogo.
+ * Las unidades son las "crudas" del token (8 decimales).
+ */
+async function fetchXStockHoldings(owner: string): Promise<Holding[]> {
+  const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+  const res = await connection.getParsedTokenAccountsByOwner(new PublicKey(owner), {
+    programId: TOKEN_2022_PROGRAM_ID,
+  });
+  const out: Holding[] = [];
+  for (const { account } of res.value) {
+    const info = (account.data as ParsedAccountData).parsed?.info as
+      | { mint?: string; tokenAmount?: { amount?: string } }
+      | undefined;
+    const stock = xStockByMint(info?.mint);
+    const amount = info?.tokenAmount?.amount;
+    if (!stock || !amount || !/^\d+$/.test(amount)) continue;
+    const tokenUnits = BigInt(amount);
+    if (tokenUnits > 0n) out.push({ asset: stock.symbol, tokenUnits });
+  }
+  return out;
 }
 
 /** Circle certifica el mensaje (fast transfer ≈ segundos; esperamos con paciencia). */

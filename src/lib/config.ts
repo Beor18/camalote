@@ -38,6 +38,15 @@ export const MIN_TRANSFER_UNITS = BigInt(
 /** Retiro mínimo en Solana: 0,10 USDC (el relayer paga la red). */
 export const MIN_WITHDRAW_UNITS = 100000n;
 
+/**
+ * Compra mínima de acciones tokenizadas: 10 USDC. Es el piso desde el que
+ * Jupiter Ultra paga la red por el usuario (modo sin gas); por debajo, lo
+ * apartado se acumula hasta llegar.
+ */
+export const INVEST_MIN_UNITS = BigInt(
+  process.env.NEXT_PUBLIC_INVEST_MIN_UNITS ?? "10000000"
+);
+
 /** Si no hay billetera de comisiones configurada, la comisión es 0 (y se muestra así). */
 export const FEE_RECIPIENT_BASE = (process.env.NEXT_PUBLIC_FEE_RECIPIENT_BASE ??
   "") as "" | `0x${string}`;

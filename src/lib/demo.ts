@@ -2,7 +2,11 @@
 
 import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
+import type { XStockSymbol } from "@/lib/invest/catalog";
+import { tokensForUsdc } from "@/lib/invest/rules";
+import type { Holding } from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
+import type { BuyStep } from "@/components/bridge/types";
 
 /**
  * Modo demo: recorre exactamente los mismos estados que el flujo real,
@@ -16,7 +20,10 @@ const BALANCES_PREFIX = "camalote.demo.balances.v2:";
 const ACCOUNTS_KEY = "camalote.demo.accounts.v1";
 const BASE_ACCOUNTS_KEY = "camalote.demo.baseAccounts.v1";
 const LEDGER_KEY = "camalote.demo.ledger.v1";
+const HOLDINGS_PREFIX = "camalote.demo.holdings.v1:";
 const DEMO_CIRCLE_FAST_BPS = 1;
+/** Costo simulado de una compra por Jupiter (sin gas): 1 %. */
+const DEMO_SWAP_FEE_BPS = 100;
 const DEMO_QUOTE_OPTS = { feeBps: FEE_BPS, feeEnabled: true };
 
 export interface DemoBalances {
@@ -222,5 +229,48 @@ export async function runDemoBridge(
 
   callbacks.onDone(solanaSignature);
   return { baseTxHash, solanaSignature };
+}
+
+/** Acciones tokenizadas de la cuenta demo: símbolo → unidades (8 decimales). */
+export function loadDemoHoldings(email: string): Holding[] {
+  const map = readJson<Record<string, string>>(HOLDINGS_PREFIX + email.trim().toLowerCase(), {});
+  return Object.entries(map)
+    .filter(([, units]) => /^\d+$/.test(units) && BigInt(units) > 0n)
+    .map(([asset, units]) => ({ asset: asset as XStockSymbol, tokenUnits: BigInt(units) }));
+}
+
+/**
+ * Simula una compra por Jupiter: descuenta los USDC de la cuenta Solana y
+ * acredita el token al precio dado, con el mismo ritmo que la real.
+ */
+export async function runDemoBuy(
+  email: string,
+  asset: XStockSymbol,
+  usdcUnits: bigint,
+  priceUsd: number,
+  onStep?: (step: BuyStep) => void
+): Promise<{ signature: string; tokenUnits: bigint; feeBps: number }> {
+  const balances = loadDemoBalances(email);
+  if (usdcUnits > BigInt(balances.solanaUnits)) {
+    throw new Error("No te alcanza el saldo en Solana.");
+  }
+  onStep?.("quoting");
+  await wait(900);
+  onStep?.("signing");
+  await wait(700);
+  onStep?.("sending");
+  await wait(1600);
+
+  const tokenUnits = tokensForUsdc(usdcUnits, priceUsd, DEMO_SWAP_FEE_BPS);
+  if (tokenUnits <= 0n) throw new Error("No pudimos cotizar la compra.");
+
+  balances.solanaUnits = (BigInt(balances.solanaUnits) - usdcUnits).toString();
+  saveDemoBalances(email, balances);
+  const key = HOLDINGS_PREFIX + email.trim().toLowerCase();
+  const map = readJson<Record<string, string>>(key, {});
+  map[asset] = (BigInt(map[asset] ?? "0") + tokenUnits).toString();
+  writeJson(key, map);
+
+  return { signature: randomBase58(88), tokenUnits, feeBps: DEMO_SWAP_FEE_BPS };
 }
 

@@ -1,4 +1,6 @@
 import type { Quote } from "@/lib/cctp/quote";
+import type { XStockSymbol } from "@/lib/invest/catalog";
+import type { Holding } from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
 
 export interface BridgeSession {
@@ -67,6 +69,28 @@ export interface BridgeActions {
   readBaseBalance: (address: string) => Promise<bigint>;
   /** Solo demo: simula que alguien mandó USDC a esa dirección de Base. */
   simulateDeposit?: (address: string, amountUnits: bigint) => void;
+  /** Acciones tokenizadas que hay en la cuenta Solana del usuario. */
+  listHoldings: () => Promise<Holding[]>;
+  /**
+   * Compra una acción tokenizada con USDC de la cuenta Solana del usuario
+   * (Jupiter Ultra, modo sin gas). Devuelve firma y unidades recibidas.
+   */
+  buyStock: (
+    asset: XStockSymbol,
+    usdcUnits: bigint,
+    onStep?: (step: BuyStep) => void
+  ) => Promise<BuyResult>;
+}
+
+export type BuyStep = "quoting" | "signing" | "sending";
+
+export interface BuyResult {
+  signature: string;
+  usdcUnits: bigint;
+  /** Unidades del token (8 decimales). */
+  tokenUnits: bigint;
+  /** Costo total de la operación en puntos básicos (Jupiter y red). */
+  feeBps: number;
 }
 
 export interface Engine {

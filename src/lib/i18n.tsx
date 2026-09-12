@@ -172,6 +172,10 @@ const es = {
         a: "La comunidad de Solana en Argentina y en más de 15 países. Organizan bounties pagados en USDC, grants de hasta $10.000 para proyectos y eventos para conocer gente que construye. Cuando te lleguen los dólares, caés parado.",
       },
       {
+        q: "¿Qué es eso de invertir una parte?",
+        a: "Una regla que armás vos: «de cada cobro, el 20 % va al S&P 500». Cuando esa parte junta 10 dólares, Camalote compra la acción tokenizada (xStocks, emitidas por Backed) en Solana y te la deja en tu cuenta. Es opcional, la apagás cuando quieras y no es un consejo de inversión.",
+      },
+      {
         q: "¿Cuánto tarda?",
         a: "Normalmente menos de un minuto, de punta a punta. Si la red está muy cargada puede tardar unos minutos más, pero llega siempre.",
       },
@@ -184,6 +188,13 @@ const es = {
         a: "Los USDC viajan por el mismo camino oficial que usan los emisores de la moneda, por donde pasan miles de millones de dólares todos los días. Y tu plata nunca pasa por nuestras manos: va de la cuenta del que paga a la tuya.",
       },
     ],
+    investTitle: "Y una parte, si querés, a acciones.",
+    investSub:
+      "Elegís un porcentaje y una acción. Cada vez que te llegan dólares, esa parte se compra sola: S&P 500, Apple, NVIDIA. Sin broker, desde 10 dólares.",
+    investFlow: ["Te pagan 100", "20 %", "S&P 500"],
+    investNote:
+      "Acciones tokenizadas (xStocks) en Solana, vía Jupiter. Opcional. No es un consejo de inversión.",
+    investCta: "Armá tu regla",
     finalTitle1: "Que la próxima respuesta",
     finalTitle2: "sea «los 100».",
     finalSub: "Creá tu link y cobrá en dólares de una vez.",
@@ -267,7 +278,9 @@ const es = {
     historyWithdrawTo: (addr: string) => `Retiro a ${addr}`,
     historyPaymentTo: (who: string) => `Pago a ${who}`,
     tabBridge: "Llevar a Solana",
+    tabBridgeShort: "Cruzar",
     tabCobros: "Cobrar",
+    tabInvest: "Invertir",
   },
   deposit: {
     title: "Depositá USDC en Base",
@@ -331,6 +344,11 @@ const es = {
     depositError:
       "No pudimos completar el viaje a Solana. Los USDC siguen en tu billetera de Base: reintentamos solos.",
     copyAddress: "Copiar dirección",
+    ruleActive: (pct: string, asset: string) =>
+      `Regla activa: el ${pct} % de cada cobro va a ${asset}.`,
+    ruleOff: "¿Querés que una parte de cada cobro se invierta sola?",
+    ruleLinkOn: "Ver cartera",
+    ruleLinkOff: "Armá tu regla",
   },
   pay: {
     requestFrom: (name: string) => `${name} te pide`,
@@ -405,6 +423,70 @@ const es = {
     viewOnSolana: "Ver en Solana",
     done: "Listo",
     genericError: "No pudimos completar el retiro. Probá de nuevo.",
+  },
+  invest: {
+    title: "Invertí una parte de cada cobro",
+    sub: "Elegís un porcentaje y una acción. Cada vez que te llegan USDC, esa parte se compra sola en Solana. Sin broker, sin otra cuenta, desde 10 dólares.",
+    ruleTitle: "Tu regla",
+    ruleOff: "Apagada. Prendela y elegí qué parte y en qué.",
+    toggleLabel: "Invertir una parte de cada cobro",
+    percentLabel: "¿Qué parte de cada cobro?",
+    assetLabel: "¿En qué?",
+    ruleSummary: (pct: string, asset: string) =>
+      `De cada cobro, el ${pct} % va a ${asset}.`,
+    ruleMin: (min: string) => `Cuando esa parte junta ${min} USDC, se compra sola.`,
+    pendingLabel: (pending: string, min: string) =>
+      `Juntando: ${pending} de ${min} USDC`,
+    paused: (msg: string) =>
+      `La última compra no salió (${msg}). Lo apartado sigue guardado y reintentamos en un rato.`,
+    testnetNote:
+      "Las acciones tokenizadas existen solo en la red principal de Solana. Acá podés armar tu regla y ver cómo funciona; las compras se activan en la red principal.",
+    portfolioTitle: "Tu cartera",
+    valueLabel: "Vale hoy",
+    investedLabel: "Invertiste",
+    returnLabel: "Rendimiento",
+    emptyPortfolio:
+      "Todavía no tenés acciones. Se compran solas con tu próximo cobro, o comprá ahora.",
+    pricesLive:
+      "Precios de mercado de Jupiter. El rendimiento se calcula sobre lo comprado desde Camalote.",
+    pricesFallback:
+      "Precios de referencia: no pudimos consultar el mercado. El rendimiento se calcula sobre lo comprado desde Camalote.",
+    priceEach: "cada una",
+    buyTitle: "Comprar ahora",
+    buySub:
+      "Con los USDC de tu cuenta de Solana. El costo de red sale de la misma compra: no necesitás nada más.",
+    buyAmountLabel: "¿Cuánto?",
+    buyAmountHint: (min: string) => `Mínimo ${min} USDC por compra.`,
+    buyAmountInvalid: "Escribí un monto válido, por ejemplo 10 o 25,50.",
+    buyAmountMin: (min: string) => `El mínimo por compra es ${min} USDC.`,
+    buyInsufficient: (balance: string) =>
+      `No te alcanza: tenés ${balance} USDC en Solana.`,
+    buySubmit: (asset: string) => `Comprar ${asset}`,
+    stepQuoting: "Buscando el mejor precio",
+    stepSigning: "Firmando con tu cuenta",
+    stepSending: "Comprando en Solana",
+    doneTitle: "¡Compraste!",
+    doneBody: (tokens: string, asset: string, usdc: string) =>
+      `${tokens} ${asset} por ${usdc} USDC ya están en tu cuenta de Solana.`,
+    feeLine: (pct: string) =>
+      `Costo de la operación (Jupiter y red): ${pct} %, ya descontado.`,
+    viewOnSolana: "Ver en Solana",
+    buyAgain: "Comprar otra vez",
+    genericError: "No pudimos completar la compra. Tus USDC no se movieron.",
+    purchasesTitle: "Tus compras",
+    purchaseBuying: "Comprando…",
+    purchaseDone: "Comprada",
+    purchaseError: "No se completó",
+    sourceRule: "por tu regla",
+    sourceManual: "a mano",
+    sim: " · simulación",
+    disclosureTitle: "Lo que tenés que saber",
+    disclosure: [
+      "Son acciones tokenizadas de xStocks, emitidas por Backed. Siguen el precio de la acción, pero no son la acción ni dan derecho a voto.",
+      "Backed puede congelarlas o retirarlas si la ley se lo exige. Esa parte no es solo tuya, como sí lo son tus USDC.",
+      "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
+      "Camalote no recomienda activos ni cobra por esto. La regla la armás vos y la apagás cuando quieras.",
+    ],
   },
 };
 
@@ -565,6 +647,10 @@ const en: Dictionary = {
         a: "The Solana community in Argentina and in 15+ countries. They run bounties paid in USDC, grants of up to $10,000 for projects and events to meet people who build. When the dollars land, you land on your feet.",
       },
       {
+        q: "What's this about investing a part?",
+        a: "A rule you set yourself: «20% of every payment goes to the S&P 500». Once that part adds up to 10 dollars, Camalote buys the tokenized stock (xStocks, issued by Backed) on Solana and leaves it in your account. It's optional, you can switch it off any time, and it's not investment advice.",
+      },
+      {
         q: "How long does it take?",
         a: "Usually under a minute, end to end. If the network is very busy it can take a few more minutes, but it always arrives.",
       },
@@ -577,6 +663,13 @@ const en: Dictionary = {
         a: "The USDC travel the same official path the currency's issuers use, where billions of dollars move every day. And your money never passes through our hands: it goes from the payer's account to yours.",
       },
     ],
+    investTitle: "And part of it, if you like, into stocks.",
+    investSub:
+      "Pick a percentage and a stock. Every time dollars land, that part buys itself: S&P 500, Apple, NVIDIA. No broker, from 10 dollars.",
+    investFlow: ["You get 100", "20%", "S&P 500"],
+    investNote:
+      "Tokenized stocks (xStocks) on Solana, through Jupiter. Optional. Not investment advice.",
+    investCta: "Set your rule",
     finalTitle1: "Make the next answer",
     finalTitle2: "«all 100».",
     finalSub: "Create your link and get paid in dollars, at last.",
@@ -658,7 +751,9 @@ const en: Dictionary = {
     historyWithdrawTo: (addr: string) => `Withdrawal to ${addr}`,
     historyPaymentTo: (who: string) => `Payment to ${who}`,
     tabBridge: "Take to Solana",
+    tabBridgeShort: "Move",
     tabCobros: "Get paid",
+    tabInvest: "Invest",
   },
   deposit: {
     title: "Deposit USDC on Base",
@@ -721,6 +816,11 @@ const en: Dictionary = {
     depositError:
       "We couldn't complete the trip to Solana. The USDC are still in your Base wallet: we'll retry on our own.",
     copyAddress: "Copy address",
+    ruleActive: (pct: string, asset: string) =>
+      `Rule on: ${pct}% of every payment goes to ${asset}.`,
+    ruleOff: "Want part of every payment to invest itself?",
+    ruleLinkOn: "See portfolio",
+    ruleLinkOff: "Set your rule",
   },
   pay: {
     requestFrom: (name: string) => `${name} is asking you for`,
@@ -795,6 +895,70 @@ const en: Dictionary = {
     viewOnSolana: "View on Solana",
     done: "Done",
     genericError: "We couldn't complete the withdrawal. Try again.",
+  },
+  invest: {
+    title: "Invest part of every payment",
+    sub: "Pick a percentage and a stock. Every time USDC land, that part buys itself on Solana. No broker, no other account, from 10 dollars.",
+    ruleTitle: "Your rule",
+    ruleOff: "Off. Switch it on and pick how much and what.",
+    toggleLabel: "Invest part of every payment",
+    percentLabel: "How much of each payment?",
+    assetLabel: "Into what?",
+    ruleSummary: (pct: string, asset: string) =>
+      `${pct}% of every payment goes to ${asset}.`,
+    ruleMin: (min: string) => `Once that part adds up to ${min} USDC, it buys itself.`,
+    pendingLabel: (pending: string, min: string) =>
+      `Adding up: ${pending} of ${min} USDC`,
+    paused: (msg: string) =>
+      `The last purchase didn't go through (${msg}). What was set aside is kept and we'll retry in a while.`,
+    testnetNote:
+      "Tokenized stocks only exist on Solana mainnet. Here you can set your rule and see how it works; purchases switch on with mainnet.",
+    portfolioTitle: "Your portfolio",
+    valueLabel: "Worth today",
+    investedLabel: "Invested",
+    returnLabel: "Return",
+    emptyPortfolio:
+      "No stocks yet. They buy themselves with your next payment, or buy now.",
+    pricesLive:
+      "Market prices from Jupiter. Return is computed on what was bought through Camalote.",
+    pricesFallback:
+      "Reference prices: we couldn't reach the market. Return is computed on what was bought through Camalote.",
+    priceEach: "each",
+    buyTitle: "Buy now",
+    buySub:
+      "With the USDC in your Solana account. The network cost comes out of the purchase itself: you need nothing else.",
+    buyAmountLabel: "How much?",
+    buyAmountHint: (min: string) => `Minimum ${min} USDC per purchase.`,
+    buyAmountInvalid: "Enter a valid amount, for example 10 or 25.50.",
+    buyAmountMin: (min: string) => `The minimum per purchase is ${min} USDC.`,
+    buyInsufficient: (balance: string) =>
+      `Not enough: you have ${balance} USDC on Solana.`,
+    buySubmit: (asset: string) => `Buy ${asset}`,
+    stepQuoting: "Finding the best price",
+    stepSigning: "Signing with your account",
+    stepSending: "Buying on Solana",
+    doneTitle: "Bought!",
+    doneBody: (tokens: string, asset: string, usdc: string) =>
+      `${tokens} ${asset} for ${usdc} USDC are now in your Solana account.`,
+    feeLine: (pct: string) =>
+      `Cost of the operation (Jupiter and network): ${pct}%, already taken.`,
+    viewOnSolana: "View on Solana",
+    buyAgain: "Buy again",
+    genericError: "We couldn't complete the purchase. Your USDC didn't move.",
+    purchasesTitle: "Your purchases",
+    purchaseBuying: "Buying…",
+    purchaseDone: "Bought",
+    purchaseError: "Not completed",
+    sourceRule: "by your rule",
+    sourceManual: "by hand",
+    sim: " · simulation",
+    disclosureTitle: "What you should know",
+    disclosure: [
+      "These are tokenized stocks by xStocks, issued by Backed. They track the stock's price, but they are not the stock and carry no voting rights.",
+      "Backed can freeze or claw them back if the law requires it. That part isn't yours alone, the way your USDC are.",
+      "Not available to residents of the United States, United Kingdom, Canada and Australia.",
+      "Camalote doesn't recommend assets and doesn't charge for this. You set the rule and switch it off whenever you like.",
+    ],
   },
 };
 
