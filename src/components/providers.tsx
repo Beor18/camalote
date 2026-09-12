@@ -29,10 +29,13 @@ export function Providers({ children }: { children: ReactNode }) {
     ADDRESSES.network === "mainnet"
       ? ("solana:mainnet" as const)
       : ("solana:devnet" as const);
+  // El público de mainnet se satura rápido: con NEXT_PUBLIC_SOLANA_RPC_URL
+  // (Helius gratis alcanza) Privy firma contra ese mismo RPC.
   const solanaHttp =
-    ADDRESSES.network === "mainnet"
+    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
+    (ADDRESSES.network === "mainnet"
       ? "https://api.mainnet-beta.solana.com"
-      : "https://api.devnet.solana.com";
+      : "https://api.devnet.solana.com");
 
   return (
     <PrivyProvider

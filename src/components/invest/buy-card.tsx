@@ -45,12 +45,13 @@ export function BuyCard({
   onBuy: (quote: StockQuote, onStep: (step: BuyStep) => void) => Promise<Purchase>;
 }) {
   const { lang, t } = useLang();
+  const minText = formatUsdc(INVEST_MIN_UNITS, 0, lang);
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
-  const [amountText, setAmountText] = useState("10");
+  // Arranca en el mínimo configurado, así una prueba con poca plata no choca.
+  const [amountText, setAmountText] = useState(minText);
   const [state, setState] = useState<State>({ phase: "idle" });
 
   const amountUnits = useMemo(() => parseUsdc(amountText), [amountText]);
-  const minText = formatUsdc(INVEST_MIN_UNITS, 0, lang);
   const amountError =
     amountText.trim() === ""
       ? null

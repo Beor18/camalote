@@ -126,9 +126,27 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
    `api.jup.ag`; sin clave usa `lite-api.jup.ag`.
 6. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.
 
-Prueba: entrá con tu email, mandá 10 a 20 USDC a tu cuenta de Solana, armá
-la regla o comprá a mano. Verificá el comprobante en Solscan y la
+Prueba: entrá con tu email, mandá USDC a tu cuenta de Solana, armá la
+regla o comprá a mano. Verificá el comprobante en Solscan y la
 transferencia de la comisión a tu cuenta.
+
+**Prueba mínima, con 2 USDC.** Jupiter acepta compras sin gas desde unos
+2 USDC (1,99 después de nuestra comisión pasa; 1,50 no). Cotizaciones del
+2026-09-12 para una cuenta sin SOL: 2 USDC pagan 7,65 % de red y Jupiter,
+5 USDC 3,12 %, 10 USDC 1,61 %, 50 USDC 0,41 %. Por eso el producto usa 10
+por defecto; para probar con 2:
+
+```bash
+NEXT_PUBLIC_NETWORK=mainnet
+NEXT_PUBLIC_INVEST_MIN_UNITS=2000000   # 2 USDC (3 deja margen)
+NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
+```
+
+Con 2 USDC probás comprar a mano y vender (el mismo camino que usa la
+regla). Para ver la regla hacen falta 4 USDC al 50 %. El cobro de la
+comisión necesita que el relayer tenga ~0,003 SOL en mainnet (crea la
+cuenta de USDC del destinatario la primera vez); si no los tiene, la compra
+igual se completa y la app dice que la comisión no se pudo cobrar.
 
 ## Seguridad y límites conocidos
 
