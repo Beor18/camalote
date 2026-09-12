@@ -172,7 +172,7 @@ const es = {
     finalTitle2: "una parte ya esté invertida.",
     finalSub: "Armá tu regla una vez. Después, cobrá como siempre.",
     finalCta: "Armar mi regla",
-    footerMadeIn: "Hecho en Argentina 🇦🇷 junto a",
+    footerMadeIn: "Hecho en Argentina 🇦🇷",
     footerNote:
       "xStocks las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Camalote no da consejos de inversión.",
   },
@@ -668,7 +668,7 @@ const en: Dictionary = {
     finalTitle2: "let part of it already be invested.",
     finalSub: "Set your rule once. Then get paid as usual.",
     finalCta: "Set my rule",
-    footerMadeIn: "Made in Argentina 🇦🇷 with",
+    footerMadeIn: "Made in Argentina 🇦🇷",
     footerNote:
       "xStocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Camalote doesn't give investment advice.",
   },

@@ -515,18 +515,7 @@ function Footer() {
     <footer className="border-t border-border py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:px-8">
         <CamaloteLogo />
-        <p className="text-xs text-muted-foreground">
-          {t.landing.footerMadeIn}{" "}
-          <a
-            href="https://superteam.ar"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-sm font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Superteam AR
-          </a>
-          .
-        </p>
+        <p className="text-xs text-muted-foreground">{t.landing.footerMadeIn}</p>
         <p className="max-w-xl text-xs text-muted-foreground">{t.landing.footerNote}</p>
       </div>
     </footer>
