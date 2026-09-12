@@ -16,13 +16,32 @@ mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({
   executablePath: "/usr/bin/google-chrome",
-  args: ["--no-sandbox"],
+  // Playwright graba en píxeles CSS y no escala hacia arriba: para un video
+  // nítido de 780x1688 hay que forzar el factor de escala en Chrome.
+  args: ["--no-sandbox", "--force-device-scale-factor=2"],
 });
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 },
   deviceScaleFactor: 2,
   recordVideo: { dir: OUT, size: { width: 780, height: 1688 } },
   locale: "es-AR",
+});
+// El botón "N" de las herramientas de desarrollo de Next no va en el video.
+await context.addInitScript(() => {
+  const hide = () =>
+    document
+      .querySelectorAll("nextjs-portal")
+      .forEach((el) => (el.style.display = "none"));
+  const start = () => {
+    hide();
+    new MutationObserver(hide).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  };
+  // el script corre antes de que exista el documento
+  if (document.documentElement) start();
+  else document.addEventListener("DOMContentLoaded", start);
 });
 const page = await context.newPage();
 const hold = (ms) => page.waitForTimeout(ms);
@@ -105,10 +124,14 @@ await page.waitForFunction(
   { timeout: 40000 }
 );
 
-// Escena 6: el 30 % de ese cobro ya se compró solo
+// Escena 6: el 30 % de ese cobro ya se compró solo: la regla, la cartera y la compra
 await page.goto(`${BASE}/app/invertir`, { waitUntil: "networkidle" });
 await page.waitForSelector("text=Comprada", { timeout: 20000 });
-await hold(3600);
+await hold(2200);
+await page.locator("[data-testid=invest-portfolio]").scrollIntoViewIfNeeded();
+await hold(2400);
+await page.locator("[data-testid=invest-purchases]").scrollIntoViewIfNeeded();
+await hold(3000);
 
 await context.close();
 await browser.close();

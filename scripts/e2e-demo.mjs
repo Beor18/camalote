@@ -3,6 +3,16 @@ const OUT = process.argv[2];
 const BASE = "http://localhost:3001";
 const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const context = await browser.newContext({ viewport: { width: 420, height: 860 }, deviceScaleFactor: 2 });
+// El botón "N" de las herramientas de desarrollo de Next no va en las capturas.
+await context.addInitScript(() => {
+  const hide = () => document.querySelectorAll("nextjs-portal").forEach((el) => (el.style.display = "none"));
+  const start = () => {
+    hide();
+    new MutationObserver(hide).observe(document.documentElement, { childList: true, subtree: true });
+  };
+  if (document.documentElement) start();
+  else document.addEventListener("DOMContentLoaded", start);
+});
 const page = await context.newPage();
 const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
