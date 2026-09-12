@@ -13,7 +13,12 @@ import {
 } from "@/lib/invest/storage";
 import type { Engine } from "@/components/bridge/types";
 
-const POLL_MS = 20_000;
+/**
+ * En demo la lectura es local; en red real cada vuelta son varias llamadas
+ * al RPC público, así que se espacia y se confía en el aviso de Cobrar.
+ */
+const POLL_MS_DEMO = 20_000;
+const POLL_MS_REAL = 60_000;
 const PAUSE_AFTER_ERROR_MS = 10 * 60 * 1000;
 
 /**
@@ -36,22 +41,24 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
   const canBuy = demo || ADDRESSES.solana.cluster === "mainnet-beta";
 
   const tick = useCallback(async () => {
-    if (!address || busy.current || !canBuy) return;
-    let rule = loadRule(address);
-    if (!rule?.enabled) return;
-    if (rule.pausedUntil !== undefined && rule.pausedUntil > Date.now()) return;
+    if (!address || busy.current) return;
     busy.current = true;
     try {
-      // Una compra que quedó a medias en otra pestaña se cierra acá.
+      // Una compra que quedó a medias en otra pestaña se cierra acá, haya
+      // regla o no (también las compras a mano).
       const { restoredUnits } = reconcileInterrupted(address, demo);
-      if (restoredUnits > 0n) {
+      let rule = loadRule(address);
+      if (restoredUnits > 0n && rule?.enabled) {
         rule = {
           ...rule,
           pendingUnits: (BigInt(rule.pendingUnits || "0") + restoredUnits).toString(),
         };
         saveRule(address, rule);
-        notifyInvest();
       }
+      if (restoredUnits > 0n) notifyInvest();
+      if (!canBuy || !rule?.enabled) return;
+      if (rule.pausedUntil !== undefined && rule.pausedUntil > Date.now()) return;
+
       const incoming = await actionsRef.current.listIncoming();
       const plan = planInvestments(rule, incoming);
       const changed =
@@ -95,7 +102,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
   useEffect(() => {
     if (!address) return;
     void tick();
-    const id = setInterval(() => void tick(), POLL_MS);
+    const id = setInterval(() => void tick(), demo ? POLL_MS_DEMO : POLL_MS_REAL);
     const onSignal = () => void tick();
     window.addEventListener(INCOMING_EVENT, onSignal);
     window.addEventListener(INVEST_EVENT, onSignal);
@@ -106,5 +113,5 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
       window.removeEventListener(INVEST_EVENT, onSignal);
       window.removeEventListener("storage", onSignal);
     };
-  }, [address, tick]);
+  }, [address, demo, tick]);
 }
