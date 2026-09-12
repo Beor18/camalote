@@ -9,9 +9,12 @@ import {
 import {
   defaultRule,
   formatTokens,
+  investFee,
+  parseTokens,
   planInvestments,
   portfolioSummary,
   tokensForUsdc,
+  tokensToDecimal,
   valueOfTokens,
 } from "@/lib/invest/rules";
 import type { InvestRule, Purchase } from "@/lib/invest/types";
@@ -165,6 +168,71 @@ describe("cuentas de la cartera", () => {
     const summary = portfolioSummary([], [], { SPYx: 800 });
     expect(summary.pnlPct).toBeNull();
     expect(summary.rows).toEqual([]);
+  });
+
+  it("una venta descuenta de lo puesto: el rendimiento es sobre lo neto", () => {
+    const purchases: Purchase[] = [
+      {
+        id: "a",
+        createdAt: 1,
+        kind: "buy",
+        asset: "SPYx",
+        usdcUnits: "20000000",
+        tokenUnits: "2600000",
+        feeBps: 100,
+        status: "done",
+        source: "rule",
+      },
+      {
+        id: "b",
+        createdAt: 2,
+        kind: "sell",
+        asset: "SPYx",
+        usdcUnits: "5000000",
+        tokenUnits: "600000",
+        feeBps: 100,
+        status: "done",
+        source: "manual",
+      },
+    ];
+    const summary = portfolioSummary(
+      [{ asset: "SPYx", tokenUnits: 2_000_000n }],
+      purchases,
+      { SPYx: 800 }
+    );
+    expect(summary.investedUnits).toBe(15_000_000n);
+    expect(summary.valueUnits).toBe(16_000_000n);
+    expect(summary.pnlUnits).toBe(1_000_000n);
+  });
+
+  it("parseTokens y tokensToDecimal van y vuelven", () => {
+    expect(parseTokens("0,0154")).toBe(1_540_000n);
+    expect(parseTokens("1.5")).toBe(150_000_000n);
+    expect(parseTokens("abc")).toBeNull();
+    expect(parseTokens("0.123456789")).toBeNull(); // más de 8 decimales
+    expect(tokensToDecimal(1_540_000n)).toBe("0.0154");
+    expect(tokensToDecimal(150_000_000n)).toBe("1.5");
+    expect(parseTokens(tokensToDecimal(123_456_789n))).toBe(123_456_789n);
+  });
+});
+
+describe("investFee: la comisión de Camalote por compra", () => {
+  const opts = { feeBps: 45, enabled: true };
+
+  it("0,45 % de lo que se invierte, descontado antes de comprar", () => {
+    expect(investFee(10_000_000n, opts)).toBe(45_000n); // 10 → 0,045
+    expect(investFee(100_000_000n, opts)).toBe(450_000n); // 100 → 0,45
+  });
+
+  it("nunca más de medio dólar", () => {
+    expect(investFee(1_000_000_000n, opts)).toBe(500_000n); // 1.000 → 0,50
+    expect(investFee(120_000_000n, opts)).toBe(500_000n); // 120 → 0,54 se topea en 0,50
+  });
+
+  it("piso de un centavo, y cero si está apagada", () => {
+    expect(investFee(1_000_000n, opts)).toBe(10_000n); // 1 → 0,0045 sube a 0,01
+    expect(investFee(10_000_000n, { ...opts, enabled: false })).toBe(0n);
+    expect(investFee(0n, opts)).toBe(0n);
   });
 
   it("formatTokens muestra 4 decimales por debajo de 1 y 2 desde 1", () => {

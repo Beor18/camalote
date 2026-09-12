@@ -1,15 +1,6 @@
-import type { Metadata } from "next";
-import { Providers } from "@/components/providers";
-import { BridgeApp } from "@/components/bridge/app";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Invertí una parte de cada cobro",
-};
-
+/** Invertir es la app entera: la ruta vieja lleva a /app. */
 export default function InvertirPage() {
-  return (
-    <Providers>
-      <BridgeApp view="invest" />
-    </Providers>
-  );
+  redirect("/app");
 }

@@ -115,6 +115,8 @@ export function RuleCard({
             </div>
           </div>
 
+          <p className="text-xs text-muted-foreground">{t.invest.ruleOpenNote}</p>
+
           {(paused || testnetNote) && (
             <p
               role="status"

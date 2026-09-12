@@ -1,4 +1,10 @@
-import { INVEST_MIN_UNITS } from "@/lib/config";
+import {
+  FEE_BPS,
+  FEE_MAX_UNITS,
+  FEE_MIN_UNITS,
+  INVEST_FEE_ENABLED,
+  INVEST_MIN_UNITS,
+} from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
 import { XSTOCK_DECIMALS, type XStockSymbol } from "@/lib/invest/catalog";
 import type { Holding, InvestRule, PriceMap, Purchase } from "@/lib/invest/types";
@@ -15,6 +21,24 @@ const USDC_UNIT = 10n ** BigInt(USDC_DECIMALS);
 const TOKEN_UNIT = 10n ** BigInt(XSTOCK_DECIMALS);
 /** Los precios en USD se manejan en millonésimas para no perder centavos. */
 const PRICE_SCALE = 1_000_000;
+
+/**
+ * La comisión de Camalote por compra: FEE_BPS de lo que se invierte, con
+ * piso y tope, descontada antes de ir al mercado. Vender no tiene comisión.
+ * Es el mismo modelo de siempre: chica, con techo y a la vista.
+ */
+export function investFee(
+  usdcUnits: bigint,
+  opts?: { feeBps?: number; enabled?: boolean }
+): bigint {
+  const enabled = opts?.enabled ?? INVEST_FEE_ENABLED;
+  const feeBps = opts?.feeBps ?? FEE_BPS;
+  if (!enabled || feeBps <= 0 || usdcUnits <= 0n) return 0n;
+  let fee = (usdcUnits * BigInt(feeBps)) / 10000n;
+  if (fee < FEE_MIN_UNITS) fee = FEE_MIN_UNITS;
+  if (FEE_MAX_UNITS > 0n && fee > FEE_MAX_UNITS) fee = FEE_MAX_UNITS;
+  return fee;
+}
 
 export function defaultRule(asset: XStockSymbol = "SPYx"): InvestRule {
   return {
@@ -116,11 +140,11 @@ export interface PortfolioSummary {
   rows: PortfolioRow[];
   /** Valor de mercado de lo que hay en la cuenta. */
   valueUnits: bigint;
-  /** USDC que salieron en compras completadas desde Camalote. */
+  /** USDC netos puestos desde Camalote: compras menos ventas completadas. */
   investedUnits: bigint;
-  /** valor − invertido (solo tiene sentido si todo se compró acá). */
+  /** valor − invertido (solo tiene sentido si todo se operó acá). */
   pnlUnits: bigint;
-  /** En porcentaje, o null si no se invirtió nada. */
+  /** En porcentaje, o null si no hay inversión neta. */
   pnlPct: number | null;
 }
 
@@ -144,7 +168,11 @@ export function portfolioSummary(
   const valueUnits = rows.reduce((acc, r) => acc + r.valueUnits, 0n);
   const investedUnits = purchases
     .filter((p) => p.status === "done")
-    .reduce((acc, p) => acc + BigInt(p.usdcUnits), 0n);
+    .reduce(
+      (acc, p) =>
+        p.kind === "sell" ? acc - BigInt(p.usdcUnits) : acc + BigInt(p.usdcUnits),
+      0n
+    );
   const pnlUnits = valueUnits - investedUnits;
   const pnlPct =
     investedUnits > 0n
@@ -165,6 +193,25 @@ export function formatTokens(
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
+}
+
+/** "0,0154" o "0.0154" → 1540000n (8 decimales). null si no es una cantidad válida. */
+export function parseTokens(input: string, decimals = XSTOCK_DECIMALS): bigint | null {
+  const clean = input.trim().replace(",", ".");
+  if (!new RegExp(`^\\d+(\\.\\d{0,${decimals}})?$`).test(clean)) return null;
+  const [whole, frac = ""] = clean.split(".");
+  try {
+    return BigInt(whole) * TOKEN_UNIT + BigInt(frac.padEnd(decimals, "0"));
+  } catch {
+    return null;
+  }
+}
+
+/** 1540000n → "0.0154" (texto exacto, sin ceros de más, con punto). */
+export function tokensToDecimal(units: bigint, decimals = XSTOCK_DECIMALS): string {
+  const whole = units / TOKEN_UNIT;
+  const frac = (units % TOKEN_UNIT).toString().padStart(decimals, "0").replace(/0+$/, "");
+  return frac ? `${whole}.${frac}` : whole.toString();
 }
 
 export function formatUsd(value: number, locale: "es" | "en" = "es"): string {

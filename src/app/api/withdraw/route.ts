@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { buildWithdraw, submitWithdraw } from "@/lib/server/withdraw";
+import {
+  buildWithdraw,
+  submitWithdraw,
+  type TransferPurpose,
+} from "@/lib/server/withdraw";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -33,8 +37,10 @@ function isValidAddress(value: unknown): value is string {
 
 /**
  * POST /api/withdraw
- *  { action: "build", owner, destination, amountUnits }  → transacción a firmar
- *  { action: "submit", transaction, blockhash, lastValidBlockHeight } → firma del relayer + envío
+ *  { action: "build", owner, destination, amountUnits, purpose? }  → transacción a firmar
+ *  { action: "submit", transaction, blockhash, lastValidBlockHeight, purpose? } → firma del relayer + envío
+ * purpose: "withdraw" (default) o "fee" (comisión de una compra de acciones,
+ * solo hacia la cuenta de comisiones).
  */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
@@ -52,6 +58,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
   }
 
+  const purpose: TransferPurpose = body.purpose === "fee" ? "fee" : "withdraw";
+
   try {
     if (body.action === "build") {
       const { owner, destination, amountUnits } = body;
@@ -66,7 +74,7 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const built = await buildWithdraw(owner, destination, BigInt(amountUnits));
+      const built = await buildWithdraw(owner, destination, BigInt(amountUnits), purpose);
       return NextResponse.json(built);
     }
 
@@ -82,7 +90,8 @@ export async function POST(req: NextRequest) {
       const result = await submitWithdraw(
         transaction,
         blockhash,
-        lastValidBlockHeight
+        lastValidBlockHeight,
+        purpose
       );
       return NextResponse.json(result);
     }

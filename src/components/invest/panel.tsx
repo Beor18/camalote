@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ShieldAlert, TrendingUp } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { AccountCard } from "@/components/invest/account-card";
 import { BuyCard } from "@/components/invest/buy-card";
 import { PortfolioCard } from "@/components/invest/portfolio-card";
 import { PurchasesList } from "@/components/invest/purchases-list";
 import { RuleCard } from "@/components/invest/rule-card";
+import { SellModal } from "@/components/invest/sell-modal";
 import { ADDRESSES } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
@@ -20,15 +22,16 @@ import {
   notifyInvest,
   saveRule,
 } from "@/lib/invest/storage";
-import type { Holding, InvestRule, Purchase } from "@/lib/invest/types";
+import type { Holding, InvestRule, Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep, Engine } from "@/components/bridge/types";
 
 const PRICES_MS = 60_000;
 
 /**
- * Invertir: la regla ("de cada cobro, el 20 % va al S&P 500"), la cartera
- * con su valor de hoy, una compra a mano y el historial con comprobantes.
- * La regla la ejecuta `useAutoInvest` desde el shell, en cualquier pestaña.
+ * Camalote: tu cuenta de Solana, la regla ("cada vez que me llegan USDC, el
+ * 20 % va al S&P 500"), la cartera con su valor de hoy, comprar y vender a
+ * mano, y el historial con comprobantes. La regla la ejecuta
+ * `useAutoInvest` desde el shell.
  */
 export function InvestPanel({ session, balances, actions }: Engine) {
   const { t } = useLang();
@@ -39,13 +42,14 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [prices, setPrices] = useState<PricesResult | null>(null);
+  const [selling, setSelling] = useState<XStockSymbol | null>(null);
 
   const actionsRef = useRef(actions);
   useEffect(() => {
     actionsRef.current = actions;
   });
 
-  // Regla y compras viven en el dispositivo; se releen cuando algo cambia
+  // Regla y operaciones viven en el dispositivo; se releen cuando algo cambia
   // (la regla compró sola, otra pestaña, etc.).
   useEffect(() => {
     if (!address) return;
@@ -93,9 +97,10 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     };
   }, []);
 
+  const priceMap = useMemo(() => prices?.prices ?? fallbackPrices(), [prices]);
   const summary = useMemo(
-    () => portfolioSummary(holdings ?? [], purchases, prices?.prices ?? fallbackPrices()),
-    [holdings, purchases, prices]
+    () => portfolioSummary(holdings ?? [], purchases, priceMap),
+    [holdings, purchases, priceMap]
   );
 
   const updateRule = useCallback(
@@ -104,7 +109,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
       const current = rule ?? defaultRule();
       const next: InvestRule = { ...current, ...patch };
       if (patch.enabled && !current.enabled) {
-        // Al prender, solo cuentan los cobros de acá en adelante.
+        // Al prender, solo cuentan los USDC que llegan de acá en adelante.
         next.createdAt = Date.now();
         next.pausedUntil = undefined;
         next.lastError = undefined;
@@ -117,15 +122,16 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   );
 
   const buyNow = useCallback(
-    async (asset: XStockSymbol, usdcUnits: bigint, onStep: (step: BuyStep) => void) => {
+    async (quote: StockQuote, onStep: (step: BuyStep) => void) => {
       if (!address) throw new Error("Entrá con tu email para continuar.");
       const purchase = await executePurchase({
         address,
-        asset,
-        usdcUnits,
+        asset: quote.asset,
+        usdcUnits: quote.usdcUnits,
         source: "manual",
         actions: actionsRef.current,
         demo: session.demo,
+        quote,
         onStep,
       });
       balances.refresh();
@@ -135,26 +141,26 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     [address, session.demo, balances, refreshHoldings]
   );
 
+  const sellingUnits =
+    selling !== null ? (holdings?.find((h) => h.asset === selling)?.tokenUnits ?? 0n) : 0n;
+
   return (
     <div className="flex w-full flex-col gap-6">
-      <Card className="p-5 sm:p-6">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-primary" aria-hidden="true" />
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            {t.invest.title}
-          </h1>
-        </div>
+      <div className="px-1">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">{t.invest.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t.invest.sub}</p>
-      </Card>
+      </div>
 
-      {rule && (
-        <RuleCard rule={rule} onChange={updateRule} testnetNote={realTestnet} />
-      )}
+      <AccountCard session={session} balances={balances} actions={actions} />
+
+      {rule && <RuleCard rule={rule} onChange={updateRule} testnetNote={realTestnet} />}
 
       <PortfolioCard
         summary={summary}
         loading={holdings === null}
         pricesLive={prices ? prices.live : null}
+        onSell={(asset) => setSelling(asset)}
+        sellDisabled={realTestnet}
       />
 
       <BuyCard
@@ -162,6 +168,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         defaultAsset={rule?.asset ?? "SPYx"}
         demo={session.demo}
         disabled={realTestnet}
+        onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}
         onBuy={buyNow}
       />
 
@@ -178,6 +185,20 @@ export function InvestPanel({ session, balances, actions }: Engine) {
           ))}
         </ul>
       </Card>
+
+      <SellModal
+        open={selling !== null}
+        asset={selling}
+        holdingUnits={sellingUnits}
+        address={address}
+        actions={actions}
+        demo={session.demo}
+        onClose={() => setSelling(null)}
+        onDone={() => {
+          balances.refresh();
+          void refreshHoldings();
+        }}
+      />
     </div>
   );
 }

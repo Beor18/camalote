@@ -1,9 +1,9 @@
 import type { XStockSymbol } from "@/lib/invest/catalog";
 
 /**
- * La regla de inversión: "de cada cobro, el X % va a tal acción". Vive en el
- * dispositivo del que cobra, por cuenta de Solana. Lo apartado que todavía
- * no llega al mínimo de compra se acumula en `pendingUnits`.
+ * La regla de inversión: "cada vez que me llegan USDC, el X % va a tal
+ * acción". Vive en el dispositivo, por cuenta de Solana. Lo apartado que
+ * todavía no llega al mínimo de compra se acumula en `pendingUnits`.
  */
 export interface InvestRule {
   enabled: boolean;
@@ -21,22 +21,72 @@ export interface InvestRule {
   lastError?: string;
 }
 
-/** Una compra de acciones tokenizadas, por regla o a mano. */
+export type OperationKind = "buy" | "sell";
+
+/** Una operación con acciones tokenizadas: compra (por regla o a mano) o venta. */
 export interface Purchase {
   id: string;
   createdAt: number;
+  /** Sin valor = compra (registros anteriores). */
+  kind?: OperationKind;
   asset: XStockSymbol;
-  /** USDC que salieron (6 decimales). */
+  /** USDC que salieron (compra) o que volvieron (venta), 6 decimales. */
   usdcUnits: string;
-  /** Unidades del token recibidas (8 decimales). "0" mientras se compra. */
+  /** Unidades del token recibidas (compra) o vendidas (venta). "0" mientras corre. */
   tokenUnits: string;
-  /** Costo total de la operación (Jupiter y red), en puntos básicos. */
+  /** Costo de Jupiter y red, en puntos básicos. */
   feeBps: number;
+  /** Comisión de Camalote descontada (solo compras), 6 decimales. */
+  camaloteFeeUnits?: string;
   signature?: string;
+  /** Firma de la transferencia de la comisión, si se cobró. */
+  feeSignature?: string;
   status: "buying" | "done" | "error";
   source: "rule" | "manual";
   errorMessage?: string;
   demo?: boolean;
+}
+
+/** Cotización de una compra: qué sale, qué se descuenta y qué se espera recibir. */
+export interface StockQuote {
+  asset: XStockSymbol;
+  /** Lo que el usuario invierte en total. */
+  usdcUnits: bigint;
+  /** Comisión de Camalote, descontada antes de comprar. */
+  camaloteFeeUnits: bigint;
+  /** Lo que va al mercado: usdcUnits menos la comisión. */
+  swapUnits: bigint;
+  expectedTokenUnits: bigint;
+  /** Costo de Jupiter y red (en modo sin gas, la red sale de la compra). */
+  jupiterFeeBps: number;
+  gasless: boolean;
+  /** Real: la orden de Jupiter lista para firmar. Vence en alrededor de un minuto. */
+  order?: { transaction: string; requestId: string; expiresAt: number | null };
+}
+
+export interface SellQuote {
+  asset: XStockSymbol;
+  tokenUnits: bigint;
+  expectedUsdcUnits: bigint;
+  jupiterFeeBps: number;
+  gasless: boolean;
+  order?: { transaction: string; requestId: string; expiresAt: number | null };
+}
+
+export interface BuyResult {
+  signature: string;
+  usdcUnits: bigint;
+  tokenUnits: bigint;
+  feeBps: number;
+  camaloteFeeUnits: bigint;
+  feeSignature?: string;
+}
+
+export interface SellResult {
+  signature: string;
+  usdcUnits: bigint;
+  tokenUnits: bigint;
+  feeBps: number;
 }
 
 export interface Holding {

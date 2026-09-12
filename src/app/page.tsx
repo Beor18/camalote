@@ -2,31 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
   Check,
   ChevronDown,
+  CircleDollarSign,
   HeartHandshake,
   Landmark,
-  Link2,
   Lock,
-  MessageCircle,
+  Mail,
   Minus,
+  Percent,
   ShieldCheck,
-  Zap,
+  TrendingUp,
 } from "lucide-react";
 import { CamaloteLogo, CamaloteMark } from "@/components/logo";
-import { BaseMark, SolanaMark } from "@/components/chain-logos";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MiniCalc } from "@/components/landing/mini-calc";
-import { StatsBand } from "@/components/landing/stats-band";
 import { InstallCta } from "@/components/install-cta";
 import { DEMO_MODE } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 
+/**
+ * La landing cuenta una sola historia, en este orden: la necesidad (cobrás
+ * en dólares y no te queda nada), la falta (invertir "cuando sobre" no pasa
+ * nunca), la respuesta (una regla que aparta antes de que gastes), la prueba
+ * (números, precio, confianza) y la acción.
+ */
 export default function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col">
@@ -36,8 +40,7 @@ export default function LandingPage() {
         <Showdown />
         <WhySolana />
         <HowItWorks />
-        <Invest />
-        <StatsBand />
+        <FactsBand />
         <Pricing />
         <Trust />
         <Faq />
@@ -69,7 +72,7 @@ function Header() {
           </a>
           <LangToggle />
           <Link
-            href="/app/cobrar"
+            href="/app"
             className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-100 hover:bg-primary-hover active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {t.landing.navOpenApp}
@@ -101,7 +104,7 @@ function Hero() {
           {t.landing.heroSub}
         </p>
         <div className="animate-fade-up-delay mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/app/cobrar" className={ctaClasses}>
+          <Link href="/app" className={ctaClasses}>
             {t.landing.heroCta}
             <ArrowRight className="size-5" aria-hidden="true" />
           </Link>
@@ -115,7 +118,7 @@ function Hero() {
         <InstallCta className="mt-4" />
       </div>
 
-      <BridgeVisual />
+      <RiverVisual />
     </section>
   );
 }
@@ -135,14 +138,12 @@ function surfacePath(y: number, amp: number): string {
   return d;
 }
 
-function BridgeVisual() {
+/** El camalote lleva una parte de tus USDC a la otra orilla: acciones. */
+function RiverVisual() {
   const { t } = useLang();
   return (
     <figure className="mx-auto mt-10 w-full max-w-3xl sm:mt-16">
-      <div
-        className="flex w-full justify-center overflow-hidden"
-        aria-hidden="true"
-      >
+      <div className="flex w-full justify-center overflow-hidden" aria-hidden="true">
         {/* bloque de 560px fijos: en pantallas angostas se escala completo
             para que el offset-path no se desalinee; flex lo centra aunque
             desborde, cosa que mx-auto no hace */}
@@ -153,11 +154,7 @@ function BridgeVisual() {
               "linear-gradient(90deg, transparent 0, black 7%, black 93%, transparent 100%)",
           }}
         >
-          <svg
-            viewBox="0 0 560 220"
-            fill="none"
-            className="absolute inset-0 h-full w-full"
-          >
+          <svg viewBox="0 0 560 220" fill="none" className="absolute inset-0 h-full w-full">
             <defs>
               <linearGradient
                 id="rio-g"
@@ -172,15 +169,10 @@ function BridgeVisual() {
                 <stop offset="100%" stopColor="var(--solana-green)" />
               </linearGradient>
             </defs>
-            {/* capas de agua de atrás: derivan hacia la orilla verde */}
             <g className="wave wave-slow" opacity="0.09" fill="var(--base-blue)">
               <path d={wavePath(154, 6)} />
             </g>
-            <g
-              className="wave wave-mid"
-              opacity="0.08"
-              fill="var(--solana-purple)"
-            >
+            <g className="wave wave-mid" opacity="0.08" fill="var(--solana-purple)">
               <path d={wavePath(164, 7)} />
             </g>
           </svg>
@@ -206,7 +198,6 @@ function BridgeVisual() {
             fill="none"
             className="pointer-events-none absolute inset-0 h-full w-full"
           >
-            {/* superficie del río con el gradiente de marca */}
             <path
               d={surfacePath(150, 5)}
               stroke="url(#rio-g)"
@@ -214,41 +205,32 @@ function BridgeVisual() {
               strokeLinecap="round"
               opacity="0.6"
             />
-            {/* cuerpo del agua: opaco, tapa lo que queda bajo la superficie */}
             <g className="wave wave-mid" opacity="0.92" fill="var(--background)">
               <path d={wavePath(158, 6)} />
             </g>
-            <g
-              className="wave wave-mid"
-              opacity="0.12"
-              fill="var(--solana-purple)"
-            >
+            <g className="wave wave-mid" opacity="0.12" fill="var(--solana-purple)">
               <path d={wavePath(158, 6)} />
             </g>
-            <g
-              className="wave wave-fast"
-              opacity="0.16"
-              fill="var(--solana-green)"
-            >
+            <g className="wave wave-fast" opacity="0.16" fill="var(--solana-green)">
               <path d={wavePath(172, 8)} />
             </g>
           </svg>
 
-          {/* las orillas */}
+          {/* las orillas: de un lado los USDC que te llegan, del otro las acciones */}
           <div className="absolute bottom-2 left-3 flex flex-col items-center gap-1.5">
             <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-surface shadow-sm">
-              <BaseMark className="size-6 rounded-[5px]" />
+              <CircleDollarSign className="size-6 text-base-blue" />
             </span>
             <span className="rounded bg-surface/80 px-1.5 text-xs font-medium text-muted-foreground">
-              Base
+              {t.landing.heroShoreLeft}
             </span>
           </div>
           <div className="absolute bottom-2 right-3 flex flex-col items-center gap-1.5">
             <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-surface shadow-sm">
-              <SolanaMark className="size-6" />
+              <TrendingUp className="size-6 text-solana-green" />
             </span>
             <span className="rounded bg-surface/80 px-1.5 text-xs font-medium text-muted-foreground">
-              Solana
+              {t.landing.heroShoreRight}
             </span>
           </div>
         </div>
@@ -263,10 +245,7 @@ function BridgeVisual() {
 function Showdown() {
   const { t } = useLang();
   return (
-    <section
-      id="convenceme"
-      className="border-t border-border bg-muted/40 py-10 sm:py-20"
-    >
+    <section id="convenceme" className="border-t border-border bg-muted/40 py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.showdownTitle}
@@ -278,24 +257,13 @@ function Showdown() {
         <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <Card className="p-5 opacity-80 sm:p-6">
             <div className="flex items-center gap-2">
-              <Landmark
-                className="size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <h3 className="font-medium text-muted-foreground">
-                {t.landing.baseColTitle}
-              </h3>
+              <Landmark className="size-4 text-muted-foreground" aria-hidden="true" />
+              <h3 className="font-medium text-muted-foreground">{t.landing.oldWayTitle}</h3>
             </div>
             <ul className="mt-5 flex flex-col gap-3">
-              {t.landing.baseCol.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-2.5 text-sm text-muted-foreground"
-                >
-                  <Minus
-                    className="mt-0.5 size-4 shrink-0 opacity-60"
-                    aria-hidden="true"
-                  />
+              {t.landing.oldWay.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <Minus className="mt-0.5 size-4 shrink-0 opacity-60" aria-hidden="true" />
                   {item}
                 </li>
               ))}
@@ -306,15 +274,12 @@ function Showdown() {
             <div className="h-full rounded-[calc(1rem-1px)] bg-surface p-5 sm:p-6">
               <div className="flex items-center gap-2">
                 <CamaloteMark className="size-4" />
-                <h3 className="font-medium">{t.landing.solanaColTitle}</h3>
+                <h3 className="font-medium">{t.landing.newWayTitle}</h3>
               </div>
               <ul className="mt-5 flex flex-col gap-3">
-                {t.landing.solanaCol.map((item) => (
+                {t.landing.newWay.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm">
-                    <Check
-                      className="mt-0.5 size-4 shrink-0 text-success"
-                      aria-hidden="true"
-                    />
+                    <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
@@ -355,19 +320,12 @@ function WhySolana() {
               key={reason.claim}
               className="grid gap-3 border-t border-border py-5 first:border-t-0 sm:grid-cols-[80px_1fr] sm:gap-6 sm:py-8"
             >
-              <span
-                className="hidden font-mono text-sm text-muted-foreground sm:block"
-                aria-hidden="true"
-              >
+              <span className="hidden font-mono text-sm text-muted-foreground sm:block" aria-hidden="true">
                 0{i + 1}
               </span>
               <div>
-                <h3 className="font-display text-xl font-semibold sm:text-2xl">
-                  {reason.claim}
-                </h3>
-                <p className="mt-2 leading-relaxed text-muted-foreground">
-                  {reason.body}
-                </p>
+                <h3 className="font-display text-xl font-semibold sm:text-2xl">{reason.claim}</h3>
+                <p className="mt-2 leading-relaxed text-muted-foreground">{reason.body}</p>
                 {i === t.landing.whyItems.length - 1 && (
                   <a
                     href="https://superteam.ar"
@@ -388,15 +346,12 @@ function WhySolana() {
   );
 }
 
-const STEP_ICONS = [Link2, MessageCircle, Zap];
+const STEP_ICONS = [Mail, Percent, CircleDollarSign];
 
 function HowItWorks() {
   const { t } = useLang();
   return (
-    <section
-      id="como-funciona"
-      className="border-t border-border bg-muted/40 py-10 sm:py-20"
-    >
+    <section id="como-funciona" className="border-t border-border bg-muted/40 py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.stepsTitle}
@@ -415,20 +370,18 @@ function HowItWorks() {
                   </span>
                 </div>
                 <h3 className="mt-4 font-medium">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {step.body}
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
               </Card>
             );
           })}
         </div>
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t.landing.stepsBridgeNote}{" "}
+          {t.landing.stepsNote}{" "}
           <Link
             href="/app"
             className="inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {t.landing.stepsBridgeLink}
+            {t.landing.stepsLink}
             <ArrowRight className="size-3.5" aria-hidden="true" />
           </Link>
         </p>
@@ -437,50 +390,23 @@ function HowItWorks() {
   );
 }
 
-/** Camalote Invest: la regla "de cada cobro, una parte a acciones", en una mirada. */
-function Invest() {
+/** Datos ciertos, sin números inflados: lo que hay hoy. */
+function FactsBand() {
   const { t } = useLang();
-  const last = t.landing.investFlow.length - 1;
   return (
-    <section id="invertir" className="border-t border-border py-8 sm:py-20">
-      <div className="mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
-        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.investTitle}
+    <section className="border-t border-border py-10 sm:py-16">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t.landing.factsTitle}
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground sm:mt-4">
-          {t.landing.investSub}
-        </p>
-        <div
-          className="mx-auto mt-6 flex max-w-lg items-center justify-center gap-2 sm:mt-8 sm:gap-3"
-          aria-hidden="true"
-        >
-          {t.landing.investFlow.map((step, i) => (
-            <Fragment key={step}>
-              {i > 0 && (
-                <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-              )}
-              <span
-                className={`whitespace-nowrap rounded-xl border px-3 py-2 font-mono text-xs tabular-nums sm:px-4 sm:text-sm ${
-                  i === last
-                    ? "border-primary bg-primary/10 font-semibold"
-                    : "border-border bg-surface"
-                }`}
-              >
-                {step}
-              </span>
-            </Fragment>
+        <dl className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-8 text-center sm:grid-cols-4">
+          {t.landing.facts.map((cell) => (
+            <div key={cell.label} className="flex flex-col-reverse gap-1">
+              <dt className="text-sm text-muted-foreground">{cell.label}</dt>
+              <dd className="font-mono text-2xl font-semibold sm:text-3xl">{cell.value}</dd>
+            </div>
           ))}
-        </div>
-        <p className="mx-auto mt-4 max-w-md text-xs text-muted-foreground sm:mt-5">
-          {t.landing.investNote}
-        </p>
-        <Link
-          href="/app/invertir"
-          className="mt-4 inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:mt-6"
-        >
-          {t.landing.investCta}
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        </dl>
       </div>
     </section>
   );
@@ -517,18 +443,13 @@ function Trust() {
           {t.landing.trust.map((point, i) => {
             const Icon = TRUST_ICONS[i];
             return (
-              <div
-                key={point.title}
-                className="flex items-start gap-4 text-left sm:block"
-              >
+              <div key={point.title} className="flex items-start gap-4 text-left sm:block">
                 <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <div>
                   <h3 className="font-medium sm:mt-4">{point.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {point.body}
-                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{point.body}</p>
                 </div>
               </div>
             );
@@ -549,10 +470,7 @@ function Faq() {
         </h2>
         <div className="mt-10 flex flex-col gap-3">
           {t.landing.faqs.map((faq) => (
-            <details
-              key={faq.q}
-              className="group rounded-2xl border border-border bg-surface"
-            >
+            <details key={faq.q} className="group rounded-2xl border border-border bg-surface">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-5 py-4 font-medium marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                 {faq.q}
                 <ChevronDown
@@ -560,9 +478,7 @@ function Faq() {
                   aria-hidden="true"
                 />
               </summary>
-              <p className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">
-                {faq.a}
-              </p>
+              <p className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
             </details>
           ))}
         </div>
@@ -581,10 +497,8 @@ function FinalCta() {
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             {t.landing.finalTitle1} {t.landing.finalTitle2}
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-            {t.landing.finalSub}
-          </p>
-          <Link href="/app/cobrar" className={`${ctaClasses} mt-8`}>
+          <p className="mx-auto mt-3 max-w-md text-muted-foreground">{t.landing.finalSub}</p>
+          <Link href="/app" className={`${ctaClasses} mt-8`}>
             {t.landing.finalCta}
             <ArrowRight className="size-5" aria-hidden="true" />
           </Link>
@@ -613,6 +527,7 @@ function Footer() {
           </a>
           .
         </p>
+        <p className="max-w-xl text-xs text-muted-foreground">{t.landing.footerNote}</p>
       </div>
     </footer>
   );

@@ -3,13 +3,13 @@ import { Providers } from "@/components/providers";
 import { BridgeApp } from "@/components/bridge/app";
 
 export const metadata: Metadata = {
-  title: "Cruzá a Solana",
+  title: "Invertí una parte de cada cobro",
 };
 
 export default function AppPage() {
   return (
     <Providers>
-      <BridgeApp />
+      <BridgeApp view="invest" />
     </Providers>
   );
 }

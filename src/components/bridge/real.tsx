@@ -14,12 +14,18 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import { ADDRESSES, BASE_RPC_URL, SOLANA_RPC_URL } from "@/lib/config";
+import {
+  ADDRESSES,
+  BASE_RPC_URL,
+  FEE_RECIPIENT_SOLANA,
+  SOLANA_RPC_URL,
+} from "@/lib/config";
 import { base64ToBytes, bytesToBase64 } from "@/lib/base64";
 import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
-import { xStockByMint } from "@/lib/invest/catalog";
+import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
+import { investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
 import type {
@@ -260,59 +266,89 @@ export function useRealEngine(): Engine {
         if (!solanaAddress || ADDRESSES.solana.cluster !== "mainnet-beta") return [];
         return fetchXStockHoldings(solanaAddress);
       },
-      buyStock: async (asset, usdcUnits, onStep) => {
-        const wallet = solanaWallets[0];
-        if (!wallet || !solanaAddress) {
-          throw new Error(
-            "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos."
-          );
-        }
-        if (ADDRESSES.solana.cluster !== "mainnet-beta") {
-          throw new Error(
-            "Las acciones tokenizadas existen solo en la red principal de Solana. Esta versión corre en la red de prueba."
-          );
-        }
-
-        onStep?.("quoting");
-        const orderRes = await fetch(
-          `/api/invest/order?asset=${asset}&units=${usdcUnits.toString()}&taker=${solanaAddress}`
-        );
-        const orderData = await orderRes.json().catch(() => ({}));
-        if (!orderRes.ok || !orderData.order?.transaction) {
-          throw new Error(orderData.error ?? "No pudimos cotizar la compra.");
-        }
-        const order = orderData.order as {
-          transaction: string;
-          requestId: string;
-          outAmount: string;
-          feeBps: number;
-        };
-
-        onStep?.("signing");
-        const { signedTransaction } = await signTransaction({
-          transaction: base64ToBytes(order.transaction),
-          wallet,
-          chain: "solana:mainnet",
-        });
-
-        onStep?.("sending");
-        const execRes = await fetch("/api/invest/execute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            signedTransaction: bytesToBase64(signedTransaction),
+      quoteStock: async (asset, usdcUnits) => {
+        const taker = requireMainnetAccount(solanaAddress);
+        const camaloteFeeUnits = investFee(usdcUnits);
+        const swapUnits = usdcUnits - camaloteFeeUnits;
+        const order = await fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker });
+        return {
+          asset,
+          usdcUnits,
+          camaloteFeeUnits,
+          swapUnits,
+          expectedTokenUnits: BigInt(order.outAmount),
+          jupiterFeeBps: order.feeBps,
+          gasless: order.gasless,
+          order: {
+            transaction: order.transaction,
             requestId: order.requestId,
-          }),
-        });
-        const result = await execRes.json().catch(() => ({}));
-        if (!execRes.ok || !result.signature) {
-          throw new Error(result.error ?? "No pudimos completar la compra.");
+            expiresAt: order.expireAt ? Number(order.expireAt) * 1000 : null,
+          },
+        };
+      },
+      buyStock: async (quote, onStep) => {
+        const wallet = solanaWallets[0];
+        const owner = requireMainnetAccount(solanaAddress);
+        if (!wallet) throw new Error(ACCOUNT_PENDING);
+        if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
+
+        const sign = (transaction: Uint8Array) =>
+          signTransaction({ transaction, wallet, chain: "solana:mainnet" }).then(
+            (r) => r.signedTransaction
+          );
+        const result = await signAndExecute(quote.order, sign, onStep);
+
+        // La comisión se cobra después de que la compra salió bien: si esto
+        // falla, la pierde Camalote, no el usuario.
+        let feeSignature: string | undefined;
+        if (quote.camaloteFeeUnits > 0n && FEE_RECIPIENT_SOLANA) {
+          onStep?.("fee");
+          try {
+            feeSignature = await collectFee(owner, quote.camaloteFeeUnits, sign);
+          } catch (err) {
+            console.warn("[invest] la comisión no se pudo cobrar", err);
+          }
         }
         return {
-          signature: result.signature as string,
-          usdcUnits,
-          tokenUnits: BigInt(result.outputAmountResult ?? order.outAmount ?? "0"),
-          feeBps: Number(order.feeBps ?? 0),
+          signature: result.signature,
+          usdcUnits: quote.usdcUnits,
+          tokenUnits: BigInt(result.outputAmountResult ?? quote.expectedTokenUnits.toString()),
+          feeBps: quote.jupiterFeeBps,
+          camaloteFeeUnits: feeSignature ? quote.camaloteFeeUnits : 0n,
+          feeSignature,
+        };
+      },
+      quoteSell: async (asset, tokenUnits) => {
+        const taker = requireMainnetAccount(solanaAddress);
+        const order = await fetchUltraOrder({ side: "sell", asset, units: tokenUnits, taker });
+        return {
+          asset,
+          tokenUnits,
+          expectedUsdcUnits: BigInt(order.outAmount),
+          jupiterFeeBps: order.feeBps,
+          gasless: order.gasless,
+          order: {
+            transaction: order.transaction,
+            requestId: order.requestId,
+            expiresAt: order.expireAt ? Number(order.expireAt) * 1000 : null,
+          },
+        };
+      },
+      sellStock: async (quote, onStep) => {
+        const wallet = solanaWallets[0];
+        requireMainnetAccount(solanaAddress);
+        if (!wallet) throw new Error(ACCOUNT_PENDING);
+        if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
+        const sign = (transaction: Uint8Array) =>
+          signTransaction({ transaction, wallet, chain: "solana:mainnet" }).then(
+            (r) => r.signedTransaction
+          );
+        const result = await signAndExecute(quote.order, sign, onStep);
+        return {
+          signature: result.signature,
+          usdcUnits: BigInt(result.outputAmountResult ?? quote.expectedUsdcUnits.toString()),
+          tokenUnits: quote.tokenUnits,
+          feeBps: quote.jupiterFeeBps,
         };
       },
     }),
@@ -336,6 +372,116 @@ async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {
     // la token account todavía no existe: saldo cero
     return 0n;
   }
+}
+
+const ACCOUNT_PENDING =
+  "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos.";
+
+/** Las acciones tokenizadas existen solo en mainnet; devuelve la cuenta lista. */
+function requireMainnetAccount(solanaAddress: string | null): string {
+  if (!solanaAddress) throw new Error(ACCOUNT_PENDING);
+  if (ADDRESSES.solana.cluster !== "mainnet-beta") {
+    throw new Error(
+      "Las acciones tokenizadas existen solo en la red principal de Solana. Esta versión corre en la red de prueba."
+    );
+  }
+  return solanaAddress;
+}
+
+interface UltraOrderJson {
+  transaction: string;
+  requestId: string;
+  outAmount: string;
+  feeBps: number;
+  gasless: boolean;
+  expireAt: string | number | null;
+}
+
+async function fetchUltraOrder(params: {
+  side: "buy" | "sell";
+  asset: XStockSymbol;
+  units: bigint;
+  taker: string;
+}): Promise<UltraOrderJson> {
+  const query = new URLSearchParams({
+    side: params.side,
+    asset: params.asset,
+    units: params.units.toString(),
+    taker: params.taker,
+  });
+  const res = await fetch(`/api/invest/order?${query}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.order?.transaction) {
+    throw new Error(
+      data.error ?? (params.side === "buy" ? "No pudimos cotizar la compra." : "No pudimos cotizar la venta.")
+    );
+  }
+  return data.order as UltraOrderJson;
+}
+
+type Signer = (transaction: Uint8Array) => Promise<Uint8Array>;
+
+/** Firma la orden de Jupiter con la billetera embebida y la manda a ejecutar. */
+async function signAndExecute(
+  order: { transaction: string; requestId: string },
+  sign: Signer,
+  onStep?: (step: "signing" | "sending") => void
+): Promise<{ signature: string; outputAmountResult: string | null }> {
+  onStep?.("signing");
+  const signed = await sign(base64ToBytes(order.transaction));
+  onStep?.("sending");
+  const res = await fetch("/api/invest/execute", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      signedTransaction: bytesToBase64(signed),
+      requestId: order.requestId,
+    }),
+  });
+  const result = await res.json().catch(() => ({}));
+  if (!res.ok || !result.signature) {
+    throw new Error(result.error ?? "No pudimos completar la operación.");
+  }
+  return {
+    signature: result.signature as string,
+    outputAmountResult: (result.outputAmountResult as string | null) ?? null,
+  };
+}
+
+/**
+ * Cobra la comisión de Camalote: una transferencia de USDC a la cuenta de
+ * comisiones, con la red pagada por nuestro relayer (el mismo camino que el
+ * retiro, con propósito "fee": el servidor solo cofirma hacia esa cuenta).
+ */
+async function collectFee(owner: string, feeUnits: bigint, sign: Signer): Promise<string> {
+  const buildRes = await fetch("/api/withdraw", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "build",
+      purpose: "fee",
+      owner,
+      destination: FEE_RECIPIENT_SOLANA,
+      amountUnits: feeUnits.toString(),
+    }),
+  });
+  const built = await buildRes.json();
+  if (!buildRes.ok) throw new Error(built.error ?? "No pudimos preparar la comisión.");
+  const signed = await sign(base64ToBytes(built.transactionBase64));
+  const submitRes = await fetch("/api/withdraw", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "submit",
+      purpose: "fee",
+      transaction: bytesToBase64(signed),
+      blockhash: built.blockhash,
+      lastValidBlockHeight: built.lastValidBlockHeight,
+    }),
+  });
+  const result = await submitRes.json();
+  if (!submitRes.ok) throw new Error(result.error ?? "No pudimos cobrar la comisión.");
+  return result.signature as string;
 }
 
 /**

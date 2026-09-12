@@ -20,19 +20,24 @@ import { BridgePanel } from "@/components/bridge/panel";
 import { CobrosPanel } from "@/components/cobros/panel";
 import { InvestPanel } from "@/components/invest/panel";
 import { useAutoInvest } from "@/components/invest/use-auto-invest";
+import { SHOW_HIDDEN_VIEWS } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 import type { BridgeSession, Engine } from "@/components/bridge/types";
 
 export type ShellView = "bridge" | "cobros" | "invest";
 
+/**
+ * La app es Invertir. Cobrar con links y el cruce desde Base quedaron
+ * ocultos (SHOW_HIDDEN_VIEWS); el motor sigue siendo uno solo.
+ */
 export function BridgeShell({
   session,
   balances,
   actions,
-  view = "bridge",
+  view = "invest",
 }: Engine & { view?: ShellView }) {
   const { t } = useLang();
-  // La regla de inversión corre en cualquier pestaña mientras la app está abierta.
+  // La regla de inversión corre mientras la app está abierta.
   useAutoInvest({ session, balances, actions });
   return (
     <div className="flex min-h-dvh flex-col">
@@ -47,9 +52,10 @@ export function BridgeShell({
           <div className="flex items-center gap-2">
             <LangToggle />
             {session.demo && (
-              <Badge tone="warning">
+              <Badge tone="warning" title={t.common.demoBadge}>
                 <Sparkles className="size-3" aria-hidden="true" />
-                {t.common.demoBadge}
+                <span className="hidden sm:inline">{t.common.demoBadge}</span>
+                <span className="sr-only sm:hidden">{t.common.demoBadge}</span>
               </Badge>
             )}
             {session.authenticated && (
@@ -74,7 +80,7 @@ export function BridgeShell({
           <LoadingState />
         ) : session.authenticated ? (
           <div className="flex flex-col gap-6">
-            <ViewTabs view={view} />
+            {SHOW_HIDDEN_VIEWS && <ViewTabs view={view} />}
             {view === "cobros" ? (
               <CobrosPanel session={session} balances={balances} actions={actions} />
             ) : view === "invest" ? (

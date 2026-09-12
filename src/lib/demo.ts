@@ -3,8 +3,14 @@
 import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
 import type { XStockSymbol } from "@/lib/invest/catalog";
-import { tokensForUsdc } from "@/lib/invest/rules";
-import type { Holding } from "@/lib/invest/types";
+import { investFee, tokensForUsdc, valueOfTokens } from "@/lib/invest/rules";
+import type {
+  BuyResult,
+  Holding,
+  SellQuote,
+  SellResult,
+  StockQuote,
+} from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
 import type { BuyStep } from "@/components/bridge/types";
 
@@ -239,38 +245,126 @@ export function loadDemoHoldings(email: string): Holding[] {
     .map(([asset, units]) => ({ asset: asset as XStockSymbol, tokenUnits: BigInt(units) }));
 }
 
+function adjustDemoHolding(email: string, asset: XStockSymbol, delta: bigint): void {
+  const key = HOLDINGS_PREFIX + email.trim().toLowerCase();
+  const map = readJson<Record<string, string>>(key, {});
+  const next = BigInt(map[asset] ?? "0") + delta;
+  map[asset] = (next < 0n ? 0n : next).toString();
+  writeJson(key, map);
+}
+
+/** Simula que llegaron USDC a una cuenta de Solana del demo (un cobro, un depósito). */
+export function simulateDemoIncoming(solanaAddress: string, amountUnits: bigint): void {
+  const email = emailForAddress(solanaAddress);
+  if (!email) return;
+  const balances = loadDemoBalances(email);
+  balances.solanaUnits = (BigInt(balances.solanaUnits) + amountUnits).toString();
+  saveDemoBalances(email, balances);
+  appendDemoIncoming({
+    signature: randomBase58(88),
+    to: solanaAddress,
+    amountUnits: amountUnits.toString(),
+    createdAt: Date.now(),
+  });
+}
+
+/** Cotización de compra del demo: misma comisión que la real, 1 % de Jupiter y red. */
+export function demoQuoteStock(
+  asset: XStockSymbol,
+  usdcUnits: bigint,
+  priceUsd: number
+): StockQuote {
+  const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS, enabled: true });
+  const swapUnits = usdcUnits - camaloteFeeUnits;
+  const expectedTokenUnits = tokensForUsdc(swapUnits, priceUsd, DEMO_SWAP_FEE_BPS);
+  if (expectedTokenUnits <= 0n) throw new Error("No pudimos cotizar la compra.");
+  return {
+    asset,
+    usdcUnits,
+    camaloteFeeUnits,
+    swapUnits,
+    expectedTokenUnits,
+    jupiterFeeBps: DEMO_SWAP_FEE_BPS,
+    gasless: true,
+  };
+}
+
 /**
- * Simula una compra por Jupiter: descuenta los USDC de la cuenta Solana y
- * acredita el token al precio dado, con el mismo ritmo que la real.
+ * Simula la compra cotizada: descuenta los USDC de la cuenta Solana (con la
+ * comisión incluida) y acredita el token, con el mismo ritmo que la real.
  */
 export async function runDemoBuy(
   email: string,
-  asset: XStockSymbol,
-  usdcUnits: bigint,
-  priceUsd: number,
+  quote: StockQuote,
   onStep?: (step: BuyStep) => void
-): Promise<{ signature: string; tokenUnits: bigint; feeBps: number }> {
+): Promise<BuyResult> {
   const balances = loadDemoBalances(email);
-  if (usdcUnits > BigInt(balances.solanaUnits)) {
+  if (quote.usdcUnits > BigInt(balances.solanaUnits)) {
     throw new Error("No te alcanza el saldo en Solana.");
   }
-  onStep?.("quoting");
-  await wait(900);
+  onStep?.("signing");
+  await wait(700);
+  onStep?.("sending");
+  await wait(1600);
+  if (quote.camaloteFeeUnits > 0n) {
+    onStep?.("fee");
+    await wait(500);
+  }
+
+  balances.solanaUnits = (BigInt(balances.solanaUnits) - quote.usdcUnits).toString();
+  saveDemoBalances(email, balances);
+  adjustDemoHolding(email, quote.asset, quote.expectedTokenUnits);
+
+  return {
+    signature: randomBase58(88),
+    usdcUnits: quote.usdcUnits,
+    tokenUnits: quote.expectedTokenUnits,
+    feeBps: DEMO_SWAP_FEE_BPS,
+    camaloteFeeUnits: quote.camaloteFeeUnits,
+    feeSignature: quote.camaloteFeeUnits > 0n ? randomBase58(88) : undefined,
+  };
+}
+
+/** Cotización de venta del demo: sin comisión de Camalote, 1 % de Jupiter y red. */
+export function demoQuoteSell(
+  asset: XStockSymbol,
+  tokenUnits: bigint,
+  priceUsd: number
+): SellQuote {
+  const gross = valueOfTokens(tokenUnits, priceUsd);
+  const expectedUsdcUnits = (gross * BigInt(10000 - DEMO_SWAP_FEE_BPS)) / 10000n;
+  if (expectedUsdcUnits <= 0n) throw new Error("No pudimos cotizar la venta.");
+  return { asset, tokenUnits, expectedUsdcUnits, jupiterFeeBps: DEMO_SWAP_FEE_BPS, gasless: true };
+}
+
+/**
+ * Simula la venta: descuenta el token y acredita los USDC. No queda como
+ * ingreso en el libro: la regla no invierte lo que vuelve de una venta.
+ */
+export async function runDemoSell(
+  email: string,
+  quote: SellQuote,
+  onStep?: (step: BuyStep) => void
+): Promise<SellResult> {
+  const holding = loadDemoHoldings(email).find((h) => h.asset === quote.asset);
+  if (!holding || holding.tokenUnits < quote.tokenUnits) {
+    throw new Error("No tenés esa cantidad para vender.");
+  }
   onStep?.("signing");
   await wait(700);
   onStep?.("sending");
   await wait(1600);
 
-  const tokenUnits = tokensForUsdc(usdcUnits, priceUsd, DEMO_SWAP_FEE_BPS);
-  if (tokenUnits <= 0n) throw new Error("No pudimos cotizar la compra.");
-
-  balances.solanaUnits = (BigInt(balances.solanaUnits) - usdcUnits).toString();
+  adjustDemoHolding(email, quote.asset, -quote.tokenUnits);
+  const balances = loadDemoBalances(email);
+  balances.solanaUnits = (BigInt(balances.solanaUnits) + quote.expectedUsdcUnits).toString();
   saveDemoBalances(email, balances);
-  const key = HOLDINGS_PREFIX + email.trim().toLowerCase();
-  const map = readJson<Record<string, string>>(key, {});
-  map[asset] = (BigInt(map[asset] ?? "0") + tokenUnits).toString();
-  writeJson(key, map);
 
-  return { signature: randomBase58(88), tokenUnits, feeBps: DEMO_SWAP_FEE_BPS };
+  return {
+    signature: randomBase58(88),
+    usdcUnits: quote.expectedUsdcUnits,
+    tokenUnits: quote.tokenUnits,
+    feeBps: DEMO_SWAP_FEE_BPS,
+  };
 }
 

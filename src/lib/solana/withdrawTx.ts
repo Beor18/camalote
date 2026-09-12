@@ -69,6 +69,8 @@ const ATA_CREATE_IDEMPOTENT_DISCRIMINANT = 1;
 export interface ValidatedWithdraw {
   owner: PublicKey;
   amountUnits: bigint;
+  /** Token account de USDC que recibe. */
+  destination: PublicKey;
 }
 
 /**
@@ -153,9 +155,9 @@ export function validateWithdrawTransaction(
         throw new Error("Decimales inválidos.");
       }
       if (amountUnits < minUnits) {
-        throw new Error("El retiro mínimo es 0,10 USDC.");
+        throw new Error("El monto es menor al mínimo.");
       }
-      transfer = { owner, amountUnits };
+      transfer = { owner, amountUnits, destination };
       transferDestination = destination;
       continue;
     }

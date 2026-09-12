@@ -1,155 +1,96 @@
 # camalote 🌿
 
-**Cobrá en dólares desde cualquier lado.** Creás un link, lo mandás por
-WhatsApp y te pagan desde Coinbase o Base con solo un email. Los USDC te
-llegan a tu cuenta de Solana. Sin billeteras, sin gas, sin letra chica.
-El número que pediste es el que llega.
+**Invertí una parte de cada cobro.** Elegís un porcentaje y una acción.
+Cada vez que te llegan USDC a tu cuenta de Solana, esa parte compra
+acciones tokenizadas, sola. Desde 10 dólares, sin broker, con la comisión
+a la vista.
 
-- **Link de cobro sin registro**: entrás con tu email, ponés cuánto y por
-  qué, y ya tenés un link y un QR para compartir. Sin base de datos: todo lo
-  que hace falta para pagar viaja en la URL.
-- **El que paga tampoco necesita saber nada**: entra con su email, ve tu
-  pedido, carga USDC en Base si le faltan (desde Coinbase es gratis) y paga
-  en una sola operación patrocinada.
-- **USDC nativos de punta a punta**: el viaje usa **CCTP v2 de Circle**
-  (burn en Base, certificación de Circle, mint en Solana). Sin bridges de
-  terceros ni tokens envueltos.
-- **Gas $0 para todos**: en Base lo patrocina el **Paymaster de Coinbase**
-  (vía smart wallets de Privy); en Solana lo paga nuestro **relayer**, que
-  además crea la cuenta de USDC del cobrador si no existe.
-- **Transparencia**: el pagador ve la comisión (0,45 %, nunca más de $0,50),
-  el envío rápido de Circle y "gas $0" antes de confirmar. El cobrador
-  recibe exactamente lo que pidió.
-- **Y también podés llevar tus propios USDC** de Base a Solana: es el
-  mismo motor, pagándote a vos mismo.
-- **Invertí una parte de cada cobro**: una regla («el 20 % va al S&P 500»)
-  y, cada vez que te llegan USDC, esa parte compra acciones tokenizadas
-  (xStocks) por Jupiter, sin gas. Cartera, rendimiento y comprobantes.
+- **Una regla, una sola vez**: «el 20 % de lo que me llega, al S&P 500».
+  Cinco acciones para empezar: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks,
+  de las 60+ que existen en Solana).
+- **Se compra sola cuando te pagan**: la app mira tu cuenta y, cuando lo
+  apartado junta 10 USDC, compra por **Jupiter Ultra** en modo sin gas. No
+  necesitás SOL. Los cobros chicos se van juntando.
+- **Cartera y comprobantes**: valor de hoy con precios de Jupiter,
+  rendimiento sobre lo que pusiste, cada operación con su link a Solscan.
+- **Comprar y vender a mano**: precio, comisión y costo de red a la vista
+  antes de confirmar. Vender no tiene comisión de Camalote.
+- **Tu cuenta es tuya**: entrás con tu email (Privy) y tenés una billetera
+  embebida de Solana. Nosotros no podemos mover ni tus USDC ni tus acciones.
+- **Sin humo**: son tokens de Backed que siguen el precio de la acción y
+  tienen *permanent delegate*; no disponibles para residentes de EE. UU.,
+  Reino Unido, Canadá y Australia; suben y bajan; la regla corre mientras
+  la app está abierta. Todo eso lo dice la app.
 
-Cada pantalla de "¡Pagado!" termina con "Creá tu propio link": cada persona
-que paga es alguien que mañana cobra. Así crece Camalote sin presupuesto.
+## Modelo de negocio
 
-## Por qué esto y no un bridge
+**0,45 % por compra, nunca más de medio dólar, piso un centavo.** Se
+descuenta de lo que se invierte y se muestra antes de confirmar. Vender es
+gratis. No hay suscripción ni spread escondido.
 
-Investigamos con Colosseum Copilot 5.400 proyectos de hackathons de Solana
-(ver `docs/hackathon/`): los bridges no ganan; ganan los productos de pago en
-stablecoins para mercados emergentes, con un "para quién" claro. Argentina
-mueve el 94 % de su volumen cripto en stablecoins. Ningún incumbente
-(Phantom, Relay, deBridge, Mayan, Circle Bridge) atiende al usuario que solo
-tiene un email. Camalote sí.
+| Compra | Comisión | % efectivo |
+|---|---|---|
+| $10 | $0,045 | 0,45 % |
+| $50 | $0,225 | 0,45 % |
+| $120 | $0,50 (tope) | 0,42 % |
+| $500 | $0,50 (tope) | 0,10 % |
+
+Aparte, Jupiter cobra su tarifa y, en modo sin gas, descuenta la red de la
+compra: cerca de 2 % en compras de 10 USDC (incluye crear la cuenta del
+token la primera vez), menos en montos más grandes. Se muestra en el ticket.
+
+**Cómo se cobra.** Después de que la compra salió bien, una transferencia
+de USDC a la cuenta de comisiones (`NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`) con
+la red pagada por nuestro relayer: `/api/withdraw` con `purpose: "fee"`,
+que solo cofirma transferencias hacia esa cuenta y desde 0,01 USDC. Si
+falla, la pierde Camalote, no el usuario. Sin cuenta configurada, la
+comisión es 0 y así se muestra.
+
+**Números honestos.** Un usuario que invierte 200 dólares por mes en
+compras de 50 paga 0,90 por mes. Mil usuarios así son 900 dólares por mes.
+El negocio es volumen. Las palancas siguientes (más activos, canastas, la
+tarifa de referido de Jupiter fuera del modo sin gas) no están construidas.
 
 ## Cómo funciona por dentro
 
 ```
- Cobrador (email → Privy)                    Pagador (email → Privy)
-   crea /p?to=<su cuenta Solana>&a=40 ───────►  abre el link, ve el pedido
-                                                 │  UNA operación patrocinada
-                                                 │  (Coinbase Paymaster, ERC-4337):
-                                                 │  approve + transfer(comisión)
-                                                 │  + depositForBurn(fast, mintRecipient
-                                                 │    = token account del cobrador)
-                                                 ▼
-                                    Base ── quema USDC ──► Circle (Iris) certifica
-                                                                     │
-                                                                     ▼  /api/relay
-                                                               Solana: crea la token
-                                                               account del cobrador si
-   la app del cobrador lo marca "Pagado"  ◄────────────────── falta y ejecuta
-   (lee los ingresos de su cuenta)                            receive_message → USDC
+ Usuario (email → Privy → billetera de Solana)
+   │
+   ├─ le llegan USDC (cobro, depósito)  ──►  useAutoInvest mira la cuenta
+   │                                          planInvestments: aparta el %
+   │                                          junta hasta 10 USDC
+   │                                                 │
+   ▼                                                 ▼
+ /api/invest/order  ◄── quoteStock ── Jupiter Ultra arma la orden (sin gas)
+ firma con la billetera embebida
+ /api/invest/execute ── Jupiter cofirma, paga la red y ejecuta
+ /api/withdraw purpose=fee ── comisión a la cuenta de Camalote (relayer paga la red)
+   │
+   ▼
+ xStocks (Token-2022) en la cuenta del usuario · cartera desde la cadena
 ```
 
-- **Links de cobro**: `/p?to=<cuenta>&a=<monto>&c=<concepto>&n=<nombre>&b=<cuenta de Base>`.
-  El monto es opcional (el pagador elige). `src/lib/paylink.ts` codifica,
-  valida y cruza los ingresos de la cuenta con los links pendientes.
-- **La comisión sale de lo que llega**: el pagador manda el número del link
-  tal cual, sin recargos. `computeQuote` desglosa comisión y envío exprés, y
-  `minReceiveUnits` reconoce un cobro por lo que llega (nunca menos que eso).
-- **Un solo motor** (`useEngine`): demo o real, alimenta la app y la página
-  de pago. El pago real es el mismo `depositForBurn` del cruce, con el
-  `mintRecipient` apuntando a la token account del cobrador.
-- `destinationCaller` va en cero: si nuestro relayer muriera, **cualquiera**
-  puede completar la entrega. Los fondos nunca quedan atrapados.
-- El relayer **verifica la certificación con Circle por su cuenta** (no confía
-  en el cliente) y chequea que el mensaje sea USDC Base→Solana hacia la cuenta
-  declarada.
-- **Retiro en Solana sin SOL**: firmás con tu billetera embebida y el relayer
-  cofirma como fee payer, después de validar estructuralmente la transacción
-  (`src/lib/solana/withdrawTx.ts`, con tests de los casos de abuso).
-- Los PDAs de `receive_message` están validados por test de integración contra
-  devnet (`pnpm test:integration`), con los IDLs oficiales de Circle vendoreados
-  en `src/lib/cctp/idl/`.
-
-## Pagar sin registrarse: la cuenta de Base del cobrador
-
-Además del pago con email, el link lleva la **cuenta de Base del cobrador**
-(la billetera embebida que Privy ya le da, parámetro `b`). El que paga manda
-USDC ahí desde Coinbase o cualquier billetera, sin crear cuenta en ningún
-lado. Cuando el cobrador abre Camalote, la app ve el saldo nuevo y lo lleva a
-Solana sola, por el mismo cruce de siempre (una operación patrocinada, sin
-tocar nada). Nada en el medio: es la billetera del cobrador desde el primer
-segundo.
-
-- `/p` muestra la cuenta con QR y monto, y avisa cuando el saldo subió por lo
-  menos ese monto ("¡Pagado!").
-- El panel de Cobrar recuerda el último saldo en Base que ya era del usuario
-  (`camalote.cobros.baseSeen.v1:<cuenta>`). Lo que aparece de más se lleva a
-  Solana automáticamente; la comisión se descuenta en ese viaje, como en
-  cualquier cruce.
-- El link se marca "Pagado" con el mismo cruce de ingresos que el pago con
-  email: llega por lo menos `minReceiveUnits(monto)`.
-
-## Invertir una parte de cada cobro (Camalote Invest)
-
-Pestaña **Invertir**: armás una regla («de cada cobro, el 20 % va al
-S&P 500») y, cada vez que te llegan USDC a Solana, esa parte se aparta.
-Cuando junta 10 USDC, Camalote compra la acción tokenizada por **Jupiter
-Ultra** en modo sin gas (el costo de red sale de la misma compra: el usuario
-no necesita SOL) y la deja en su cuenta. Cartera con valor de hoy y
-rendimiento, compra a mano y comprobantes en Solscan.
-
-- Catálogo: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks de Backed, Token-2022,
-  8 decimales; `src/lib/invest/catalog.ts`, mints verificados contra Jupiter).
-- La regla y las compras viven en el dispositivo, por cuenta de Solana
+- **Motor único** (`useEngine`): demo o real, misma interfaz
+  (`BridgeActions`): `listIncoming`, `listHoldings`, `quoteStock`,
+  `buyStock`, `quoteSell`, `sellStock`, `withdrawSolana`.
+- **La regla** (`src/lib/invest/rules.ts`, puro y testeado):
+  `planInvestments` cruza los ingresos de la cuenta con la regla. Solo
+  cuentan los posteriores a prenderla, cada uno una sola vez, y lo que
+  vuelve de una venta propia no cuenta.
+- **La comisión** (`investFee`): FEE_BPS con piso y tope, descontada antes
+  de ir al mercado.
+- **Compra**: `quoteStock` pide la orden a Ultra por `usdc − comisión`;
+  el usuario ve el ticket; `buyStock` firma, ejecuta y después cobra la
+  comisión. **Venta**: lado `sell`, sin comisión.
+- **Tenencias** desde la cadena: cuentas Token-2022 del usuario filtradas
+  por el catálogo (`src/lib/invest/catalog.ts`, mints verificados contra
+  la API de tokens de Jupiter). **Precios**: `/api/invest/prices` (cache
+  30 s) usa `usdPricePrescaled` porque xStocks escalan la cantidad visible.
+- **Solo mainnet**: xStocks no existen en devnet. En testnet real se arma
+  la regla y la app lo explica; en demo todo se simula con precios reales.
+- **Regla y operaciones** viven en el dispositivo por cuenta
   (`camalote.invest.rule.v1:<cuenta>`, `camalote.invest.purchases.v1:<cuenta>`).
-  Las tenencias se leen de la cadena (cuentas Token-2022 del usuario).
-- `planInvestments` (`src/lib/invest/rules.ts`) cruza los ingresos con la
-  regla: solo cuentan los posteriores a prenderla, cada uno una sola vez, y
-  los cobros chicos se juntan hasta el mínimo.
-- Flujo real: `GET /api/invest/order` (orden Ultra, solo nuestros pares) →
-  firma con la billetera embebida de Solana (Privy) → `POST /api/invest/execute`.
-  Precios por `GET /api/invest/prices` (cache 30 s, con precios de referencia
-  si Jupiter no responde). Clave opcional: `JUPITER_API_KEY`.
-- Las acciones tokenizadas existen solo en mainnet: en testnet real se puede
-  armar la regla y ver la pantalla, y las compras se activan con
-  `NEXT_PUBLIC_NETWORK=mainnet`. En demo todo se simula con precios reales.
-- Camalote no cobra por invertir. Jupiter cobra su tarifa y, en modo sin gas,
-  descuenta la red de la compra (cerca del 2 % en compras de 10 USDC, menos
-  en compras más grandes): se muestra en el ticket.
-- Lo que hay que saber (y la app lo dice): xStocks tienen *permanent
-  delegate* de Backed (puede congelar o retirar tokens si la ley lo exige),
-  no son la acción ni dan voto, y no están disponibles para residentes de
-  EE. UU., Reino Unido, Canadá y Australia. No es un consejo de inversión.
-
-## Comisión
-
-Regla vigente: **0,45 % con tope de $0,50 por cobro o cruce** (piso 0,01;
-mínimo 0,50 USDC; retiros gratis). Se descuenta de lo que llega: el que paga
-manda el número del link tal cual, sin recargos. Aparte, Circle cobra su
-envío exprés (~0,013 %). Todo configurable por env: `NEXT_PUBLIC_FEE_BPS`,
-`NEXT_PUBLIC_FEE_MIN_UNITS`, `NEXT_PUBLIC_FEE_MAX_UNITS`,
-`NEXT_PUBLIC_MIN_TRANSFER_UNITS`.
-
-| Te pagan | Te llegan | Comisión | % efectivo |
-|---|---|---|---|
-| $20 | $19,91 | $0,09 | 0,45 % |
-| $100 | $99,53 | $0,45 | 0,45 % |
-| $500 | $499,44 | $0,50 (tope) | 0,10 % |
-| $1.000 | $999,37 | $0,50 (tope) | 0,05 % |
-
-Contra las alternativas para mover USDC a Solana (estimaciones 2026):
-Phantom cobra 0,85 % (1,5 % sin gas) y exige seed phrase; deBridge 0,50 fijo
-más spread del solver; los exchanges argentinos 0,8 a 1,5 % de spread. Todos
-piden una billetera con gas. Camalote: email y listo.
+  Una operación interrumpida (pestaña cerrada) se cierra al volver.
 
 ## Correr el proyecto
 
@@ -158,86 +99,66 @@ pnpm install
 pnpm dev          # http://localhost:3000
 ```
 
-**Sin configurar nada corre en MODO DEMO**: misma UX, flujo completo simulado,
-saldos por cuenta persistentes, badge "Modo demo". Ideal para mostrar el
-producto sin depender de faucets ni terceros. Para forzarlo aunque haya
-claves: `NEXT_PUBLIC_DEMO_MODE=true`.
+**Sin configurar nada corre en MODO DEMO**: misma UX, todo simulado con
+precios reales de Jupiter, un botón para simular que te llegan USDC. Para
+forzarlo aunque haya claves: `NEXT_PUBLIC_DEMO_MODE=true`.
 
 ```bash
-pnpm test              # unit tests (cotización, links de cobro, regla de inversión, mensajes CCTP, calldata, retiros)
-pnpm test:integration  # verifica los PDAs contra Solana devnet (requiere red)
+pnpm test              # unit tests (regla, comisión, cartera, retiros, CCTP)
 pnpm build             # build de producción
-node scripts/e2e-demo.mjs <carpeta>   # recorre el cobro completo en demo con Playwright y saca capturas
+node scripts/e2e-demo.mjs <carpeta>   # recorre todo en demo con Playwright y saca capturas
 node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
 ```
 
-## Pasar a testnet real (Base Sepolia + Solana devnet)
+## Pasar a real
 
-1. **Privy**: [dashboard.privy.io](https://dashboard.privy.io)
-   - Creá una app y copiá el App ID → `NEXT_PUBLIC_PRIVY_APP_ID`.
-   - Login methods: Email (y Google si querés).
-   - Embedded wallets: activá **Ethereum** y **Solana**, "create on login".
-   - **Smart wallets**: activá (Coinbase Smart Wallet o Kernel) y pegá las URLs
-     del paso 2. Elegí la red **Base Sepolia**.
-2. **Coinbase Developer Platform**: [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com)
-   - Creá un proyecto → "Paymaster & Bundler" → red **Base Sepolia**.
-   - Copiá la **RPC URL** (sirve de bundler y paymaster) en la config de smart
-     wallets de Privy. Activá la gas policy (los límites que quieras).
-3. **Relayer de Solana**
-   ```bash
-   pnpm relayer        # genera la clave y pide airdrop en devnet
-   ```
-   Pegá la línea `RELAYER_SOLANA_SECRET=...` en `.env.local`.
-4. **USDC de prueba**: [faucet.circle.com](https://faucet.circle.com) → red
-   "Base Sepolia" → mandalos a la dirección "En Base" que muestra la app.
-5. `cp .env.example .env.local`, completá los valores y reiniciá `pnpm dev`.
+1. **Privy** ([dashboard.privy.io](https://dashboard.privy.io)): app con
+   login por email y embedded wallets de **Solana** ("create on login").
+   `NEXT_PUBLIC_PRIVY_APP_ID`.
+2. **Relayer de Solana**: `pnpm relayer` genera la clave;
+   `RELAYER_SOLANA_SECRET` en `.env.local`. Paga la red de retiros y de
+   la comisión (~0,00001 SOL cada uno).
+3. **Mainnet**: `NEXT_PUBLIC_NETWORK=mainnet` (las acciones tokenizadas
+   existen solo ahí). Fondeá el relayer con algo de SOL.
+4. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>`. Vacía =
+   sin comisión, y la app lo muestra.
+5. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
+   `api.jup.ag`; sin clave usa `lite-api.jup.ag`.
+6. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.
 
-Prueba de punta a punta con dos personas: A entra en `/app/cobrar` y crea un
-link; B abre el link en otro dispositivo, entra con su email, carga USDC de
-prueba y paga. La pantalla de A marca el cobro "Pagado" sola.
-
-### Pagar sin registrarse, en testnet
-
-Abrí un link de cobro sin entrar con email, mandá USDC de prueba (faucet de
-Circle) a la cuenta de Base que muestra, y después abrí Camalote con la cuenta
-del cobrador: la pestaña Cobrar los ve y los lleva a Solana sola.
-
-## Checklist para mainnet
-
-- [ ] `NEXT_PUBLIC_NETWORK=mainnet` (cambia solo direcciones/APIs: Base
-      mainnet, Solana mainnet, Iris de producción, en
-      `src/lib/cctp/constants.ts`, verificadas contra la docs de Circle).
-- [ ] En Privy: agregá la red **Base** (mainnet) a smart wallets, con el
-      Paymaster de CDP de **Base mainnet** y una gas policy con límites.
-- [ ] Fondeá el relayer con SOL real (`pnpm relayer -- --mainnet` muestra el
-      saldo; ~0,05 SOL alcanza para cientos de entregas).
-- [ ] `NEXT_PUBLIC_FEE_RECIPIENT_BASE=0x…` (billetera que cobra la comisión;
-      si queda vacía, la app cobra $0 y lo muestra).
-- [ ] RPCs dedicados (Alchemy/Helius) en vez de los públicos.
-- [ ] Deploy (Vercel: las API routes usan runtime Node; `maxDuration=60` en
-      `/api/relay`).
-- [ ] Probá un cobro chico (0,50 USDC) de punta a punta entre dos cuentas.
+Prueba: entrá con tu email, mandá 10 a 20 USDC a tu cuenta de Solana, armá
+la regla o comprá a mano. Verificá el comprobante en Solscan y la
+transferencia de la comisión a tu cuenta.
 
 ## Seguridad y límites conocidos
 
-- El relayer solo firma `receive_message` de mensajes **certificados por
-  Circle** que sean USDC Base→Solana; no puede mover otros fondos.
-- `/api/relay` tiene rate-limit simple por IP en memoria; para producción
-  multi-instancia conviene un rate-limit compartido (Upstash/Redis).
-- La comisión se cobra en Base *antes* del burn, en el mismo lote atómico
-  patrocinado: si el burn falla, la comisión no se cobra.
-- Si Circle demora (congestión), la UI lo explica y la entrega se completa
-  igual: el mensaje certificado no expira para `receiveMessage` estándar.
-- Los links de cobro se marcan pagados por coincidencia de monto y fecha con
-  los ingresos de la cuenta (no hay identificador on-chain del link). Dos
-  links iguales creados al mismo tiempo se marcan en orden de creación.
-- La primera entrega a una cuenta nueva paga el alquiler de la token account
-  (~0,002 SOL); en cobros muy chicos ese costo supera la comisión.
+- Cada compra y venta la firma el usuario con su billetera embebida. Jupiter
+  cofirma solo para pagar la red. Nuestro relayer cofirma únicamente
+  transferencias de USDC del firmante (retiros) o hacia la cuenta de
+  comisiones (fee), validadas estructuralmente (`withdrawTx.ts`).
+- `/api/invest/order` solo arma órdenes entre USDC y el catálogo: no es un
+  proxy genérico. Rate limit simple por IP en memoria.
+- La regla corre en el navegador: si la app está cerrada, no compra. Es
+  una limitación real y se dice en la app y en el FAQ.
+- xStocks: *permanent delegate* de Backed (puede congelar o retirar),
+  restricción por países, liquidez más fina en fin de semana, spread del
+  RFQ en montos chicos (2 % en 10 USDC).
+- El rendimiento se calcula sobre lo comprado y vendido desde Camalote;
+  acciones compradas en otro lado aparecen en la cartera pero no en lo
+  "puesto".
+
+## Módulos ocultos: cobrar con links y cruce desde Base
+
+Antes de este pivot (2026-09-12), Camalote era un link de cobro en USDC
+(te pagaban desde Coinbase o Base y llegaba a Solana por CCTP v2). Ese
+código sigue en el repo pero no se muestra: pestañas Cobrar y Llevar a
+Solana, rutas `/app/cobrar` y `/p`, contratos de Circle, Paymaster de
+Coinbase. Vuelve con `NEXT_PUBLIC_SHOW_HIDDEN_VIEWS=true`. La
+documentación de esa versión está en el historial (commit `1421d41`).
 
 ## Stack
 
-Next.js 16 (App Router) · Tailwind v4 · Privy (auth + embedded + smart
-wallets) · viem · @solana/web3.js + Anchor (IDLs oficiales de Circle) ·
-CCTP v2 (fast transfers) · Jupiter Ultra y Price API (acciones tokenizadas
-xStocks) · PWA (manifest + service worker) · Vitest · Playwright para el
+Next.js 16 (App Router) · Tailwind v4 · Privy (auth + embedded wallets) ·
+@solana/web3.js + spl-token (Token-2022) · Jupiter Ultra y Price API
+(xStocks) · PWA (manifest + service worker) · Vitest · Playwright para el
 recorrido de demo.

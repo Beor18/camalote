@@ -1,22 +1,27 @@
 "use client";
 
 import { ChartPie } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { findXStock } from "@/lib/invest/catalog";
+import { findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import { formatTokens, formatUsd, type PortfolioSummary } from "@/lib/invest/rules";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
-/** Cuánto vale hoy lo que se compró, y cuánto rindió. */
+/** Cuánto vale hoy lo que se compró, cuánto rindió, y vender cuando quieras. */
 export function PortfolioCard({
   summary,
   loading,
   pricesLive,
+  onSell,
+  sellDisabled,
 }: {
   summary: PortfolioSummary;
   loading: boolean;
   pricesLive: boolean | null;
+  onSell: (asset: XStockSymbol) => void;
+  sellDisabled?: boolean;
 }) {
   const { lang, t } = useLang();
   const hasRows = summary.rows.length > 0;
@@ -64,14 +69,14 @@ export function PortfolioCard({
           <p className="text-xs text-muted-foreground">{t.invest.returnLabel}</p>
           <p
             className={`font-mono text-lg font-medium tabular-nums ${
-              summary.investedUnits === 0n
+              summary.pnlPct === null
                 ? "text-muted-foreground"
                 : pnlPositive
                   ? "text-success"
                   : "text-destructive"
             }`}
           >
-            {summary.investedUnits === 0n ? "–" : `${pnlText}${pctText}`}
+            {summary.pnlPct === null ? "–" : `${pnlText}${pctText}`}
           </p>
         </div>
       </div>
@@ -88,13 +93,24 @@ export function PortfolioCard({
                     {stock?.name} · {formatUsd(row.priceUsd, lang)} {t.invest.priceEach}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-sm font-medium tabular-nums">
-                    {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
-                  </p>
-                  <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                    {formatTokens(row.tokenUnits, lang)} {row.asset}
-                  </p>
+                <div className="flex shrink-0 items-center gap-3">
+                  <div className="text-right">
+                    <p className="font-mono text-sm font-medium tabular-nums">
+                      {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
+                    </p>
+                    <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                      {formatTokens(row.tokenUnits, lang)} {row.asset}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={sellDisabled}
+                    onClick={() => onSell(row.asset)}
+                    data-testid={`sell-${row.asset}`}
+                  >
+                    {t.invest.sell}
+                  </Button>
                 </div>
               </li>
             );

@@ -27,11 +27,11 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Camalote · Cobrá en dólares desde cualquier lado",
+    default: "Camalote · Invertí una parte de cada cobro",
     template: "%s · Camalote",
   },
   description:
-    "Tu link para cobrar en USDC. Te pagan desde Coinbase o Base con solo un email y los dólares te llegan a Solana. Sin billeteras, sin gas, sin letra chica.",
+    "Elegís un porcentaje y una acción. Cada vez que te llegan USDC a tu cuenta de Solana, esa parte compra acciones tokenizadas, sola. Desde 10 dólares, sin broker, con la comisión a la vista.",
   applicationName: "Camalote",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

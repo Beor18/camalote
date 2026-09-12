@@ -1,6 +1,12 @@
 import type { Quote } from "@/lib/cctp/quote";
 import type { XStockSymbol } from "@/lib/invest/catalog";
-import type { Holding } from "@/lib/invest/types";
+import type {
+  BuyResult,
+  Holding,
+  SellQuote,
+  SellResult,
+  StockQuote,
+} from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
 
 export interface BridgeSession {
@@ -45,6 +51,9 @@ export interface RunOptions {
   recipientOwner?: string;
 }
 
+/** Pasos de una compra o venta de acciones tokenizadas. */
+export type BuyStep = "quoting" | "signing" | "sending" | "fee";
+
 export interface BridgeActions {
   getQuote: (units: bigint) => Promise<Quote>;
   runBridge: (
@@ -63,34 +72,28 @@ export interface BridgeActions {
     baseTxHash: string,
     recipientOwner?: string
   ) => Promise<string | null>;
-  /** Ingresos de USDC en la cuenta Solana del usuario (para marcar cobros). */
+  /** Ingresos de USDC en la cuenta Solana del usuario (cobros y depósitos). */
   listIncoming: () => Promise<IncomingPayment[]>;
   /** Saldo de USDC de una dirección de Base (la cuenta de cobro de un link). */
   readBaseBalance: (address: string) => Promise<bigint>;
   /** Solo demo: simula que alguien mandó USDC a esa dirección de Base. */
   simulateDeposit?: (address: string, amountUnits: bigint) => void;
+  /** Solo demo: simula que llegaron USDC a esa cuenta de Solana. */
+  simulateIncoming?: (solanaAddress: string, amountUnits: bigint) => void;
+
   /** Acciones tokenizadas que hay en la cuenta Solana del usuario. */
   listHoldings: () => Promise<Holding[]>;
+  /** Cotiza una compra: comisión, costo de Jupiter y cuánto se espera recibir. */
+  quoteStock: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
   /**
-   * Compra una acción tokenizada con USDC de la cuenta Solana del usuario
-   * (Jupiter Ultra, modo sin gas). Devuelve firma y unidades recibidas.
+   * Ejecuta la compra cotizada con USDC de la cuenta Solana del usuario
+   * (Jupiter Ultra, modo sin gas) y después cobra la comisión de Camalote.
    */
-  buyStock: (
-    asset: XStockSymbol,
-    usdcUnits: bigint,
-    onStep?: (step: BuyStep) => void
-  ) => Promise<BuyResult>;
-}
-
-export type BuyStep = "quoting" | "signing" | "sending";
-
-export interface BuyResult {
-  signature: string;
-  usdcUnits: bigint;
-  /** Unidades del token (8 decimales). */
-  tokenUnits: bigint;
-  /** Costo total de la operación en puntos básicos (Jupiter y red). */
-  feeBps: number;
+  buyStock: (quote: StockQuote, onStep?: (step: BuyStep) => void) => Promise<BuyResult>;
+  /** Cotiza una venta a USDC. */
+  quoteSell: (asset: XStockSymbol, tokenUnits: bigint) => Promise<SellQuote>;
+  /** Ejecuta la venta cotizada. Sin comisión de Camalote. */
+  sellStock: (quote: SellQuote, onStep?: (step: BuyStep) => void) => Promise<SellResult>;
 }
 
 export interface Engine {

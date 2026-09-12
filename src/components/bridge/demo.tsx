@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import {
   demoQuote,
+  demoQuoteSell,
+  demoQuoteStock,
   loadDemoBalances,
   loadDemoBaseBalance,
   loadDemoHoldings,
@@ -11,8 +13,10 @@ import {
   registerDemoAccount,
   runDemoBridge,
   runDemoBuy,
+  runDemoSell,
   runDemoWithdraw,
   simulateDemoDeposit,
+  simulateDemoIncoming,
 } from "@/lib/demo";
 import { fetchPrices } from "@/lib/invest/prices";
 import type {
@@ -23,6 +27,7 @@ import type {
 } from "@/components/bridge/types";
 
 const EMAIL_KEY = "camalote.demo.email";
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Direcciones de muestra, estables por email (solo para la simulación). */
 function pseudoRandomHex(seed: string, length: number): string {
@@ -163,12 +168,25 @@ export function useDemoEngine(): Engine {
         solanaAddress ? loadDemoIncoming(solanaAddress) : [],
       readBaseBalance: async (address) => loadDemoBaseBalance(address),
       simulateDeposit: (address, amountUnits) => simulateDemoDeposit(address, amountUnits),
+      simulateIncoming: (address, amountUnits) => simulateDemoIncoming(address, amountUnits),
       listHoldings: async () => (email ? loadDemoHoldings(email) : []),
-      buyStock: async (asset, usdcUnits, onStep) => {
-        if (!email) throw new Error("Entrá con tu email para continuar.");
+      quoteStock: async (asset, usdcUnits) => {
         const { prices } = await fetchPrices();
-        const result = await runDemoBuy(email, asset, usdcUnits, prices[asset] ?? 0, onStep);
-        return { ...result, usdcUnits };
+        await wait(500);
+        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0);
+      },
+      buyStock: async (quote, onStep) => {
+        if (!email) throw new Error("Entrá con tu email para continuar.");
+        return runDemoBuy(email, quote, onStep);
+      },
+      quoteSell: async (asset, tokenUnits) => {
+        const { prices } = await fetchPrices();
+        await wait(500);
+        return demoQuoteSell(asset, tokenUnits, prices[asset] ?? 0);
+      },
+      sellStock: async (quote, onStep) => {
+        if (!email) throw new Error("Entrá con tu email para continuar.");
+        return runDemoSell(email, quote, onStep);
       },
     }),
     [email, solanaAddress]

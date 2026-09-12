@@ -19,6 +19,13 @@ export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
 export const DEMO_MODE =
   process.env.NEXT_PUBLIC_DEMO_MODE === "true" || PRIVY_APP_ID === "";
 
+/**
+ * Cobrar con links y el cruce desde Base quedaron ocultos (2026-09-12):
+ * Camalote es Invertir. El código sigue; con esto en "true" vuelven las
+ * pestañas y las rutas /app/cobrar y /p.
+ */
+export const SHOW_HIDDEN_VIEWS = process.env.NEXT_PUBLIC_SHOW_HIDDEN_VIEWS === "true";
+
 /** Comisión de Camalote en puntos básicos (10 = 0,10 %). */
 export const FEE_BPS = Number(process.env.NEXT_PUBLIC_FEE_BPS ?? "45");
 /** Piso y techo de la comisión, en unidades de USDC (6 decimales). */
@@ -50,6 +57,14 @@ export const INVEST_MIN_UNITS = BigInt(
 /** Si no hay billetera de comisiones configurada, la comisión es 0 (y se muestra así). */
 export const FEE_RECIPIENT_BASE = (process.env.NEXT_PUBLIC_FEE_RECIPIENT_BASE ??
   "") as "" | `0x${string}`;
+
+/**
+ * Cuenta de Solana que cobra la comisión de cada compra de acciones
+ * (misma regla: FEE_BPS con piso y tope). Vacía = sin comisión, y así se
+ * muestra. En demo la comisión siempre se simula.
+ */
+export const FEE_RECIPIENT_SOLANA = process.env.NEXT_PUBLIC_FEE_RECIPIENT_SOLANA ?? "";
+export const INVEST_FEE_ENABLED = DEMO_MODE || FEE_RECIPIENT_SOLANA !== "";
 
 export const SOLANA_RPC_URL =
   process.env.SOLANA_RPC_URL ??

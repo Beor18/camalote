@@ -7,6 +7,7 @@ import { planInvestments } from "@/lib/invest/rules";
 import {
   INCOMING_EVENT,
   INVEST_EVENT,
+  loadPurchases,
   loadRule,
   notifyInvest,
   saveRule,
@@ -59,7 +60,15 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
       if (!canBuy || !rule?.enabled) return;
       if (rule.pausedUntil !== undefined && rule.pausedUntil > Date.now()) return;
 
-      const incoming = await actionsRef.current.listIncoming();
+      // Lo que vuelve de una venta propia no es un ingreso: no se reinvierte.
+      const ownSales = new Set(
+        loadPurchases(address)
+          .filter((p) => p.kind === "sell" && p.signature)
+          .map((p) => p.signature as string)
+      );
+      const incoming = (await actionsRef.current.listIncoming()).filter(
+        (i) => !ownSales.has(i.signature)
+      );
       const plan = planInvestments(rule, incoming);
       const changed =
         plan.setAsideUnits > 0n ||

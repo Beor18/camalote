@@ -1,18 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { computeQuote, QuoteError } from "@/lib/cctp/quote";
+import { FEE_BPS, INVEST_MIN_UNITS } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
-import { FEE_BPS } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
+import { investFee } from "@/lib/invest/rules";
 
 /**
- * La promesa de transparencia, hecha juguete: escribís cuánto te pagan y ves
- * al instante cuánto te llega y de dónde sale la diferencia. Misma
- * matemática que usa la app.
+ * La promesa de transparencia, hecha juguete: escribís cuánto invertís y ves
+ * al instante cuánto va al mercado y de dónde sale la diferencia. Misma
+ * comisión que cobra la app.
  */
-const EXPRESS_BPS = 1.3;
-
 export function MiniCalc() {
   const { lang, t } = useLang();
   const [text, setText] = useState("100");
@@ -20,22 +18,11 @@ export function MiniCalc() {
   const result = useMemo(() => {
     const units = parseUsdc(text);
     if (units === null || units === 0n) return { kind: "empty" as const };
-    try {
-      // sin opciones: usa la misma config que la app (si la comisión está
-      // apagada acá también se ve gratis; la promesa de arriba es literal)
-      const q = computeQuote(units, EXPRESS_BPS);
-      return {
-        kind: "ok" as const,
-        receive: q.receiveUnits,
-        fee: q.camaloteFeeUnits,
-        express: q.circleFeeUnits,
-      };
-    } catch (err) {
-      if (err instanceof QuoteError && err.code === "TOO_SMALL") {
-        return { kind: "min" as const };
-      }
-      return { kind: "empty" as const };
-    }
+    if (units < INVEST_MIN_UNITS) return { kind: "min" as const };
+    // sin opciones: usa la misma config que la app (si la comisión está
+    // apagada acá también se ve gratis; la promesa de arriba es literal)
+    const fee = investFee(units);
+    return { kind: "ok" as const, fee, buy: units - fee };
   }, [text]);
 
   const pct = (FEE_BPS / 100).toLocaleString(lang === "es" ? "es" : "en", {
@@ -48,11 +35,8 @@ export function MiniCalc() {
       <div className="rounded-[calc(1.5rem-1px)] bg-surface p-6 sm:p-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
           <div className="flex w-full flex-col gap-1.5 sm:w-auto">
-            <label
-              htmlFor="calc"
-              className="text-sm font-medium text-muted-foreground"
-            >
-              {t.landing.calcIfYouBring}
+            <label htmlFor="calc" className="text-sm font-medium text-muted-foreground">
+              {t.landing.calcIfYouInvest}
             </label>
             <div className="relative">
               <input
@@ -71,37 +55,24 @@ export function MiniCalc() {
             </div>
           </div>
 
-          <span
-            className="hidden text-2xl text-muted-foreground sm:block sm:pt-6"
-            aria-hidden="true"
-          >
+          <span className="hidden text-2xl text-muted-foreground sm:block sm:pt-6" aria-hidden="true">
             →
           </span>
 
           <div className="flex w-full flex-col gap-1.5 text-left sm:w-auto">
             <span className="text-sm font-medium text-muted-foreground">
-              {t.landing.calcYouReceive}
+              {t.landing.calcYouBuy}
             </span>
-            <div
-              className="flex h-14 items-center"
-              role="status"
-              aria-live="polite"
-            >
+            <div className="flex h-14 items-center" role="status" aria-live="polite">
               {result.kind === "ok" ? (
                 <span className="font-mono text-3xl font-semibold tabular-nums">
-                  {formatUsdc(result.receive, 2, lang)}{" "}
-                  <span className="text-base font-normal text-muted-foreground">
-                    USDC
-                  </span>
+                  {formatUsdc(result.buy, 2, lang)}{" "}
+                  <span className="text-base font-normal text-muted-foreground">USDC</span>
                 </span>
               ) : result.kind === "min" ? (
-                <span className="text-sm text-muted-foreground">
-                  {t.landing.calcMinHint}
-                </span>
+                <span className="text-sm text-muted-foreground">{t.landing.calcMinHint}</span>
               ) : (
-                <span className="text-sm text-muted-foreground">
-                  {t.landing.calcEmptyHint}
-                </span>
+                <span className="text-sm text-muted-foreground">{t.landing.calcEmptyHint}</span>
               )}
             </div>
           </div>
@@ -111,11 +82,9 @@ export function MiniCalc() {
           {result.kind === "ok" && (
             <>
               <span className="font-medium text-foreground">
-                {t.landing.calcFeeLine(
-                  formatUsdc(result.fee, 2, lang),
-                  pct,
-                  formatUsdc(result.express, 2, lang)
-                )}
+                {result.fee > 0n
+                  ? t.landing.calcFeeLine(formatUsdc(result.fee, 2, lang), pct)
+                  : t.landing.calcFeeFree}
               </span>{" "}
             </>
           )}

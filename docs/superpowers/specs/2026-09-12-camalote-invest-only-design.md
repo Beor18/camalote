@@ -1,0 +1,80 @@
+# Camalote es Invertir: diseño del pivot (2026-09-12)
+
+Estado: implementado. Decisión de Fernando: "sacá todo lo de Base, ocultá
+Cobrar y Llevar a Solana, adaptá la narrativa a Invertir y pensá el modelo
+de negocio sobre invertir. No me vendas humo."
+
+## Qué queda
+
+Un solo producto: **tu cuenta de Solana que invierte sola**. Entrás con tu
+email, tenés una cuenta donde te llegan USDC (de quien te paga, de un
+exchange, de un bounty), y una regla: "el X % de lo que me llega va a tal
+acción". Cuando lo apartado junta 10 USDC, se compra por Jupiter sin gas.
+Cartera con valor de hoy, comprar y vender a mano, comprobantes.
+
+Lo que se oculta (no se borra): los links de cobro, la dirección de cobro en
+Base, el cruce Base→Solana por CCTP, el Paymaster de Coinbase. Flag
+`NEXT_PUBLIC_SHOW_HIDDEN_VIEWS`. Las rutas `/app/cobrar`, `/app/invertir` y
+`/p` redirigen. `/app` es Invertir.
+
+## Modelo de negocio (sin humo)
+
+- **Misma regla de siempre, sobre la compra**: 0,45 % con tope de 0,50 USDC
+  y piso de 0,01, descontada de lo que se invierte y a la vista antes de
+  confirmar. Vender: gratis. Sin suscripción, sin spread escondido.
+- **Cómo se cobra**: después de que la compra salió bien, una transferencia
+  de USDC del usuario a `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`, cofirmada por
+  el relayer como fee payer (`/api/withdraw` con `purpose: "fee"`; el
+  servidor solo acepta ese destino y ese mínimo). Si falla, la pierde
+  Camalote. Sin cuenta configurada, comisión 0 y así se muestra.
+- **Por qué no la tarifa de referido de Jupiter**: Ultra no admite
+  `referralAccount` en modo sin gas, y sin gas es la única forma de que el
+  usuario no necesite SOL. Queda como palanca si Jupiter lo cambia.
+- **Unit economics**: 0,045 por compra de 10; 0,50 desde 111. Un usuario
+  que invierte 200 por mes en compras de 50 paga 0,90 por mes. Mil usuarios
+  así: 900 por mes. La meta de 500 por mes pide unos 550 usuarios activos
+  o más volumen por usuario. Es un negocio de volumen; no hay otra fuente
+  construida hoy.
+- **Lo que no prometemos**: rendimiento. Es el mercado, para arriba y para
+  abajo, y la app lo dice.
+
+## Narrativa de la landing ("vendeme una pluma")
+
+1. Necesidad: "Cobrás en dólares. ¿Cuánto te quedó el mes pasado?"
+2. Falta: invertir "cuando sobre" no pasa nunca; abrir un broker desde acá
+   tampoco. Columnas: como hasta ahora vs. con Camalote. Nota de tus dólares.
+3. Por qué en Solana: acá viven las acciones tokenizadas, mover plata
+   cuesta una fracción de centavo, hay laburo que paga en USDC acá,
+   Argentina juega de local.
+4. Respuesta: tres pasos (email, elegí cuánto y en qué, cobrá como siempre).
+5. Prueba: números ciertos (mínimo 10, tope 0,50, vender gratis, 5
+   acciones), calculadora con la misma comisión de la app, confianza.
+6. FAQ honesto: qué comprás, puede bajar, cuánto cuesta, vender, si no te
+   pagan en Solana, cuándo compra (solo con la app abierta), qué es Solana,
+   legal desde Argentina.
+7. Cierre: "Que la próxima vez que cobres, una parte ya esté invertida."
+
+## Componentes nuevos o cambiados
+
+- `src/components/invest/account-card.tsx`: cuenta de Solana, saldo,
+  depositar (modal con QR), retirar, y en demo "simular que te llegan 40".
+- `buy-card.tsx`: compra en dos pasos, con ticket (invertís, comisión de
+  Camalote, Jupiter y red, recibís) y confirmación.
+- `sell-modal.tsx`: vender cantidad o todo, precio a la vista, sin comisión.
+- `portfolio-card.tsx`: botón Vender por fila; rendimiento sobre lo neto.
+- `purchases-list.tsx`: compras y ventas.
+- Motor: `quoteStock`/`buyStock`/`quoteSell`/`sellStock`/`simulateIncoming`.
+  Real: Ultra (`side=buy|sell`), firma con Privy, cobro de comisión.
+  Demo: mismos pasos, 1 % de costo simulado, precios reales.
+- Servidor: `/api/invest/order` con `side`; `/api/withdraw` con `purpose`
+  (`withdrawTx.ts` ahora devuelve el destino validado).
+- La regla ignora lo que vuelve de ventas propias (firmas conocidas).
+
+## Riesgos que se dicen
+
+- Permanent delegate de Backed; países restringidos; sin voto.
+- La regla corre en el navegador: con la app cerrada no compra.
+- Ultra: Jupiter menciona migración a Swap v2; lite-api Ultra responde
+  hoy con órdenes sin gas.
+- Argentina: Backed no restringe; Bybit sí. Camalote no custodia ni
+  intermedia: el usuario firma cada operación. Impuestos: su contador.

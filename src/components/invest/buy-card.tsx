@@ -1,32 +1,39 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, CircleCheck, Loader2, RotateCcw, ShoppingCart } from "lucide-react";
+import { Check, CircleCheck, Info, Loader2, RotateCcw, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ExplorerLink } from "@/components/bridge/panel";
 import { AssetPicker } from "@/components/invest/asset-picker";
-import { INVEST_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
+import { FEE_BPS, INVEST_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import type { XStockSymbol } from "@/lib/invest/catalog";
 import { formatTokens } from "@/lib/invest/rules";
-import type { Purchase } from "@/lib/invest/types";
+import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
-const STEPS: BuyStep[] = ["quoting", "signing", "sending"];
+const STEPS: BuyStep[] = ["signing", "sending", "fee"];
 
 type State =
   | { phase: "idle"; error?: string }
-  | { phase: "running"; step: BuyStep }
+  | { phase: "quoting" }
+  | { phase: "quoted"; quote: StockQuote }
+  | { phase: "running"; step: BuyStep; quote: StockQuote }
   | { phase: "done"; purchase: Purchase };
 
-/** Compra a mano, con los USDC de la cuenta de Solana. Mismo camino que la regla. */
+/**
+ * Compra a mano en dos pasos: ves el precio (comisión de Camalote, costo de
+ * Jupiter y red, cuánto recibís) y recién ahí confirmás. Mismo camino que
+ * la regla, que compra sin preguntar porque para eso la armaste.
+ */
 export function BuyCard({
   balanceUnits,
   defaultAsset,
   demo,
   disabled,
+  onQuote,
   onBuy,
 }: {
   balanceUnits: bigint | null;
@@ -34,11 +41,8 @@ export function BuyCard({
   demo: boolean;
   /** Real en devnet: la compra no puede hacerse. */
   disabled?: boolean;
-  onBuy: (
-    asset: XStockSymbol,
-    usdcUnits: bigint,
-    onStep: (step: BuyStep) => void
-  ) => Promise<Purchase>;
+  onQuote: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
+  onBuy: (quote: StockQuote, onStep: (step: BuyStep) => void) => Promise<Purchase>;
 }) {
   const { lang, t } = useLang();
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
@@ -57,25 +61,43 @@ export function BuyCard({
           : balanceUnits !== null && amountUnits > balanceUnits
             ? t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
             : null;
-  const canSubmit =
+  const canQuote =
     !disabled && amountUnits !== null && amountError === null && state.phase === "idle";
 
-  const submit = async () => {
-    if (!canSubmit || amountUnits === null) return;
-    setState({ phase: "running", step: "quoting" });
-    const purchase = await onBuy(asset, amountUnits, (step) =>
-      setState({ phase: "running", step })
-    );
+  const pct = (bps: number) =>
+    (bps / 100).toLocaleString(lang === "es" ? "es" : "en", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  // Una comisión de 0,045 se muestra entera, no truncada a 0,04.
+  const fee = (units: bigint) => formatUsdc(units, units < 100_000n ? 3 : 2, lang);
+
+  const quote = async () => {
+    if (!canQuote || amountUnits === null) return;
+    setState({ phase: "quoting" });
+    try {
+      const q = await onQuote(asset, amountUnits);
+      setState({ phase: "quoted", quote: q });
+    } catch (err) {
+      setState({
+        phase: "idle",
+        error: err instanceof Error && err.message ? err.message : t.invest.genericError,
+      });
+    }
+  };
+
+  const confirm = async () => {
+    if (state.phase !== "quoted") return;
+    const q = state.quote;
+    setState({ phase: "running", step: "signing", quote: q });
+    const purchase = await onBuy(q, (step) => setState({ phase: "running", step, quote: q }));
     if (purchase.status === "done") setState({ phase: "done", purchase });
     else setState({ phase: "idle", error: purchase.errorMessage ?? t.invest.genericError });
   };
 
   if (state.phase === "done") {
     const p = state.purchase;
-    const feePct = (p.feeBps / 100).toLocaleString(lang === "es" ? "es" : "en", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const camaloteFee = BigInt(p.camaloteFeeUnits ?? "0");
     return (
       <Card className="p-6 animate-pop" data-testid="invest-buy">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -90,7 +112,12 @@ export function BuyCard({
               formatUsdc(BigInt(p.usdcUnits), 2, lang)
             )}
           </p>
-          <p className="text-xs text-muted-foreground">{t.invest.feeLine(feePct)}</p>
+          <p className="text-xs text-muted-foreground">
+            {camaloteFee > 0n
+              ? t.invest.camaloteFeeLine(fee(camaloteFee))
+              : t.invest.camaloteFeeFree}{" "}
+            {t.invest.feeLine(pct(p.feeBps))}
+          </p>
           {demo ? (
             <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
           ) : (
@@ -112,16 +139,18 @@ export function BuyCard({
   }
 
   if (state.phase === "running") {
-    const activeIndex = STEPS.indexOf(state.step);
+    const steps = state.quote.camaloteFeeUnits > 0n ? STEPS : STEPS.slice(0, 2);
+    const activeIndex = steps.indexOf(state.step);
     const labels: Record<BuyStep, string> = {
-      quoting: t.invest.stepQuoting,
+      quoting: t.invest.quoteLoading,
       signing: t.invest.stepSigning,
       sending: t.invest.stepSending,
+      fee: t.invest.stepFee,
     };
     return (
       <Card className="p-6" data-testid="invest-buy" aria-live="polite">
         <ol className="flex flex-col gap-3">
-          {STEPS.map((step, i) => {
+          {steps.map((step, i) => {
             const s = i < activeIndex ? "done" : i === activeIndex ? "active" : "pending";
             return (
               <li key={step} className="flex items-center gap-3">
@@ -154,6 +183,8 @@ export function BuyCard({
     );
   }
 
+  const quoted = state.phase === "quoted" ? state.quote : null;
+
   return (
     <Card className="p-5 sm:p-6" data-testid="invest-buy">
       <div className="flex items-center gap-2">
@@ -165,11 +196,12 @@ export function BuyCard({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          void submit();
+          if (quoted) void confirm();
+          else void quote();
         }}
         className="mt-5 flex flex-col gap-5"
       >
-        {state.error && (
+        {state.phase === "idle" && state.error && (
           <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {state.error}
           </p>
@@ -177,7 +209,12 @@ export function BuyCard({
 
         <div>
           <p className="mb-2 text-sm font-medium">{t.invest.assetLabel}</p>
-          <AssetPicker value={asset} onChange={setAsset} idPrefix="buy" disabled={disabled} />
+          <AssetPicker
+            value={asset}
+            onChange={setAsset}
+            idPrefix="buy"
+            disabled={disabled || state.phase !== "idle"}
+          />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -192,11 +229,11 @@ export function BuyCard({
               autoComplete="off"
               spellCheck={false}
               value={amountText}
-              disabled={disabled}
+              disabled={disabled || state.phase !== "idle"}
               onChange={(e) => setAmountText(e.target.value)}
               aria-invalid={amountError ? "true" : undefined}
               aria-describedby={amountError ? "buy-amount-error" : "buy-amount-hint"}
-              className="h-12 w-full rounded-xl border border-border bg-surface px-4 pr-20 font-mono text-lg tabular-nums text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50"
+              className="h-12 w-full rounded-xl border border-border bg-surface px-4 pr-20 font-mono text-lg tabular-nums text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
             />
             <span className="absolute inset-y-0 right-4 flex items-center text-sm font-medium text-muted-foreground">
               {t.common.usdc}
@@ -213,10 +250,74 @@ export function BuyCard({
           )}
         </div>
 
-        <Button type="submit" disabled={!canSubmit} className="w-full" data-testid="buy-submit">
-          {t.invest.buySubmit(asset)}
-        </Button>
+        {quoted && (
+          <dl className="flex flex-col gap-2 rounded-xl bg-muted p-4 text-sm" data-testid="buy-ticket">
+            <Row label={t.invest.rowSpend}>
+              {formatUsdc(quoted.usdcUnits, 2, lang)} {t.common.usdc}
+            </Row>
+            <Row
+              label={
+                quoted.camaloteFeeUnits > 0n
+                  ? t.invest.rowCamaloteFee(pct(FEE_BPS))
+                  : t.invest.rowCamaloteFeeOff
+              }
+            >
+              {quoted.camaloteFeeUnits > 0n
+                ? `− ${fee(quoted.camaloteFeeUnits)} ${t.common.usdc}`
+                : t.common.free}
+            </Row>
+            <Row label={t.invest.rowJupiter(pct(quoted.jupiterFeeBps))}>{t.invest.rowIncluded}</Row>
+            <div className="my-1 border-t border-border" role="presentation" />
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="font-medium">{t.invest.rowReceive}</dt>
+              <dd className="font-mono text-base font-semibold tabular-nums">
+                ~{formatTokens(quoted.expectedTokenUnits, lang)} {quoted.asset}
+              </dd>
+            </div>
+            {!quoted.gasless && (
+              <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                {t.invest.quoteNotGasless}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">{t.invest.quoteValid}</p>
+          </dl>
+        )}
+
+        {quoted ? (
+          <div className="flex flex-col gap-2">
+            <Button type="submit" className="w-full" data-testid="buy-confirm">
+              {t.invest.confirmBuy}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setState({ phase: "idle" })}
+              className="rounded-lg py-2 text-center text-sm text-muted-foreground transition-colors duration-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            >
+              {t.invest.changeAmount}
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="submit"
+            loading={state.phase === "quoting"}
+            disabled={!canQuote}
+            className="w-full"
+            data-testid="buy-quote"
+          >
+            {state.phase === "quoting" ? t.invest.quoteLoading : t.invest.buyQuote(asset)}
+          </Button>
+        )}
       </form>
     </Card>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <dt className="min-w-0 text-muted-foreground">{label}</dt>
+      <dd className="shrink-0 whitespace-nowrap font-mono tabular-nums">{children}</dd>
+    </div>
   );
 }
