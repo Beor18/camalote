@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartPie } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,141 +16,104 @@ import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
 /**
- * Cuánto vale hoy lo que se compró, cuánto rindió, qué te reinvirtieron en
- * dividendos, y vender cuando quieras. Las cantidades se muestran como en
- * cualquier billetera (cruda × multiplicador de la acción).
+ * Tus acciones, una por fila: cuánto valen hoy, cuántas son (como las
+ * muestra cualquier billetera), qué te reinvirtieron en dividendos, y
+ * vender. Comprar a mano abre su hoja desde acá.
  */
-export function PortfolioCard({
+export function StocksSection({
   summary,
   loading,
   pricesLive,
   demo,
+  onBuy,
   onSell,
-  sellDisabled,
+  actionsDisabled,
 }: {
   summary: PortfolioSummary;
   loading: boolean;
   pricesLive: boolean | null;
   demo: boolean;
+  onBuy: () => void;
   onSell: (asset: XStockSymbol) => void;
-  sellDisabled?: boolean;
+  /** Real en devnet: no se puede comprar ni vender. */
+  actionsDisabled?: boolean;
 }) {
   const { lang, t } = useLang();
   const hasRows = summary.rows.length > 0;
-  const pnlPositive = summary.pnlUnits >= 0n;
-  const pnlText = `${pnlPositive ? "+" : "−"}${formatUsdc(
-    pnlPositive ? summary.pnlUnits : -summary.pnlUnits,
-    2,
-    lang
-  )}`;
-  const pctText =
-    summary.pnlPct === null
-      ? ""
-      : ` (${pnlPositive ? "+" : "−"}${Math.abs(summary.pnlPct).toLocaleString(
-          lang === "es" ? "es" : "en",
-          { minimumFractionDigits: 1, maximumFractionDigits: 1 }
-        )} %)`;
 
   return (
-    <Card className="p-5 sm:p-6" data-testid="invest-portfolio">
-      <div className="flex items-center gap-2">
-        <ChartPie className="size-4 text-primary" aria-hidden="true" />
-        <h2 className="font-display text-lg font-semibold">{t.invest.portfolioTitle}</h2>
+    <section aria-labelledby="stocks-title" data-testid="invest-portfolio">
+      <div className="mb-2 flex items-center justify-between gap-3 px-1">
+        <h2 id="stocks-title" className="text-sm font-medium text-muted-foreground">
+          {t.invest.portfolioTitle}
+        </h2>
+        <Button size="sm" onClick={onBuy} disabled={actionsDisabled} data-testid="buy-open">
+          <ShoppingCart className="size-4" aria-hidden="true" />
+          {t.invest.buyOpen}
+        </Button>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div>
-          <p className="text-xs text-muted-foreground">{t.invest.valueLabel}</p>
-          {loading ? (
-            <Skeleton className="mt-1 h-8 w-28" />
-          ) : (
-            <p className="font-mono text-2xl font-semibold tabular-nums" data-testid="portfolio-value">
-              {formatUsdc(summary.valueUnits, 2, lang)}{" "}
-              <span className="text-sm font-normal text-muted-foreground">{t.common.usdc}</span>
-            </p>
-          )}
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">{t.invest.investedLabel}</p>
-          <p className="font-mono text-lg font-medium tabular-nums">
-            {formatUsdc(summary.investedUnits, 2, lang)}{" "}
-            <span className="text-sm font-normal text-muted-foreground">{t.common.usdc}</span>
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">{t.invest.returnLabel}</p>
-          <p
-            className={`font-mono text-lg font-medium tabular-nums ${
-              summary.pnlPct === null
-                ? "text-muted-foreground"
-                : pnlPositive
-                  ? "text-success"
-                  : "text-destructive"
-            }`}
-          >
-            {summary.pnlPct === null ? "–" : `${pnlText}${pctText}`}
-          </p>
-        </div>
-      </div>
-
-      {hasRows ? (
-        <ul className="mt-5 divide-y divide-border rounded-xl border border-border">
-          {summary.rows.map((row) => {
-            const stock = findXStock(row.asset);
-            return (
-              <li key={row.asset} className="flex flex-col gap-2 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-sm font-semibold">{row.asset}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {stock?.name} · {formatUsd(row.priceEachUsd, lang)} {t.invest.priceEach}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <div className="text-right">
-                      <p className="font-mono text-sm font-medium tabular-nums">
-                        {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
-                      </p>
-                      <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                        {formatTokens(row.displayUnits, lang)} {row.asset}
+      <Card className="overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col gap-3 p-4">
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+          </div>
+        ) : hasRows ? (
+          <ul className="divide-y divide-border">
+            {summary.rows.map((row) => {
+              const stock = findXStock(row.asset);
+              return (
+                <li key={row.asset} className="flex flex-col gap-2 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-sm font-semibold">{row.asset}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {stock?.name} · {formatUsd(row.priceEachUsd, lang)} {t.invest.priceEach}
                       </p>
                     </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={sellDisabled}
-                      onClick={() => onSell(row.asset)}
-                      data-testid={`sell-${row.asset}`}
-                    >
-                      {t.invest.sell}
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <div className="text-right">
+                        <p className="font-mono text-sm font-medium tabular-nums">
+                          {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
+                        </p>
+                        <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                          {formatTokens(row.displayUnits, lang)} {row.asset}
+                        </p>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={actionsDisabled}
+                        onClick={() => onSell(row.asset)}
+                        data-testid={`sell-${row.asset}`}
+                      >
+                        {t.invest.sell}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                {row.dividendUnits > 0n && (
-                  <p className="text-xs text-success" data-testid={`dividends-${row.asset}`}>
-                    {t.invest.dividendsLine(
-                      formatUsdc(valueOfTokens(row.dividendUnits, row.priceEachUsd), 2, lang),
-                      formatTokensPrecise(row.dividendUnits, lang),
-                      row.asset
-                    )}
-                    {demo ? t.invest.sim : ""}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        !loading && (
-          <p className="mt-5 rounded-xl bg-muted p-3 text-sm text-muted-foreground">
-            {t.invest.emptyPortfolio}
-          </p>
-        )
-      )}
+                  {row.dividendUnits > 0n && (
+                    <p className="text-xs text-success" data-testid={`dividends-${row.asset}`}>
+                      {t.invest.dividendsLine(
+                        formatUsdc(valueOfTokens(row.dividendUnits, row.priceEachUsd), 2, lang),
+                        formatTokensPrecise(row.dividendUnits, lang),
+                        row.asset
+                      )}
+                      {demo ? t.invest.sim : ""}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="p-4 text-sm text-muted-foreground">{t.invest.emptyPortfolio}</p>
+        )}
+      </Card>
 
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-2 px-1 text-xs text-muted-foreground">
         {pricesLive === false ? t.invest.pricesFallback : t.invest.pricesLive}
       </p>
-    </Card>
+    </section>
   );
 }

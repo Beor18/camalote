@@ -40,6 +40,7 @@ export function BuyCard({
   defaultAsset,
   demo,
   disabled,
+  bare,
   onQuote,
   onBuy,
 }: {
@@ -48,10 +49,13 @@ export function BuyCard({
   demo: boolean;
   /** Real en devnet: la compra no puede hacerse. */
   disabled?: boolean;
+  /** Sin borde: cuando vive adentro de una hoja. */
+  bare?: boolean;
   onQuote: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
   onBuy: (quote: StockQuote, onStep: (step: BuyStep) => void) => Promise<Purchase>;
 }) {
   const { lang, t } = useLang();
+  const frame = bare ? "border-0" : "";
   const minText = formatUsdc(BUY_MIN_UNITS, 0, lang);
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
   // null = el usuario todavía no escribió: se muestra el monto sugerido.
@@ -108,7 +112,7 @@ export function BuyCard({
     const p = state.purchase;
     const camaloteFee = BigInt(p.camaloteFeeUnits ?? "0");
     return (
-      <Card className="p-6 animate-pop" data-testid="invest-buy">
+      <Card className={`p-6 animate-pop ${frame}`} data-testid="invest-buy">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="flex size-14 items-center justify-center rounded-full bg-brand-gradient">
             <Check className="size-7 text-white" strokeWidth={3} aria-hidden="true" />
@@ -156,7 +160,7 @@ export function BuyCard({
       fee: t.invest.stepFee,
     };
     return (
-      <Card className="p-6" data-testid="invest-buy" aria-live="polite">
+      <Card className={`p-6 ${frame}`} data-testid="invest-buy" aria-live="polite">
         <ol className="flex flex-col gap-3">
           {STEPS.map((step, i) => {
             const s = i < activeIndex ? "done" : i === activeIndex ? "active" : "pending";
@@ -194,7 +198,7 @@ export function BuyCard({
   const quoted = state.phase === "quoted" ? state.quote : null;
 
   return (
-    <Card className="p-5 sm:p-6" data-testid="invest-buy">
+    <Card className={`p-5 sm:p-6 ${frame}`} data-testid="invest-buy">
       <div className="flex items-center gap-2">
         <ShoppingCart className="size-4 text-primary" aria-hidden="true" />
         <h2 className="font-display text-lg font-semibold">{t.invest.buyTitle}</h2>

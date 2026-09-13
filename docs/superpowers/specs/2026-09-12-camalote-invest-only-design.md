@@ -54,6 +54,25 @@ Base, el cruce Base→Solana por CCTP, el Paymaster de Coinbase. Flag
    legal desde Argentina.
 7. Cierre: "Que la próxima vez que cobres, una parte ya esté invertida."
 
+## La app es tu río (rediseño del 2026-09-13)
+
+Fernando: "la UI/UX no me está cerrando del todo en la page app, necesito
+que me sorprendas". El problema: seis tarjetas iguales apiladas, parecía un
+panel de configuración y el camalote de la landing desaparecía en la app.
+
+- `river-hero.tsx` + `river.tsx`: arriba las dos orillas con los dos números
+  que importan (USDC en tu cuenta, ya en acciones). En el medio el agua con
+  el camalote **donde está lo apartado**: en la orilla izquierda cuando la
+  regla arranca, cruza a medida que junta (`pendingUnits / INVEST_MIN_UNITS`)
+  y llega a la otra orilla mientras la regla compra. Apagada: amarrado y
+  atenuado. Debajo, la regla en una frase con su interruptor y "Cambiar".
+- `rule-sheet.tsx`: el editor (porcentaje y acción) en una hoja que se abre
+  sola la primera vez que se prende la regla.
+- `buy-sheet.tsx`: comprar a mano en una hoja desde "Tus acciones".
+- `portfolio-card.tsx` → `StocksSection`: filas con Vender, botón Comprar.
+- El aviso "Lo que tenés que saber" queda plegado en un `<details>`.
+- Resultado: la página en teléfono con una compra pasó de 2.613 a 1.155 px.
+
 ## Componentes nuevos o cambiados
 
 - `src/components/invest/account-card.tsx`: cuenta de Solana, saldo,

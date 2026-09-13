@@ -65,11 +65,14 @@ await hold(1600);
 
 // Escena 3: arma su regla, el 30 % de lo que le llega al S&P 500
 await page.click("[data-testid=rule-toggle]");
+await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await hold(900);
 await page.click("[data-testid=rule-percent-30]");
 await hold(700);
 await page.click("[data-testid=rule-asset-SPYx]");
-await hold(2200);
+await hold(1200);
+await page.click("[data-testid=rule-done]");
+await hold(1600);
 
 // Escena 4: le llegan 40 USDC y el 30 % se compra solo
 await page.locator("[data-testid=invest-account]").scrollIntoViewIfNeeded();

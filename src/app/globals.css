@@ -119,6 +119,11 @@ dialog::backdrop {
   transform: translateX(-560px);
 }
 
+/* el camalote de la app se mueve a donde está lo apartado (un solo elemento chico) */
+.camalote-move {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .camalote-sail {
     animation: camalote-sail 16s ease-in-out infinite;
@@ -126,6 +131,11 @@ dialog::backdrop {
   .camalote-bob {
     animation: camalote-bob 3.2s ease-in-out infinite;
     transform-origin: 50% 80%;
+  }
+  .camalote-move {
+    transition:
+      left 400ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 150ms cubic-bezier(0, 0, 0.2, 1);
   }
   /* la correntada: cada capa deriva a su ritmo hacia la orilla verde */
   .wave-slow {

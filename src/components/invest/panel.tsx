@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ShieldAlert } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { AccountCard } from "@/components/invest/account-card";
-import { BuyCard } from "@/components/invest/buy-card";
-import { PortfolioCard } from "@/components/invest/portfolio-card";
+import { ChevronDown, ShieldAlert } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BuySheet } from "@/components/invest/buy-sheet";
+import { StocksSection } from "@/components/invest/portfolio-card";
 import { PurchasesList } from "@/components/invest/purchases-list";
-import { RuleCard } from "@/components/invest/rule-card";
+import { RiverHero } from "@/components/invest/river-hero";
+import { RuleSheet } from "@/components/invest/rule-sheet";
 import { SellModal } from "@/components/invest/sell-modal";
 import { ADDRESSES } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
@@ -28,10 +28,11 @@ import type { BuyStep, Engine } from "@/components/bridge/types";
 const PRICES_MS = 60_000;
 
 /**
- * Camalote: tu cuenta de Solana, la regla ("cada vez que me llegan USDC, el
- * 20 % va al S&P 500"), la cartera con su valor de hoy, comprar y vender a
- * mano, y el historial con comprobantes. La regla la ejecuta
- * `useAutoInvest` desde el shell.
+ * Camalote es tu río: arriba las dos orillas (USDC en tu cuenta, ya en
+ * acciones) con el camalote llevando lo apartado, y la regla en una frase.
+ * Debajo, tus acciones y tus operaciones. El editor de la regla, comprar y
+ * vender viven en hojas que se abren cuando hacen falta. La regla la
+ * ejecuta `useAutoInvest` desde el shell.
  */
 export function InvestPanel({ session, balances, actions }: Engine) {
   const { t } = useLang();
@@ -42,6 +43,8 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [prices, setPrices] = useState<PricesResult | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [buying, setBuying] = useState(false);
   const [selling, setSelling] = useState<XStockSymbol | null>(null);
 
   const actionsRef = useRef(actions);
@@ -122,6 +125,13 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     [address, rule]
   );
 
+  const toggleRule = useCallback(() => {
+    const enabled = !(rule?.enabled ?? false);
+    updateRule({ enabled });
+    // Recién prendida, elegís qué parte y en qué.
+    if (enabled) setEditing(true);
+  }, [rule, updateRule]);
+
   const buyNow = useCallback(
     async (quote: StockQuote, onStep: (step: BuyStep) => void) => {
       if (!address) throw new Error("Entrá con tu email para continuar.");
@@ -147,25 +157,69 @@ export function InvestPanel({ session, balances, actions }: Engine) {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="px-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">{t.invest.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t.invest.sub}</p>
-      </div>
+      <h1 className="px-1 font-display text-xl font-semibold tracking-tight sm:text-2xl">
+        {t.invest.title}
+      </h1>
 
-      <AccountCard session={session} balances={balances} actions={actions} />
+      {rule ? (
+        <RiverHero
+          session={session}
+          balances={balances}
+          actions={actions}
+          rule={rule}
+          summary={summary}
+          holdingsLoading={holdings === null}
+          purchases={purchases}
+          testnetNote={realTestnet}
+          onToggleRule={toggleRule}
+          onEditRule={() => setEditing(true)}
+        />
+      ) : (
+        <Skeleton className="h-80" />
+      )}
 
-      {rule && <RuleCard rule={rule} onChange={updateRule} testnetNote={realTestnet} />}
-
-      <PortfolioCard
+      <StocksSection
         summary={summary}
         loading={holdings === null}
         pricesLive={prices ? prices.live : null}
         demo={session.demo}
+        onBuy={() => setBuying(true)}
         onSell={(asset) => setSelling(asset)}
-        sellDisabled={realTestnet}
+        actionsDisabled={realTestnet}
       />
 
-      <BuyCard
+      <PurchasesList purchases={purchases} multipliers={multipliers} />
+
+      <details className="group rounded-2xl border border-border bg-surface">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 text-sm font-medium marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2">
+            <ShieldAlert className="size-4 text-muted-foreground" aria-hidden="true" />
+            {t.invest.disclosureTitle}
+          </span>
+          <ChevronDown
+            className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 ease-out group-open:rotate-180"
+            aria-hidden="true"
+          />
+        </summary>
+        <ul className="flex flex-col gap-1.5 px-5 pb-5 text-xs leading-relaxed text-muted-foreground">
+          {t.invest.disclosure.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </details>
+
+      {rule && (
+        <RuleSheet
+          open={editing}
+          rule={rule}
+          onChange={updateRule}
+          onClose={() => setEditing(false)}
+        />
+      )}
+
+      <BuySheet
+        open={buying}
+        onClose={() => setBuying(false)}
         balanceUnits={balances.solanaUnits}
         defaultAsset={rule?.asset ?? "SPYx"}
         demo={session.demo}
@@ -173,20 +227,6 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}
         onBuy={buyNow}
       />
-
-      <PurchasesList purchases={purchases} multipliers={multipliers} />
-
-      <Card className="p-5">
-        <div className="flex items-center gap-2">
-          <ShieldAlert className="size-4 text-muted-foreground" aria-hidden="true" />
-          <h2 className="text-sm font-medium">{t.invest.disclosureTitle}</h2>
-        </div>
-        <ul className="mt-2 flex flex-col gap-1.5 text-xs leading-relaxed text-muted-foreground">
-          {t.invest.disclosure.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      </Card>
 
       <SellModal
         open={selling !== null}

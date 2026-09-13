@@ -56,8 +56,12 @@ console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Secciones]").co
 
 // 3. Arma su regla: el 30 % de lo que le llega, al S&P 500
 await page.click("[data-testid=rule-toggle]");
+// Recién prendida, se abre la hoja para elegir qué parte y en qué.
+await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await page.click("[data-testid=rule-percent-30]");
 await page.click("[data-testid=rule-asset-SPYx]");
+await shot("03-regla-hoja");
+await page.click("[data-testid=rule-done]");
 await page.waitForTimeout(800);
 await shot("03-regla");
 console.log("RULE:", await text("[data-testid=invest-rule] p"));
@@ -80,14 +84,15 @@ try {
 console.log("PENDING:", await text("[data-testid=rule-pending]"));
 console.log("BALANCE 2:", await text("[data-testid=usdc-balance]"));
 
-// 5. Compra a mano: 10 USDC de NVIDIA, con el ticket a la vista
+// 5. Compra a mano: 10 USDC de NVIDIA, con el ticket a la vista (en su hoja)
+await page.click("[data-testid=buy-open]");
+await page.waitForSelector("[data-testid=buy-sheet][open]", { timeout: 10000 });
 console.log("BUY HINT:", await text("#buy-amount-hint"));
 console.log("BUY DEFAULT:", await page.inputValue("#buy-amount"));
 await page.click("[data-testid=buy-asset-NVDAx]");
 await page.fill("#buy-amount", "10");
 await page.click("[data-testid=buy-quote]");
 await page.waitForSelector("[data-testid=buy-ticket]", { timeout: 15000 });
-await page.locator("[data-testid=invest-buy]").scrollIntoViewIfNeeded();
 await page.waitForTimeout(500);
 await shot("05-ticket");
 console.log("TICKET:", (await text("[data-testid=buy-ticket]"))?.replace(/\s+/g, " "));
@@ -97,6 +102,8 @@ await page.waitForTimeout(800);
 await shot("06-comprado");
 console.log("MANUAL BUY:", await text("[data-testid=invest-buy] p"));
 console.log("FEE LINE:", await page.locator("[data-testid=invest-buy] p").nth(1).textContent());
+await page.click("[data-testid=buy-close]");
+await page.waitForTimeout(400);
 
 // 6. Vende todo su S&P 500
 await page.click("[data-testid=sell-SPYx]");
