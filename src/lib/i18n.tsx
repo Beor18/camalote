@@ -58,7 +58,7 @@ const es = {
     newWayTitle: "Con Camalote",
     newWay: [
       "Una regla: «el 20 % de lo que me llega, al S&P 500»",
-      "Se compra sola cuando te pagan, desde 10 dólares",
+      "Se compra sola cuando te pagan",
       "0,45 % por compra, tope medio dólar, a la vista",
       "Las acciones son tuyas. Vender es gratis",
     ],
@@ -73,7 +73,7 @@ const es = {
     whyItems: [
       {
         claim: "Acá viven las acciones tokenizadas",
-        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana: el 93 % de todo lo tokenizado vive acá. Comprás una fracción desde 10 dólares.",
+        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana: el 93 % de todo lo tokenizado vive acá. Comprás una fracción desde 2 dólares.",
       },
       {
         claim: "Mover plata cuesta una fracción de centavo",
@@ -101,7 +101,7 @@ const es = {
       },
       {
         title: "Cobrá como siempre",
-        body: "Cada vez que te llegan USDC, esa parte se compra sola desde 10 dólares.",
+        body: "Cada vez que te llegan USDC, esa parte se junta y se compra sola al llegar a 10 dólares.",
       },
     ],
     stepsNote: "¿Todavía no te pagan en Solana?",
@@ -111,7 +111,7 @@ const es = {
       "En iPhone: tocá el botón Compartir y elegí «Agregar a inicio».",
     factsTitle: "Lo que hay, en números.",
     facts: [
-      { label: "Compra mínima", value: "$10" },
+      { label: "Compra mínima", value: "$2" },
       { label: "Comisión por compra", value: "0,45 %" },
       { label: "Tope de comisión", value: "$0,50" },
       { label: "Vender", value: "Gratis" },
@@ -120,12 +120,12 @@ const es = {
     pricingSub: "La misma cuenta que hace la app.",
     calcIfYouInvest: "Si invertís",
     calcYouBuy: "van al mercado",
-    calcMinHint: "desde 10 USDC por compra",
+    calcMinHint: "desde 2 USDC por compra",
     calcEmptyHint: "escribí un número y mirá",
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC de comisión (${pct} %, tope medio dólar).`,
     calcFootnote:
-      "Aparte va la tarifa de Jupiter y la red: cerca de 2 % en compras de 10 dólares, menos en montos más grandes. Lo ves antes de confirmar.",
+      "Aparte va la tarifa de Jupiter y la red: cerca de 2 % en compras de 10 dólares, más en montos chicos y menos en grandes. Lo ves antes de confirmar.",
     trustTitle: "Pensado para que duermas tranquilo",
     trust: [
       {
@@ -153,7 +153,7 @@ const es = {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter y la red: cerca de 2 % en compras de 10 dólares.",
+        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter y la red: cerca de 2 % en compras de 10 dólares y cerca de 8 % en compras de 2.",
       },
       {
         q: "¿Y si no me pagan en Solana?",
@@ -400,7 +400,7 @@ const es = {
   },
   invest: {
     title: "Invertí una parte de cada cobro",
-    sub: "Elegís un porcentaje y una acción. Cada vez que te llegan USDC a tu cuenta, esa parte se compra sola. Desde 10 dólares, sin broker.",
+    sub: "Elegís un porcentaje y una acción. Cada vez que te llegan USDC a tu cuenta, esa parte se compra sola. Desde 2 dólares, sin broker.",
     accountTitle: "Tu cuenta de Solana",
     accountSub: "Acá te llegan los USDC y acá quedan las acciones.",
     deposit: "Depositar",
@@ -557,7 +557,7 @@ const en: Dictionary = {
     newWayTitle: "With Camalote",
     newWay: [
       "One rule: «20% of what comes in, to the S&P 500»",
-      "It buys itself when you get paid, from 10 dollars",
+      "It buys itself when you get paid",
       "0.45% per purchase, capped at half a dollar, in plain sight",
       "The stocks are yours. Selling is free",
     ],
@@ -572,7 +572,7 @@ const en: Dictionary = {
     whyItems: [
       {
         claim: "This is where tokenized stocks live",
-        body: "More than 60 US stocks and ETFs already exist on Solana as tokens: 93% of everything tokenized lives here. You buy a fraction from 10 dollars.",
+        body: "More than 60 US stocks and ETFs already exist on Solana as tokens: 93% of everything tokenized lives here. You buy a fraction from 2 dollars.",
       },
       {
         claim: "Moving money costs a fraction of a cent",
@@ -600,7 +600,7 @@ const en: Dictionary = {
       },
       {
         title: "Get paid as usual",
-        body: "Every time USDC land, that part buys itself from 10 dollars.",
+        body: "Every time USDC land, that part adds up and buys itself once it reaches 10 dollars.",
       },
     ],
     stepsNote: "Not getting paid on Solana yet?",
@@ -610,7 +610,7 @@ const en: Dictionary = {
       "On iPhone: tap the Share button and choose «Add to Home Screen».",
     factsTitle: "What's there, in numbers.",
     facts: [
-      { label: "Minimum purchase", value: "$10" },
+      { label: "Minimum purchase", value: "$2" },
       { label: "Fee per purchase", value: "0.45%" },
       { label: "Fee cap", value: "$0.50" },
       { label: "Selling", value: "Free" },
@@ -619,12 +619,12 @@ const en: Dictionary = {
     pricingSub: "The same math the app runs.",
     calcIfYouInvest: "If you invest",
     calcYouBuy: "goes to market",
-    calcMinHint: "from 10 USDC per purchase",
+    calcMinHint: "from 2 USDC per purchase",
     calcEmptyHint: "type a number and see",
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC is our fee (${pct}%, capped at half a dollar).`,
     calcFootnote:
-      "On top comes Jupiter's fee and the network: around 2% on 10-dollar purchases, less on larger amounts. You see it before confirming.",
+      "On top comes Jupiter's fee and the network: around 2% on 10-dollar purchases, more on small amounts and less on large ones. You see it before confirming.",
     trustTitle: "Built so you can sleep at night",
     trust: [
       {
@@ -652,7 +652,7 @@ const en: Dictionary = {
       },
       {
         q: "How much does it cost?",
-        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter and the network: around 2% on 10-dollar purchases.",
+        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter and the network: around 2% on 10-dollar purchases and around 8% on 2-dollar ones.",
       },
       {
         q: "What if I don't get paid on Solana?",
@@ -896,7 +896,7 @@ const en: Dictionary = {
   },
   invest: {
     title: "Invest part of every payment",
-    sub: "Pick a percentage and a stock. Every time USDC land in your account, that part buys itself. From 10 dollars, no broker.",
+    sub: "Pick a percentage and a stock. Every time USDC land in your account, that part buys itself. From 2 dollars, no broker.",
     accountTitle: "Your Solana account",
     accountSub: "USDC land here and the stocks stay here.",
     deposit: "Deposit",

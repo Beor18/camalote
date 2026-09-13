@@ -46,9 +46,16 @@ export const MIN_TRANSFER_UNITS = BigInt(
 export const MIN_WITHDRAW_UNITS = 100000n;
 
 /**
- * Compra mínima de acciones tokenizadas: 10 USDC. Es el piso desde el que
- * Jupiter Ultra paga la red por el usuario (modo sin gas); por debajo, lo
- * apartado se acumula hasta llegar.
+ * Compra mínima a mano: 2 USDC. Es el piso desde el que Jupiter Ultra arma
+ * una compra sin gas (observado el 2026-09-12: 1,99 pasa, 1,50 no). En
+ * montos así la red y Jupiter pesan mucho (cerca de 8 % en 2 USDC, 2 % en
+ * 10) y el ticket lo muestra antes de confirmar.
+ */
+export const BUY_MIN_UNITS = BigInt(process.env.NEXT_PUBLIC_BUY_MIN_UNITS ?? "2000000");
+
+/**
+ * Lo que junta la regla antes de comprar: 10 USDC. Los cobros chicos se
+ * acumulan hasta ahí para que la red no se coma la compra.
  */
 export const INVEST_MIN_UNITS = BigInt(
   process.env.NEXT_PUBLIC_INVEST_MIN_UNITS ?? "10000000"

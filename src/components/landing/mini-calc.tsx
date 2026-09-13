@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FEE_BPS, INVEST_MIN_UNITS } from "@/lib/config";
+import { BUY_MIN_UNITS, FEE_BPS } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { investFee } from "@/lib/invest/rules";
@@ -18,7 +18,7 @@ export function MiniCalc() {
   const result = useMemo(() => {
     const units = parseUsdc(text);
     if (units === null || units === 0n) return { kind: "empty" as const };
-    if (units < INVEST_MIN_UNITS) return { kind: "min" as const };
+    if (units < BUY_MIN_UNITS) return { kind: "min" as const };
     // sin opciones: la misma comisión que cobra la app
     const fee = investFee(units);
     return { kind: "ok" as const, fee, buy: units - fee };

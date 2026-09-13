@@ -17,6 +17,7 @@ import {
   parseTokens,
   planInvestments,
   portfolioSummary,
+  suggestedBuyUnits,
   toDisplayUnits,
   tokensForUsdc,
   tokensToDecimal,
@@ -304,6 +305,23 @@ describe("multiplicador de dividendos (scaled UI amount)", () => {
   it("formatTokensPrecise no muestra 0,0000 para un dividendo chico", () => {
     expect(formatTokensPrecise(2_770n, "es")).toBe("0,000028");
     expect(formatTokensPrecise(1_000_000n, "es")).toBe(formatTokens(1_000_000n, "es"));
+  });
+});
+
+describe("suggestedBuyUnits: el monto sugerido para comprar a mano", () => {
+  const min = 2_000_000n;
+  it("10 USDC si hay saldo o todavía no se sabe", () => {
+    expect(suggestedBuyUnits(null, min)).toBe(10_000_000n);
+    expect(suggestedBuyUnits(40_340_000n, min)).toBe(10_000_000n);
+    expect(suggestedBuyUnits(10_000_000n, min)).toBe(10_000_000n);
+  });
+  it("lo que hay, a centavos hacia abajo, si es menos de 10", () => {
+    expect(suggestedBuyUnits(4_970_000n, min)).toBe(4_970_000n);
+    expect(suggestedBuyUnits(4_999_999n, min)).toBe(4_990_000n);
+  });
+  it("nunca menos que el mínimo", () => {
+    expect(suggestedBuyUnits(1_500_000n, min)).toBe(min);
+    expect(suggestedBuyUnits(0n, min)).toBe(min);
   });
 });
 

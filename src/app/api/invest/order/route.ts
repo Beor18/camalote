@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { FEE_MAX_UNITS, INVEST_MIN_UNITS } from "@/lib/config";
+import { BUY_MIN_UNITS, FEE_MAX_UNITS } from "@/lib/config";
 import { findXStock, USDC_MAINNET_MINT } from "@/lib/invest/catalog";
 import { ultraOrder } from "@/lib/server/jupiter";
 import { clientIp, makeRateLimiter } from "@/lib/server/rateLimit";
@@ -9,7 +9,8 @@ export const runtime = "nodejs";
 
 const limited = makeRateLimiter(30);
 /** Lo que va al mercado es la compra mínima menos, como mucho, la comisión. */
-const MIN_BUY_SWAP_UNITS = INVEST_MIN_UNITS - FEE_MAX_UNITS;
+const MIN_BUY_SWAP_UNITS = BUY_MIN_UNITS - FEE_MAX_UNITS;
+const MIN_BUY_TEXT = `${Number(BUY_MIN_UNITS) / 1_000_000} USDC`;
 
 /**
  * GET /api/invest/order?side=buy|sell&asset=SPYx&units=…&taker=<cuenta de Solana>
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Revisá el monto." }, { status: 400 });
   }
   if (side === "buy" && BigInt(units) < MIN_BUY_SWAP_UNITS) {
-    return NextResponse.json({ error: "La compra mínima es 10 USDC." }, { status: 400 });
+    return NextResponse.json({ error: `La compra mínima es ${MIN_BUY_TEXT}.` }, { status: 400 });
   }
   try {
     new PublicKey(taker);

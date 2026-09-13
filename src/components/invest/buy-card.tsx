@@ -6,15 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ExplorerLink } from "@/components/bridge/panel";
 import { AssetPicker } from "@/components/invest/asset-picker";
-import { FEE_BPS, INVEST_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
+import { BUY_MIN_UNITS, FEE_BPS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
-import { useLang } from "@/lib/i18n";
+import { useLang, type Lang } from "@/lib/i18n";
 import type { XStockSymbol } from "@/lib/invest/catalog";
-import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
+import { formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
 const STEPS: BuyStep[] = ["signing", "sending", "fee"];
+
+/** El monto sugerido como texto editable ("10", "4,97"). */
+function suggestedAmount(balanceUnits: bigint | null, lang: Lang): string {
+  const units = suggestedBuyUnits(balanceUnits);
+  const text = (Number(units) / 1_000_000).toFixed(units % 1_000_000n === 0n ? 0 : 2);
+  return lang === "es" ? text.replace(".", ",") : text;
+}
 
 type State =
   | { phase: "idle"; error?: string }
@@ -45,10 +52,11 @@ export function BuyCard({
   onBuy: (quote: StockQuote, onStep: (step: BuyStep) => void) => Promise<Purchase>;
 }) {
   const { lang, t } = useLang();
-  const minText = formatUsdc(INVEST_MIN_UNITS, 0, lang);
+  const minText = formatUsdc(BUY_MIN_UNITS, 0, lang);
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
-  // Arranca en el mínimo configurado, así una prueba con poca plata no choca.
-  const [amountText, setAmountText] = useState(minText);
+  // null = el usuario todavía no escribió: se muestra el monto sugerido.
+  const [typed, setTyped] = useState<string | null>(null);
+  const amountText = typed ?? suggestedAmount(balanceUnits, lang);
   const [state, setState] = useState<State>({ phase: "idle" });
 
   const amountUnits = useMemo(() => parseUsdc(amountText), [amountText]);
@@ -57,7 +65,7 @@ export function BuyCard({
       ? null
       : amountUnits === null
         ? t.invest.buyAmountInvalid
-        : amountUnits < INVEST_MIN_UNITS
+        : amountUnits < BUY_MIN_UNITS
           ? t.invest.buyAmountMin(minText)
           : balanceUnits !== null && amountUnits > balanceUnits
             ? t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
@@ -230,7 +238,7 @@ export function BuyCard({
               spellCheck={false}
               value={amountText}
               disabled={disabled || state.phase !== "idle"}
-              onChange={(e) => setAmountText(e.target.value)}
+              onChange={(e) => setTyped(e.target.value)}
               aria-invalid={amountError ? "true" : undefined}
               aria-describedby={amountError ? "buy-amount-error" : "buy-amount-hint"}
               className="h-12 w-full rounded-xl border border-border bg-surface px-4 pr-20 font-mono text-lg tabular-nums text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"

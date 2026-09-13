@@ -1,4 +1,10 @@
-import { FEE_BPS, FEE_MAX_UNITS, FEE_MIN_UNITS, INVEST_MIN_UNITS } from "@/lib/config";
+import {
+  BUY_MIN_UNITS,
+  FEE_BPS,
+  FEE_MAX_UNITS,
+  FEE_MIN_UNITS,
+  INVEST_MIN_UNITS,
+} from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
 import { XSTOCK_DECIMALS, type XStockSymbol } from "@/lib/invest/catalog";
 import type {
@@ -34,6 +40,21 @@ export function investFee(usdcUnits: bigint, opts?: { feeBps?: number }): bigint
   if (fee < FEE_MIN_UNITS) fee = FEE_MIN_UNITS;
   if (FEE_MAX_UNITS > 0n && fee > FEE_MAX_UNITS) fee = FEE_MAX_UNITS;
   return fee;
+}
+
+/**
+ * Monto sugerido para comprar a mano: 10 USDC, o lo que haya en la cuenta
+ * si es menos (redondeado a centavos hacia abajo), y nunca menos que el
+ * mínimo. Así una cuenta chica no arranca en "no te alcanza".
+ */
+export function suggestedBuyUnits(
+  balanceUnits: bigint | null,
+  minUnits: bigint = BUY_MIN_UNITS,
+  preferredUnits: bigint = 10n * USDC_UNIT
+): bigint {
+  if (balanceUnits === null || balanceUnits >= preferredUnits) return preferredUnits;
+  const cents = (balanceUnits / 10_000n) * 10_000n;
+  return cents < minUnits ? minUnits : cents;
 }
 
 export function defaultRule(asset: XStockSymbol = "SPYx"): InvestRule {

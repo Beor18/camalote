@@ -2,7 +2,7 @@
 
 **Invertí una parte de cada cobro.** Elegís un porcentaje y una acción.
 Cada vez que te llegan USDC a tu cuenta de Solana, esa parte compra
-acciones tokenizadas, sola. Desde 10 dólares, sin broker, con la comisión
+acciones tokenizadas, sola. Desde 2 dólares, sin broker, con la comisión
 a la vista.
 
 - **Una regla, una sola vez**: «el 20 % de lo que me llega, al S&P 500».
@@ -138,23 +138,27 @@ Prueba: entrá con tu email, mandá USDC a tu cuenta de Solana, armá la
 regla o comprá a mano. Verificá el comprobante en Solscan y la
 transferencia de la comisión a tu cuenta.
 
-**Prueba mínima, con 2 USDC.** Jupiter acepta compras sin gas desde unos
-2 USDC (1,99 después de nuestra comisión pasa; 1,50 no). Cotizaciones del
-2026-09-12 para una cuenta sin SOL: 2 USDC pagan 7,65 % de red y Jupiter,
-5 USDC 3,12 %, 10 USDC 1,61 %, 50 USDC 0,41 %. Por eso el producto usa 10
-por defecto; para probar con 2:
+**Mínimos.** La compra a mano acepta desde 2 USDC (`NEXT_PUBLIC_BUY_MIN_UNITS`):
+es el piso desde el que Jupiter arma una compra sin gas (observado el
+2026-09-12: 1,99 pasa, 1,50 no). Cotizaciones de ese día para una cuenta
+sin SOL: 2 USDC pagan 7,65 % de red y Jupiter, 5 USDC 3,12 %, 10 USDC
+1,61 %, 50 USDC 0,41 %. El ticket muestra el porcentaje real antes de
+confirmar. La regla junta hasta 10 USDC (`NEXT_PUBLIC_INVEST_MIN_UNITS`)
+para que la red no se coma la compra.
+
+**Prueba mínima, con 2 USDC.**
 
 ```bash
 NEXT_PUBLIC_NETWORK=mainnet
-NEXT_PUBLIC_INVEST_MIN_UNITS=2000000   # 2 USDC (3 deja margen)
 NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
 ```
 
 Con 2 USDC probás comprar a mano y vender (el mismo camino que usa la
-regla). Para ver la regla hacen falta 4 USDC al 50 %. El cobro de la
-comisión necesita que el relayer tenga ~0,003 SOL en mainnet (crea la
-cuenta de USDC del destinatario la primera vez); si no los tiene, la compra
-igual se completa y la app dice que la comisión no se pudo cobrar.
+regla); 3 deja margen. Para ver la regla hacen falta 20 USDC al 50 %, o
+bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`. El cobro de la comisión necesita que
+el relayer tenga ~0,003 SOL en mainnet (crea la cuenta de USDC del
+destinatario la primera vez); si no los tiene, la compra igual se completa
+y la app dice que la comisión no se pudo cobrar.
 
 ## Seguridad y límites conocidos
 

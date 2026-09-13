@@ -81,6 +81,8 @@ console.log("PENDING:", await text("[data-testid=rule-pending]"));
 console.log("BALANCE 2:", await text("[data-testid=usdc-balance]"));
 
 // 5. Compra a mano: 10 USDC de NVIDIA, con el ticket a la vista
+console.log("BUY HINT:", await text("#buy-amount-hint"));
+console.log("BUY DEFAULT:", await page.inputValue("#buy-amount"));
 await page.click("[data-testid=buy-asset-NVDAx]");
 await page.fill("#buy-amount", "10");
 await page.click("[data-testid=buy-quote]");
