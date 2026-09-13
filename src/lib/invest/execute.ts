@@ -67,6 +67,7 @@ export async function executePurchase(opts: {
       camaloteFeeUnits: result.camaloteFeeUnits.toString(),
       signature: result.signature,
       feeSignature: result.feeSignature,
+      multiplier: result.multiplier ?? quote.multiplier,
     };
   } catch (err) {
     record = { ...record, status: "error", errorMessage: errorMessage(err) };
@@ -97,6 +98,7 @@ export async function executeSale(opts: {
     status: "buying",
     source: "manual",
     demo: opts.demo,
+    multiplier: opts.quote.multiplier,
   };
   savePurchase(opts.address, record);
   inFlightPurchases.add(record.id);
@@ -110,6 +112,7 @@ export async function executeSale(opts: {
       tokenUnits: result.tokenUnits.toString(),
       feeBps: result.feeBps,
       signature: result.signature,
+      multiplier: result.multiplier ?? opts.quote.multiplier,
     };
   } catch (err) {
     record = { ...record, status: "error", errorMessage: errorMessage(err) };

@@ -73,7 +73,7 @@ const es = {
     whyItems: [
       {
         claim: "Acá viven las acciones tokenizadas",
-        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana. Comprás una fracción desde 10 dólares.",
+        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana: el 93 % de todo lo tokenizado vive acá. Comprás una fracción desde 10 dólares.",
       },
       {
         claim: "Mover plata cuesta una fracción de centavo",
@@ -145,7 +145,7 @@ const es = {
     faqs: [
       {
         q: "¿Qué compro exactamente?",
-        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real, pero no son la acción: no votás, y Backed puede congelarlas si la ley lo exige.",
+        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real y los dividendos se reinvierten solos. No son la acción: no votás, y Backed puede congelarlas si la ley lo exige.",
       },
       {
         q: "¿Puede bajar?",
@@ -445,6 +445,8 @@ const es = {
     pricesFallback:
       "Precios de referencia: no pudimos consultar el mercado. El rendimiento se calcula sobre lo comprado y vendido desde Camalote.",
     priceEach: "cada una",
+    dividendsLine: (usdc: string, tokens: string, asset: string) =>
+      `Dividendos reinvertidos: +${usdc} USDC (${tokens} ${asset})`,
     sell: "Vender",
     buyTitle: "Comprar ahora",
     buySub: "Con los USDC de tu cuenta. Ves el precio y la comisión antes de confirmar.",
@@ -507,6 +509,7 @@ const es = {
     disclosureTitle: "Lo que tenés que saber",
     disclosure: [
       "Son acciones tokenizadas de xStocks, emitidas por Backed. Siguen el precio de la acción, pero no son la acción ni dan derecho a voto. Suben y bajan: no hay rendimiento prometido.",
+      "Los dividendos se reinvierten solos: cuando la acción paga, tu cantidad crece un poco. Lo ves en tu cartera.",
       "Backed puede congelarlas o retirarlas si la ley se lo exige. Esa parte no es solo tuya, como sí lo son tus USDC.",
       "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
@@ -569,7 +572,7 @@ const en: Dictionary = {
     whyItems: [
       {
         claim: "This is where tokenized stocks live",
-        body: "More than 60 US stocks and ETFs already exist on Solana as tokens. You buy a fraction from 10 dollars.",
+        body: "More than 60 US stocks and ETFs already exist on Solana as tokens: 93% of everything tokenized lives here. You buy a fraction from 10 dollars.",
       },
       {
         claim: "Moving money costs a fraction of a cent",
@@ -641,7 +644,7 @@ const en: Dictionary = {
     faqs: [
       {
         q: "What exactly am I buying?",
-        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price, but they aren't the stock: you don't vote, and Backed can freeze them if the law requires it.",
+        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price and dividends reinvest on their own. They aren't the stock: you don't vote, and Backed can freeze them if the law requires it.",
       },
       {
         q: "Can it go down?",
@@ -938,6 +941,8 @@ const en: Dictionary = {
     pricesFallback:
       "Reference prices: we couldn't reach the market. Return is computed on what was bought and sold through Camalote.",
     priceEach: "each",
+    dividendsLine: (usdc: string, tokens: string, asset: string) =>
+      `Dividends reinvested: +${usdc} USDC (${tokens} ${asset})`,
     sell: "Sell",
     buyTitle: "Buy now",
     buySub: "With the USDC in your account. You see the price and the fee before confirming.",
@@ -1000,6 +1005,7 @@ const en: Dictionary = {
     disclosureTitle: "What you should know",
     disclosure: [
       "These are tokenized stocks by xStocks, issued by Backed. They track the stock's price, but they are not the stock and carry no voting rights. They go up and down: there's no promised return.",
+      "Dividends reinvest on their own: when the stock pays, your amount grows a little. You see it in your portfolio.",
       "Backed can freeze or claw them back if the law requires it. That part isn't yours alone, the way your USDC are.",
       "Not available to residents of the United States, United Kingdom, Canada and Australia.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",

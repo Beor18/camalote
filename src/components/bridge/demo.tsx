@@ -171,18 +171,22 @@ export function useDemoEngine(): Engine {
       simulateIncoming: (address, amountUnits) => simulateDemoIncoming(address, amountUnits),
       listHoldings: async () => (email ? loadDemoHoldings(email) : []),
       quoteStock: async (asset, usdcUnits) => {
-        const { prices } = await fetchPrices();
+        const { prices, multipliers, previousMultipliers } = await fetchPrices();
         await wait(500);
-        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0);
+        // La compra del demo se cotiza y registra como si fuera anterior al
+        // último dividendo real de esa acción: así la cartera muestra el
+        // renglón de dividendos (etiquetado como simulación) con datos del mint.
+        const multiplier = previousMultipliers[asset] ?? multipliers[asset] ?? 1;
+        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0, multiplier);
       },
       buyStock: async (quote, onStep) => {
         if (!email) throw new Error("Entrá con tu email para continuar.");
         return runDemoBuy(email, quote, onStep);
       },
       quoteSell: async (asset, tokenUnits) => {
-        const { prices } = await fetchPrices();
+        const { prices, multipliers } = await fetchPrices();
         await wait(500);
-        return demoQuoteSell(asset, tokenUnits, prices[asset] ?? 0);
+        return demoQuoteSell(asset, tokenUnits, prices[asset] ?? 0, multipliers[asset] ?? 1);
       },
       sellStock: async (quote, onStep) => {
         if (!email) throw new Error("Entrá con tu email para continuar.");

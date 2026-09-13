@@ -6,13 +6,18 @@ import {
   isXStockSymbol,
   xStockByMint,
 } from "@/lib/invest/catalog";
+import { effectiveMultiplier } from "@/lib/invest/multiplier";
 import {
   defaultRule,
+  dividendsSummary,
   formatTokens,
+  formatTokensPrecise,
+  fromDisplayUnits,
   investFee,
   parseTokens,
   planInvestments,
   portfolioSummary,
+  toDisplayUnits,
   tokensForUsdc,
   tokensToDecimal,
   valueOfTokens,
@@ -213,6 +218,92 @@ describe("cuentas de la cartera", () => {
     expect(tokensToDecimal(1_540_000n)).toBe("0.0154");
     expect(tokensToDecimal(150_000_000n)).toBe("1.5");
     expect(parseTokens(tokensToDecimal(123_456_789n))).toBe(123_456_789n);
+  });
+});
+
+describe("multiplicador de dividendos (scaled UI amount)", () => {
+  // Estado real del mint de SPYx el 2026-09-12: el nuevo rige desde junio.
+  const spyx = {
+    multiplier: 1.003909240011759,
+    newMultiplier: 1.005714560286254,
+    newMultiplierEffectiveTimestamp: 1781755200,
+  };
+
+  it("usa el nuevo multiplicador cuando ya rige, y el anterior queda como previo", () => {
+    const pair = effectiveMultiplier(spyx, 1781755200 + 1);
+    expect(pair.current).toBe(spyx.newMultiplier);
+    expect(pair.previous).toBe(spyx.multiplier);
+  });
+
+  it("acepta los valores como texto, que es como los devuelve el RPC", () => {
+    const pair = effectiveMultiplier(
+      {
+        multiplier: "1.003909240011759",
+        newMultiplier: "1.005714560286254",
+        newMultiplierEffectiveTimestamp: 1781755200,
+      },
+      1781755200 + 1
+    );
+    expect(pair.current).toBeCloseTo(1.0057145, 6);
+    expect(pair.previous).toBeCloseTo(1.0039092, 6);
+  });
+
+  it("antes de la fecha sigue el vigente; sin extensión, 1", () => {
+    expect(effectiveMultiplier(spyx, 1781755200 - 1)).toEqual({
+      current: spyx.multiplier,
+      previous: spyx.multiplier,
+    });
+    expect(effectiveMultiplier({ multiplier: 1, newMultiplier: 1, newMultiplierEffectiveTimestamp: 0 })).toEqual({ current: 1, previous: 1 });
+    expect(effectiveMultiplier(undefined)).toEqual({ current: 1, previous: 1 });
+  });
+
+  it("cantidad visible = cruda × multiplicador, y vuelve hacia abajo", () => {
+    expect(toDisplayUnits(1_000_000n, 1.0057)).toBe(1_005_700n);
+    expect(toDisplayUnits(1_000_000n, 1)).toBe(1_000_000n);
+    expect(fromDisplayUnits(1_005_700n, 1.0057)).toBeLessThanOrEqual(1_000_000n);
+    expect(fromDisplayUnits(1_005_700n, 1.0057)).toBeGreaterThan(999_990n);
+  });
+
+  it("dividendos reinvertidos: lo que creció el multiplicador desde cada compra, menos las ventas", () => {
+    const buy: Purchase = {
+      id: "b",
+      createdAt: 1,
+      kind: "buy",
+      asset: "SPYx",
+      usdcUnits: "10000000",
+      tokenUnits: "1000000",
+      feeBps: 100,
+      status: "done",
+      source: "rule",
+      multiplier: 1.0,
+    };
+    const sell: Purchase = { ...buy, id: "s", kind: "sell", tokenUnits: "400000", multiplier: 1.001 };
+    const only = dividendsSummary([buy], { SPYx: 1.002 });
+    expect(only.SPYx).toBe(2_000n); // 1.000.000 × 0,002
+    const withSale = dividendsSummary([buy, sell], { SPYx: 1.002 });
+    expect(withSale.SPYx).toBe(2_000n - 400n); // lo vendido dejó de crecer desde 1,001
+    // sin multiplicador guardado o sin el de hoy, no se inventa nada
+    expect(dividendsSummary([{ ...buy, multiplier: undefined }], { SPYx: 1.002 })).toEqual({});
+    expect(dividendsSummary([buy], {})).toEqual({});
+  });
+
+  it("la cartera muestra cantidad y precio por unidad visible, y el valor no cambia", () => {
+    const summary = portfolioSummary(
+      [{ asset: "SPYx", tokenUnits: 1_000_000n }],
+      [],
+      { SPYx: 770 },
+      { SPYx: 1.01 }
+    );
+    const row = summary.rows[0];
+    expect(row.displayUnits).toBe(1_010_000n);
+    expect(row.priceEachUsd).toBeCloseTo(770 / 1.01, 6);
+    expect(row.valueUnits).toBe(valueOfTokens(1_000_000n, 770));
+    expect(row.dividendUnits).toBe(0n);
+  });
+
+  it("formatTokensPrecise no muestra 0,0000 para un dividendo chico", () => {
+    expect(formatTokensPrecise(2_770n, "es")).toBe("0,000028");
+    expect(formatTokensPrecise(1_000_000n, "es")).toBe(formatTokens(1_000_000n, "es"));
   });
 });
 

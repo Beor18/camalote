@@ -98,9 +98,10 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   }, []);
 
   const priceMap = useMemo(() => prices?.prices ?? fallbackPrices(), [prices]);
+  const multipliers = useMemo(() => prices?.multipliers ?? {}, [prices]);
   const summary = useMemo(
-    () => portfolioSummary(holdings ?? [], purchases, priceMap),
-    [holdings, purchases, priceMap]
+    () => portfolioSummary(holdings ?? [], purchases, priceMap, multipliers),
+    [holdings, purchases, priceMap, multipliers]
   );
 
   const updateRule = useCallback(
@@ -159,6 +160,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         summary={summary}
         loading={holdings === null}
         pricesLive={prices ? prices.live : null}
+        demo={session.demo}
         onSell={(asset) => setSelling(asset)}
         sellDisabled={realTestnet}
       />
@@ -172,7 +174,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         onBuy={buyNow}
       />
 
-      <PurchasesList purchases={purchases} />
+      <PurchasesList purchases={purchases} multipliers={multipliers} />
 
       <Card className="p-5">
         <div className="flex items-center gap-2">
@@ -190,6 +192,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         open={selling !== null}
         asset={selling}
         holdingUnits={sellingUnits}
+        multiplier={selling !== null ? (multipliers[selling] ?? 1) : 1}
         address={address}
         actions={actions}
         demo={session.demo}

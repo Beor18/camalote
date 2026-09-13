@@ -1,7 +1,13 @@
 import { FEE_BPS, FEE_MAX_UNITS, FEE_MIN_UNITS, INVEST_MIN_UNITS } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
 import { XSTOCK_DECIMALS, type XStockSymbol } from "@/lib/invest/catalog";
-import type { Holding, InvestRule, PriceMap, Purchase } from "@/lib/invest/types";
+import type {
+  Holding,
+  InvestRule,
+  MultiplierMap,
+  PriceMap,
+  Purchase,
+} from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
 
 /**
@@ -119,11 +125,56 @@ export function valueOfTokens(tokenUnits: bigint, priceUsd: number): bigint {
   return (tokenUnits * priceMicro) / TOKEN_UNIT;
 }
 
+/** Cantidad cruda → la que muestran las billeteras (cruda × multiplicador). */
+export function toDisplayUnits(rawUnits: bigint, multiplier = 1): bigint {
+  if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier === 1) return rawUnits;
+  return BigInt(Math.round(Number(rawUnits) * multiplier));
+}
+
+/** Cantidad visible → cruda, hacia abajo: nunca más de lo que hay. */
+export function fromDisplayUnits(displayUnits: bigint, multiplier = 1): bigint {
+  if (!Number.isFinite(multiplier) || multiplier <= 0 || multiplier === 1) return displayUnits;
+  return BigInt(Math.floor(Number(displayUnits) / multiplier));
+}
+
+/**
+ * Dividendos reinvertidos desde Camalote, en unidades visibles por acción:
+ * lo que creció el multiplicador desde cada compra, menos lo que dejó de
+ * crecer desde cada venta. Solo cuentan operaciones con multiplicador guardado.
+ */
+export function dividendsSummary(
+  purchases: Purchase[],
+  multipliers: MultiplierMap
+): Partial<Record<XStockSymbol, bigint>> {
+  const acc: Partial<Record<XStockSymbol, number>> = {};
+  for (const p of purchases) {
+    if (p.status !== "done" || p.multiplier === undefined) continue;
+    const now = multipliers[p.asset];
+    if (!now || !Number.isFinite(p.multiplier) || p.multiplier <= 0) continue;
+    const growth = Number(p.tokenUnits) * (now - p.multiplier);
+    acc[p.asset] = (acc[p.asset] ?? 0) + (p.kind === "sell" ? -growth : growth);
+  }
+  const out: Partial<Record<XStockSymbol, bigint>> = {};
+  for (const [asset, units] of Object.entries(acc)) {
+    if (units !== undefined && units >= 1) out[asset as XStockSymbol] = BigInt(Math.round(units));
+  }
+  return out;
+}
+
 export interface PortfolioRow {
   asset: XStockSymbol;
+  /** Unidades crudas, las que van en cada transacción. */
   tokenUnits: bigint;
+  multiplier: number;
+  /** Unidades como las muestra cualquier billetera. */
+  displayUnits: bigint;
+  /** Precio por unidad cruda (para valuar). */
   priceUsd: number;
+  /** Precio por unidad visible: el "cada una" que ve el usuario. */
+  priceEachUsd: number;
   valueUnits: bigint;
+  /** Dividendos reinvertidos desde Camalote, en unidades visibles. */
+  dividendUnits: bigint;
 }
 
 export interface PortfolioSummary {
@@ -141,17 +192,24 @@ export interface PortfolioSummary {
 export function portfolioSummary(
   holdings: Holding[],
   purchases: Purchase[],
-  prices: PriceMap
+  prices: PriceMap,
+  multipliers: MultiplierMap = {}
 ): PortfolioSummary {
+  const dividends = dividendsSummary(purchases, multipliers);
   const rows: PortfolioRow[] = holdings
     .filter((h) => h.tokenUnits > 0n)
     .map((h) => {
       const priceUsd = prices[h.asset] ?? 0;
+      const multiplier = multipliers[h.asset] ?? 1;
       return {
         asset: h.asset,
         tokenUnits: h.tokenUnits,
+        multiplier,
+        displayUnits: toDisplayUnits(h.tokenUnits, multiplier),
         priceUsd,
+        priceEachUsd: priceUsd / multiplier,
         valueUnits: valueOfTokens(h.tokenUnits, priceUsd),
+        dividendUnits: dividends[h.asset] ?? 0n,
       };
     })
     .sort((a, b) => (b.valueUnits > a.valueUnits ? 1 : b.valueUnits < a.valueUnits ? -1 : 0));
@@ -183,6 +241,13 @@ export function formatTokens(
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
+}
+
+/** Para cantidades chiquitas (dividendos): dos cifras significativas en vez de "0,0000". */
+export function formatTokensPrecise(units: bigint, locale: "es" | "en" = "es"): string {
+  const value = Number(units) / 10 ** XSTOCK_DECIMALS;
+  if (value >= 0.001) return formatTokens(units, locale);
+  return value.toLocaleString(locale === "es" ? "es" : "en", { maximumSignificantDigits: 2 });
 }
 
 /** "0,0154" o "0.0154" → 1540000n (8 decimales). null si no es una cantidad válida. */

@@ -45,6 +45,12 @@ export interface Purchase {
   source: "rule" | "manual";
   errorMessage?: string;
   demo?: boolean;
+  /**
+   * Multiplicador de la acción al momento de operar (ver multiplier.ts):
+   * con el de hoy se calculan los dividendos reinvertidos. Sin valor en
+   * registros anteriores.
+   */
+  multiplier?: number;
 }
 
 /** Cotización de una compra: qué sale, qué se descuenta y qué se espera recibir. */
@@ -60,16 +66,20 @@ export interface StockQuote {
   /** Costo de Jupiter y red (en modo sin gas, la red sale de la compra). */
   jupiterFeeBps: number;
   gasless: boolean;
+  /** Multiplicador vigente de la acción (1 si no se pudo leer). */
+  multiplier: number;
   /** Real: la orden de Jupiter lista para firmar. Vence en alrededor de un minuto. */
   order?: { transaction: string; requestId: string; expiresAt: number | null };
 }
 
 export interface SellQuote {
   asset: XStockSymbol;
+  /** Unidades crudas a vender. */
   tokenUnits: bigint;
   expectedUsdcUnits: bigint;
   jupiterFeeBps: number;
   gasless: boolean;
+  multiplier: number;
   order?: { transaction: string; requestId: string; expiresAt: number | null };
 }
 
@@ -80,6 +90,8 @@ export interface BuyResult {
   feeBps: number;
   camaloteFeeUnits: bigint;
   feeSignature?: string;
+  /** Multiplicador con el que queda registrada la compra (el de la cotización si falta). */
+  multiplier?: number;
 }
 
 export interface SellResult {
@@ -87,6 +99,7 @@ export interface SellResult {
   usdcUnits: bigint;
   tokenUnits: bigint;
   feeBps: number;
+  multiplier?: number;
 }
 
 export interface Holding {
@@ -96,3 +109,5 @@ export interface Holding {
 }
 
 export type PriceMap = Partial<Record<XStockSymbol, number>>;
+/** Multiplicador vigente por acción (cantidad visible = cruda × multiplicador). */
+export type MultiplierMap = Partial<Record<XStockSymbol, number>>;

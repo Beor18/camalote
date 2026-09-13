@@ -38,9 +38,11 @@ you spend, and that is the moment the money lands. Small payments add up,
 so a 25-dollar gig still invests.
 
 What you get: a portfolio with today's value (Jupiter prices) and return on
-what you put in, buy and sell by hand with the price and fees shown before
-you confirm, a receipt on Solscan for every operation, and a rule you can
-switch off in one tap.
+what you put in, the dividends xStocks reinvested for you (read from the
+token's Scaled UI Amount multiplier on-chain, compared with the multiplier
+the day you bought), buy and sell by hand with the price and fees shown
+before you confirm, a receipt on Solscan for every operation, and a rule
+you can switch off in one tap.
 
 Business model, in plain sight: 0.45% per purchase, capped at 50 cents,
 taken from the purchase and shown on the ticket. Selling is free. The fee
@@ -58,8 +60,9 @@ open it if USDC landed meanwhile).
 → completar · video → completar.
 
 **Tech**: Next.js 16, Privy (email login, embedded Solana wallet), Jupiter
-Ultra (gasless swaps, buy and sell) and Price API, Token-2022 (xStocks),
-a small Solana relayer that co-signs fee and withdrawal transfers.
+Ultra (gasless swaps, buy and sell) and Price API, Token-2022 (xStocks:
+amounts shown with the Scaled UI Amount multiplier, dividends derived from
+it), a small Solana relayer that co-signs fee and withdrawal transfers.
 
 **Country**: Argentina
 
@@ -104,9 +107,17 @@ Grabar: `node scripts/demo-video.mjs docs/demo` (dev server en demo, :3001).
 - Ningún proyecto de los 5.400 de Colosseum invierte al recibir un pago;
   los cercanos son SIPs por calendario (siphere, qist-1). myfye-1 (Breakout
   2025, ganador) validó "el Robinhood de mercados emergentes" con Privy.
-- Solana concentra cerca del 95 % del volumen mundial de acciones
-  tokenizadas: 4.900 millones en el primer semestre de 2026, 300.000+
-  tenedores (KuCoin News, sep-2026).
+- La case study oficial de Solana sobre xStocks (solana.com/news/case-study-xstocks,
+  datos al 19 de enero de 2026): 3.000 millones de volumen en cadena, 57.000
+  tenedores, 196 millones en xStocks y el 93 % de ese valor en Solana. Y el
+  cliente que describe es el nuestro: "no residentes de EE. UU., mercados
+  emergentes, gente sin cuenta de broker".
+- Actualización: cerca del 95 % del volumen mundial de acciones tokenizadas,
+  4.900 millones en el primer semestre de 2026, 300.000+ tenedores (KuCoin
+  News, sep-2026).
+- Los dividendos de xStocks se reinvierten por el multiplicador del token
+  (Scaled UI Amount). Al 2026-09-12: SPYx 1,0057, AAPLx 1,0033, QQQx 1,0027,
+  NVDAx 1,0017, TSLAx 1. Camalote lo lee del mint y lo muestra.
 - Bitso lanzó xStocks en Argentina (custodial, sin retiro). Backed no
   restringe Argentina; Bybit sí.
 - Argentina: 94 % del volumen cripto en pesos es stablecoin (a16z, ago-2026).

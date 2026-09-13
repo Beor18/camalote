@@ -69,6 +69,14 @@ await page.waitForTimeout(1200);
 await shot("04-compra-por-regla");
 console.log("PURCHASE:", await text("[data-testid=invest-purchases] p"));
 console.log("PORTFOLIO:", await text("[data-testid=portfolio-value]"));
+// El multiplicador viene de un RPC público de mainnet: si no responde, el renglón no está (por diseño).
+try {
+  await page.waitForSelector("[data-testid=dividends-SPYx]", { timeout: 8000 });
+  console.log("DIVIDENDS:", await text("[data-testid=dividends-SPYx]"));
+  await page.locator("[data-testid=invest-portfolio]").screenshot({ path: `${OUT}/04b-cartera.png` });
+} catch {
+  console.log("DIVIDENDS: sin renglón (no se pudo leer el multiplicador)");
+}
 console.log("PENDING:", await text("[data-testid=rule-pending]"));
 console.log("BALANCE 2:", await text("[data-testid=usdc-balance]"));
 

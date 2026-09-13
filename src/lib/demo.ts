@@ -272,7 +272,8 @@ export function simulateDemoIncoming(solanaAddress: string, amountUnits: bigint)
 export function demoQuoteStock(
   asset: XStockSymbol,
   usdcUnits: bigint,
-  priceUsd: number
+  priceUsd: number,
+  multiplier = 1
 ): StockQuote {
   const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS });
   const swapUnits = usdcUnits - camaloteFeeUnits;
@@ -286,6 +287,7 @@ export function demoQuoteStock(
     expectedTokenUnits,
     jupiterFeeBps: DEMO_SWAP_FEE_BPS,
     gasless: true,
+    multiplier,
   };
 }
 
@@ -322,6 +324,7 @@ export async function runDemoBuy(
     feeBps: DEMO_SWAP_FEE_BPS,
     camaloteFeeUnits: quote.camaloteFeeUnits,
     feeSignature: quote.camaloteFeeUnits > 0n ? randomBase58(88) : undefined,
+    multiplier: quote.multiplier,
   };
 }
 
@@ -329,12 +332,20 @@ export async function runDemoBuy(
 export function demoQuoteSell(
   asset: XStockSymbol,
   tokenUnits: bigint,
-  priceUsd: number
+  priceUsd: number,
+  multiplier = 1
 ): SellQuote {
   const gross = valueOfTokens(tokenUnits, priceUsd);
   const expectedUsdcUnits = (gross * BigInt(10000 - DEMO_SWAP_FEE_BPS)) / 10000n;
   if (expectedUsdcUnits <= 0n) throw new Error("No pudimos cotizar la venta.");
-  return { asset, tokenUnits, expectedUsdcUnits, jupiterFeeBps: DEMO_SWAP_FEE_BPS, gasless: true };
+  return {
+    asset,
+    tokenUnits,
+    expectedUsdcUnits,
+    jupiterFeeBps: DEMO_SWAP_FEE_BPS,
+    gasless: true,
+    multiplier,
+  };
 }
 
 /**
@@ -365,6 +376,7 @@ export async function runDemoSell(
     usdcUnits: quote.expectedUsdcUnits,
     tokenUnits: quote.tokenUnits,
     feeBps: DEMO_SWAP_FEE_BPS,
+    multiplier: quote.multiplier,
   };
 }
 

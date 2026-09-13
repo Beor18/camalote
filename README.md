@@ -12,7 +12,9 @@ a la vista.
   apartado junta 10 USDC, compra por **Jupiter Ultra** en modo sin gas. No
   necesitás SOL. Los cobros chicos se van juntando.
 - **Cartera y comprobantes**: valor de hoy con precios de Jupiter,
-  rendimiento sobre lo que pusiste, cada operación con su link a Solscan.
+  rendimiento sobre lo que pusiste, los dividendos que xStocks reinvirtió
+  por vos (leídos del multiplicador del token en la cadena), cada operación
+  con su link a Solscan.
 - **Comprar y vender a mano**: precio, comisión y costo de red a la vista
   antes de confirmar. Vender no tiene comisión de Camalote.
 - **Tu cuenta es tuya**: entrás con tu email (Privy) y tenés una billetera
@@ -43,8 +45,8 @@ token la primera vez), menos en montos más grandes. Se muestra en el ticket.
 de USDC a la cuenta de comisiones (`NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`) con
 la red pagada por nuestro relayer: `/api/withdraw` con `purpose: "fee"`,
 que solo cofirma transferencias hacia esa cuenta y desde 0,01 USDC. Si
-falla, la pierde Camalote, no el usuario. Sin cuenta configurada, la
-comisión es 0 y así se muestra.
+falla, la pierde Camalote, no el usuario, y la app lo dice en el
+comprobante. La comisión no se apaga por configuración.
 
 **Números honestos.** Un usuario que invierte 200 dólares por mes en
 compras de 50 paga 0,90 por mes. Mil usuarios así son 900 dólares por mes.
@@ -86,6 +88,12 @@ tarifa de referido de Jupiter fuera del modo sin gas) no están construidas.
   por el catálogo (`src/lib/invest/catalog.ts`, mints verificados contra
   la API de tokens de Jupiter). **Precios**: `/api/invest/prices` (cache
   30 s) usa `usdPricePrescaled` porque xStocks escalan la cantidad visible.
+- **Dividendos** (`src/lib/invest/multiplier.ts`): xStocks los reinvierte
+  subiendo el multiplicador "scaled UI amount" del mint. El mismo endpoint
+  de precios lo lee; la app muestra cantidades como cualquier billetera
+  (cruda × multiplicador), guarda el multiplicador en cada operación y la
+  cartera muestra "Dividendos reinvertidos" con la diferencia. En demo la
+  compra se registra como anterior al último dividendo real, etiquetada.
 - **Solo mainnet**: xStocks no existen en devnet. En testnet real se arma
   la regla y la app lo explica; en demo todo se simula con precios reales.
 - **Regla y operaciones** viven en el dispositivo por cuenta

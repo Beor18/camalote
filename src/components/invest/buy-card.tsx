@@ -10,7 +10,7 @@ import { FEE_BPS, INVEST_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import type { XStockSymbol } from "@/lib/invest/catalog";
-import { formatTokens } from "@/lib/invest/rules";
+import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
@@ -108,7 +108,7 @@ export function BuyCard({
           <h2 className="font-display text-2xl font-semibold">{t.invest.doneTitle}</h2>
           <p className="text-muted-foreground">
             {t.invest.doneBody(
-              formatTokens(BigInt(p.tokenUnits), lang),
+              formatTokens(toDisplayUnits(BigInt(p.tokenUnits), p.multiplier ?? 1), lang),
               p.asset,
               formatUsdc(BigInt(p.usdcUnits), 2, lang)
             )}
@@ -263,7 +263,8 @@ export function BuyCard({
             <div className="flex items-baseline justify-between gap-4">
               <dt className="font-medium">{t.invest.rowReceive}</dt>
               <dd className="font-mono text-base font-semibold tabular-nums">
-                ~{formatTokens(quoted.expectedTokenUnits, lang)} {quoted.asset}
+                ~{formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang)}{" "}
+                {quoted.asset}
               </dd>
             </div>
             {!quoted.gasless && (

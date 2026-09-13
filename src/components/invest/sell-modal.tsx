@@ -9,7 +9,13 @@ import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import type { XStockSymbol } from "@/lib/invest/catalog";
 import { executeSale } from "@/lib/invest/execute";
-import { formatTokens, parseTokens, tokensToDecimal } from "@/lib/invest/rules";
+import {
+  formatTokens,
+  fromDisplayUnits,
+  parseTokens,
+  toDisplayUnits,
+  tokensToDecimal,
+} from "@/lib/invest/rules";
 import type { Purchase, SellQuote } from "@/lib/invest/types";
 import type { BridgeActions, BuyStep } from "@/components/bridge/types";
 
@@ -25,11 +31,14 @@ type State =
 /**
  * Vender una acción tokenizada a USDC: cantidad (o todo), precio a la
  * vista, confirmar. Sin comisión de Camalote; los USDC vuelven a la cuenta.
+ * El usuario escribe cantidades como las ve en su billetera (con el
+ * multiplicador); la transacción va en unidades crudas.
  */
 export function SellModal({
   open,
   asset,
   holdingUnits,
+  multiplier,
   address,
   actions,
   demo,
@@ -38,7 +47,9 @@ export function SellModal({
 }: {
   open: boolean;
   asset: XStockSymbol | null;
+  /** Unidades crudas en la cuenta. */
   holdingUnits: bigint;
+  multiplier: number;
   address: string | null;
   actions: BridgeActions;
   demo: boolean;
@@ -49,6 +60,7 @@ export function SellModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [amountText, setAmountText] = useState("");
   const [state, setState] = useState<State>({ phase: "idle" });
+  const displayHolding = toDisplayUnits(holdingUnits, multiplier);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -72,7 +84,7 @@ export function SellModal({
       ? null
       : amountUnits === null || amountUnits === 0n
         ? t.invest.sellAmountInvalid
-        : amountUnits > holdingUnits
+        : amountUnits > displayHolding
           ? t.invest.sellTooMuch
           : null;
   const canQuote =
@@ -80,9 +92,12 @@ export function SellModal({
 
   const quote = async () => {
     if (!canQuote || !asset || amountUnits === null) return;
+    // "Todo" vende exactamente lo que hay; cualquier otra cantidad se convierte a crudas hacia abajo.
+    const rawUnits =
+      amountUnits === displayHolding ? holdingUnits : fromDisplayUnits(amountUnits, multiplier);
     setState({ phase: "quoting" });
     try {
-      const q = await actions.quoteSell(asset, amountUnits);
+      const q = await actions.quoteSell(asset, rawUnits);
       setState({ phase: "quoted", quote: q });
     } catch (err) {
       setState({
@@ -136,7 +151,13 @@ export function SellModal({
             <p className="mt-1 text-sm text-muted-foreground">
               {t.invest.sellDoneBody(
                 formatUsdc(BigInt(state.purchase.usdcUnits), 2, lang),
-                formatTokens(BigInt(state.purchase.tokenUnits), lang),
+                formatTokens(
+                  toDisplayUnits(
+                    BigInt(state.purchase.tokenUnits),
+                    state.purchase.multiplier ?? multiplier
+                  ),
+                  lang
+                ),
                 state.purchase.asset
               )}
             </p>
@@ -246,7 +267,7 @@ export function SellModal({
                   type="button"
                   disabled={state.phase !== "idle"}
                   data-testid="sell-all"
-                  onClick={() => setAmountText(tokensToDecimal(holdingUnits).replace(".", lang === "es" ? "," : "."))}
+                  onClick={() => setAmountText(tokensToDecimal(displayHolding).replace(".", lang === "es" ? "," : "."))}
                   className="rounded-lg px-2.5 py-2 text-xs font-semibold text-primary transition-colors duration-100 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer"
                 >
                   {t.invest.sellAll}
@@ -260,7 +281,7 @@ export function SellModal({
               </p>
             ) : (
               <p id="sell-amount-hint" className="text-xs text-muted-foreground">
-                {t.invest.sellHave(formatTokens(holdingUnits, lang), asset ?? "")}
+                {t.invest.sellHave(formatTokens(displayHolding, lang), asset ?? "")}
               </p>
             )}
           </div>
@@ -270,7 +291,8 @@ export function SellModal({
               <div className="flex items-baseline justify-between gap-4">
                 <dt className="min-w-0 text-muted-foreground">{t.invest.sellRowSell}</dt>
                 <dd className="shrink-0 whitespace-nowrap font-mono tabular-nums">
-                  {formatTokens(state.quote.tokenUnits, lang)} {state.quote.asset}
+                  {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang)}{" "}
+                  {state.quote.asset}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">

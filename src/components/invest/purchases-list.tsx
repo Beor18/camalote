@@ -5,11 +5,17 @@ import { Card } from "@/components/ui/card";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { formatTokens } from "@/lib/invest/rules";
-import type { Purchase } from "@/lib/invest/types";
+import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
+import type { MultiplierMap, Purchase } from "@/lib/invest/types";
 
 /** Cada operación con su comprobante: compra por regla o a mano, o venta. */
-export function PurchasesList({ purchases }: { purchases: Purchase[] }) {
+export function PurchasesList({
+  purchases,
+  multipliers,
+}: {
+  purchases: Purchase[];
+  multipliers?: MultiplierMap;
+}) {
   const { lang, t } = useLang();
   const sorted = [...purchases].sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
   if (sorted.length === 0) return null;
@@ -22,7 +28,9 @@ export function PurchasesList({ purchases }: { purchases: Purchase[] }) {
       <Card className="divide-y divide-border">
         {sorted.map((p) => {
           const sell = p.kind === "sell";
-          const tokens = formatTokens(BigInt(p.tokenUnits), lang);
+          // Cantidad como la mostraba la billetera ese día (multiplicador de entonces).
+          const multiplier = p.multiplier ?? multipliers?.[p.asset] ?? 1;
+          const tokens = formatTokens(toDisplayUnits(BigInt(p.tokenUnits), multiplier), lang);
           const usdc = `${formatUsdc(BigInt(p.usdcUnits), 2, lang)} ${t.common.usdc}`;
           const camaloteFee = BigInt(p.camaloteFeeUnits ?? "0");
           const feeText =

@@ -5,21 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { findXStock, type XStockSymbol } from "@/lib/invest/catalog";
-import { formatTokens, formatUsd, type PortfolioSummary } from "@/lib/invest/rules";
+import {
+  formatTokens,
+  formatTokensPrecise,
+  formatUsd,
+  valueOfTokens,
+  type PortfolioSummary,
+} from "@/lib/invest/rules";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
-/** Cuánto vale hoy lo que se compró, cuánto rindió, y vender cuando quieras. */
+/**
+ * Cuánto vale hoy lo que se compró, cuánto rindió, qué te reinvirtieron en
+ * dividendos, y vender cuando quieras. Las cantidades se muestran como en
+ * cualquier billetera (cruda × multiplicador de la acción).
+ */
 export function PortfolioCard({
   summary,
   loading,
   pricesLive,
+  demo,
   onSell,
   sellDisabled,
 }: {
   summary: PortfolioSummary;
   loading: boolean;
   pricesLive: boolean | null;
+  demo: boolean;
   onSell: (asset: XStockSymbol) => void;
   sellDisabled?: boolean;
 }) {
@@ -86,32 +98,44 @@ export function PortfolioCard({
           {summary.rows.map((row) => {
             const stock = findXStock(row.asset);
             return (
-              <li key={row.asset} className="flex items-center justify-between gap-3 p-3">
-                <div className="min-w-0">
-                  <p className="font-mono text-sm font-semibold">{row.asset}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {stock?.name} · {formatUsd(row.priceUsd, lang)} {t.invest.priceEach}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  <div className="text-right">
-                    <p className="font-mono text-sm font-medium tabular-nums">
-                      {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
-                    </p>
-                    <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                      {formatTokens(row.tokenUnits, lang)} {row.asset}
+              <li key={row.asset} className="flex flex-col gap-2 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm font-semibold">{row.asset}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {stock?.name} · {formatUsd(row.priceEachUsd, lang)} {t.invest.priceEach}
                     </p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={sellDisabled}
-                    onClick={() => onSell(row.asset)}
-                    data-testid={`sell-${row.asset}`}
-                  >
-                    {t.invest.sell}
-                  </Button>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-mono text-sm font-medium tabular-nums">
+                        {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
+                      </p>
+                      <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                        {formatTokens(row.displayUnits, lang)} {row.asset}
+                      </p>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={sellDisabled}
+                      onClick={() => onSell(row.asset)}
+                      data-testid={`sell-${row.asset}`}
+                    >
+                      {t.invest.sell}
+                    </Button>
+                  </div>
                 </div>
+                {row.dividendUnits > 0n && (
+                  <p className="text-xs text-success" data-testid={`dividends-${row.asset}`}>
+                    {t.invest.dividendsLine(
+                      formatUsdc(valueOfTokens(row.dividendUnits, row.priceEachUsd), 2, lang),
+                      formatTokensPrecise(row.dividendUnits, lang),
+                      row.asset
+                    )}
+                    {demo ? t.invest.sim : ""}
+                  </p>
+                )}
               </li>
             );
           })}

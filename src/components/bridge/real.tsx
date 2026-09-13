@@ -25,6 +25,7 @@ import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
+import { fetchPrices } from "@/lib/invest/prices";
 import { investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
@@ -270,7 +271,10 @@ export function useRealEngine(): Engine {
         const taker = requireMainnetAccount(solanaAddress);
         const camaloteFeeUnits = investFee(usdcUnits);
         const swapUnits = usdcUnits - camaloteFeeUnits;
-        const order = await fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker });
+        const [order, { multipliers }] = await Promise.all([
+          fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker }),
+          fetchPrices(),
+        ]);
         return {
           asset,
           usdcUnits,
@@ -279,6 +283,7 @@ export function useRealEngine(): Engine {
           expectedTokenUnits: BigInt(order.outAmount),
           jupiterFeeBps: order.feeBps,
           gasless: order.gasless,
+          multiplier: multipliers[asset] ?? 1,
           order: {
             transaction: order.transaction,
             requestId: order.requestId,
@@ -316,17 +321,22 @@ export function useRealEngine(): Engine {
           feeBps: quote.jupiterFeeBps,
           camaloteFeeUnits: feeSignature ? quote.camaloteFeeUnits : 0n,
           feeSignature,
+          multiplier: quote.multiplier,
         };
       },
       quoteSell: async (asset, tokenUnits) => {
         const taker = requireMainnetAccount(solanaAddress);
-        const order = await fetchUltraOrder({ side: "sell", asset, units: tokenUnits, taker });
+        const [order, { multipliers }] = await Promise.all([
+          fetchUltraOrder({ side: "sell", asset, units: tokenUnits, taker }),
+          fetchPrices(),
+        ]);
         return {
           asset,
           tokenUnits,
           expectedUsdcUnits: BigInt(order.outAmount),
           jupiterFeeBps: order.feeBps,
           gasless: order.gasless,
+          multiplier: multipliers[asset] ?? 1,
           order: {
             transaction: order.transaction,
             requestId: order.requestId,
@@ -349,6 +359,7 @@ export function useRealEngine(): Engine {
           usdcUnits: BigInt(result.outputAmountResult ?? quote.expectedUsdcUnits.toString()),
           tokenUnits: quote.tokenUnits,
           feeBps: quote.jupiterFeeBps,
+          multiplier: quote.multiplier,
         };
       },
     }),

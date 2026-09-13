@@ -62,6 +62,10 @@ Base, el cruce Base→Solana por CCTP, el Paymaster de Coinbase. Flag
   Camalote, Jupiter y red, recibís) y confirmación.
 - `sell-modal.tsx`: vender cantidad o todo, precio a la vista, sin comisión.
 - `portfolio-card.tsx`: botón Vender por fila; rendimiento sobre lo neto.
+  Desde el 2026-09-13: cantidades como las muestra cualquier billetera
+  (cruda × multiplicador "scaled UI amount" de xStocks) y renglón
+  "Dividendos reinvertidos" por acción, calculado con el multiplicador
+  guardado en cada operación (`multiplier.ts`, `dividendsSummary`).
 - `purchases-list.tsx`: compras y ventas.
 - Motor: `quoteStock`/`buyStock`/`quoteSell`/`sellStock`/`simulateIncoming`.
   Real: Ultra (`side=buy|sell`), firma con Privy, cobro de comisión.
