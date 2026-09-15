@@ -23,13 +23,37 @@ Base, el cruce Base→Solana por CCTP, el Paymaster de Coinbase. Flag
   y piso de 0,01, descontada de lo que se invierte y a la vista antes de
   confirmar. Vender: gratis. Sin suscripción, sin spread escondido.
 - **Cómo se cobra**: después de que la compra salió bien, una transferencia
-  de USDC del usuario a `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`, cofirmada por
-  el relayer como fee payer (`/api/withdraw` con `purpose: "fee"`; el
-  servidor solo acepta ese destino y ese mínimo). Si falla, la pierde
-  Camalote. Sin cuenta configurada, comisión 0 y así se muestra.
-- **Por qué no la tarifa de referido de Jupiter**: Ultra no admite
-  `referralAccount` en modo sin gas, y sin gas es la única forma de que el
-  usuario no necesite SOL. Queda como palanca si Jupiter lo cambia.
+  de USDC del usuario a `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`, firmada y
+  pagada por el usuario desde su reserva de SOL (`/api/withdraw` con
+  `purpose: "fee"` arma, valida y reenvía; el servidor solo acepta ese
+  destino y ese mínimo y no firma nada). Si falla, la pierde Camalote. Si
+  la cuenta de comisiones no tiene abierta su cuenta de USDC, no se cobra:
+  esa cuenta no se la cobramos al usuario. Hasta el 2026-09-15 la
+  cofirmaba un relayer nuestro como fee payer.
+- **Por qué no la tarifa de referido de Jupiter**: la doc de tarifas de
+  integradores de Ultra desapareció (404 el 2026-09-15) y la nota anterior
+  decía que rompía el modo sin gas, que sigue haciendo falta para cargar
+  la reserva. Queda como palanca si Jupiter lo aclara.
+
+## La reserva de red (2026-09-15)
+
+Fernando: "ocultá lo del relayer y dejá que el usuario pague, o que se
+pague a través de Jupiter". Sin relayer, cada cuenta paga su propia red:
+
+- `src/lib/invest/fuel.ts`: 1 USDC se cambia por SOL con Ultra (sin gas,
+  Jupiter lo arma desde 1 USDC; probado dos veces) cuando la cuenta tiene
+  menos de 0,004 SOL. `needsFuel`, `fuelUnitsFor`, `fitBuyToBalance`.
+- La cotización de compra trae `fuelUnits` (1 USDC o 0) y el ticket lo
+  muestra como "Reserva de red (una vez)". Al comprar: primero la reserva,
+  después se vuelve a pedir la orden (con SOL, Jupiter arma la compra
+  normal, más barata que la sin gas), después la comisión.
+- Retiros: misma reserva primero si falta; el usuario es fee payer y paga
+  la cuenta destino si no existe. El servidor arma y reenvía, no cofirma.
+- La regla: si el saldo no alcanza para la compra y la reserva, invierte
+  lo que entra y deja el resto apartado.
+- Demo: misma secuencia con `solLamports` simulados.
+- Costo real por compra con reserva: Jupiter 0,10 % + red < 1 centavo +
+  ~0,0025 SOL la primera vez por acción (cuenta del token).
 - **Unit economics**: 0,045 por compra de 10; 0,50 desde 111. Un usuario
   que invierte 200 por mes en compras de 50 paga 0,90 por mes. Mil usuarios
   así: 900 por mes. La meta de 500 por mes pide unos 550 usuarios activos

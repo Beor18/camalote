@@ -8,7 +8,6 @@ import {
   MIN_WITHDRAW_UNITS,
   SOLANA_RPC_URL,
 } from "@/lib/config";
-import { loadRelayerKeypair } from "@/lib/server/relayer";
 import {
   buildWithdrawTransaction,
   validateWithdrawTransaction,
@@ -17,7 +16,8 @@ import {
 /**
  * "withdraw": el usuario retira USDC a donde quiera (mínimo 0,10).
  * "fee": la comisión de Camalote por una compra de acciones; solo hacia la
- * cuenta de comisiones y desde 0,01. En los dos casos el relayer paga la red.
+ * cuenta de comisiones y desde 0,01. En los dos casos la red la paga el
+ * usuario desde su reserva de SOL: el servidor solo arma y reenvía.
  */
 export type TransferPurpose = "withdraw" | "fee";
 
@@ -49,21 +49,29 @@ export async function buildWithdraw(
       purpose === "fee" ? "La comisión es menor al mínimo." : "El retiro mínimo es 0,10 USDC."
     );
   }
-  if (purpose === "fee" && !feeRecipient().equals(new PublicKey(destination))) {
-    throw new Error("La comisión solo va a la cuenta de comisiones.");
-  }
-  const relayer = loadRelayerKeypair();
+  const usdcMint = new PublicKey(ADDRESSES.solana.usdcMint);
   const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+
+  if (purpose === "fee") {
+    if (!feeRecipient().equals(new PublicKey(destination))) {
+      throw new Error("La comisión solo va a la cuenta de comisiones.");
+    }
+    // Nuestra cuenta de USDC la abrimos nosotros: si falta, esta vez no se cobra.
+    const feeAta = getAssociatedTokenAddressSync(usdcMint, feeRecipient(), true);
+    const info = await connection.getAccountInfo(feeAta);
+    if (!info) throw new Error("La cuenta de comisiones todavía no está abierta.");
+  }
+
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash("confirmed");
 
   const tx = buildWithdrawTransaction({
-    relayer: relayer.publicKey,
     owner: new PublicKey(owner),
     destinationOwner: new PublicKey(destination),
-    usdcMint: new PublicKey(ADDRESSES.solana.usdcMint),
+    usdcMint,
     amountUnits,
     blockhash,
+    createDestination: purpose === "withdraw",
   });
 
   return {
@@ -81,13 +89,11 @@ export async function submitWithdraw(
   lastValidBlockHeight: number,
   purpose: TransferPurpose = "withdraw"
 ): Promise<{ signature: string; amountUnits: string }> {
-  const relayer = loadRelayerKeypair();
   const usdcMint = new PublicKey(ADDRESSES.solana.usdcMint);
   const tx = Transaction.from(Buffer.from(signedTransactionBase64, "base64"));
 
-  // Nunca cofirmamos algo que no sea exactamente una transferencia de USDC del firmante.
+  // Nunca reenviamos algo que no sea exactamente una transferencia de USDC del firmante.
   const validated = validateWithdrawTransaction(tx, {
-    relayer: relayer.publicKey,
     usdcMint,
     minUnits: minUnitsFor(purpose),
   });
@@ -97,15 +103,9 @@ export async function submitWithdraw(
       throw new Error("La comisión solo va a la cuenta de comisiones.");
     }
   }
-
-  const ownerSignature = tx.signatures.find((s) =>
-    s.publicKey.equals(validated.owner)
-  );
-  if (!ownerSignature?.signature) {
+  if (!tx.verifySignatures()) {
     throw new Error("Falta la firma del dueño de los fondos.");
   }
-
-  tx.partialSign(relayer);
 
   const connection = new Connection(SOLANA_RPC_URL, "confirmed");
   const signature = await connection.sendRawTransaction(tx.serialize(), {

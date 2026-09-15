@@ -12,6 +12,7 @@ import { SellModal } from "@/components/invest/sell-modal";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
+import { fuelUnitsFor } from "@/lib/invest/fuel";
 import { fetchPrices, type PricesResult } from "@/lib/invest/prices";
 import { defaultRule, portfolioSummary } from "@/lib/invest/rules";
 import {
@@ -217,6 +218,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         open={buying}
         onClose={() => setBuying(false)}
         balanceUnits={balances.solanaUnits}
+        fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         defaultAsset={rule?.asset ?? "SPYx"}
         demo={session.demo}
         onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}

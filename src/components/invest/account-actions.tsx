@@ -7,6 +7,7 @@ import { WithdrawModal } from "@/components/bridge/withdraw-modal";
 import { SolanaDepositModal } from "@/components/invest/deposit-solana-modal";
 import { saveTransfer } from "@/lib/history";
 import { useLang } from "@/lib/i18n";
+import { fuelUnitsFor } from "@/lib/invest/fuel";
 import type { Engine } from "@/components/bridge/types";
 
 /**
@@ -60,10 +61,11 @@ export function AccountActions({ session, balances, actions }: Engine) {
         open={modal === "withdraw"}
         onClose={close}
         balanceUnits={balances.solanaUnits}
+        fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         ownAddress={address}
         demo={session.demo}
-        onWithdraw={async (destination, amountUnits) => {
-          const sig = await actions.withdrawSolana(destination, amountUnits);
+        onWithdraw={async (destination, amountUnits, onStep) => {
+          const sig = await actions.withdrawSolana(destination, amountUnits, onStep);
           saveTransfer({
             id: `w-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             createdAt: Date.now(),

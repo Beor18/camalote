@@ -9,8 +9,9 @@ a la vista.
   Cinco acciones para empezar: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks,
   de las 60+ que existen en Solana).
 - **Se compra sola cuando te pagan**: la app mira tu cuenta y, cuando lo
-  apartado junta 10 USDC, compra por **Jupiter Ultra** en modo sin gas. No
-  necesitás SOL. Los cobros chicos se van juntando.
+  apartado junta 10 USDC, compra por **Jupiter Ultra**. La red la pagás vos
+  desde una reserva de SOL que la app carga sola con 1 USDC la primera vez.
+  Los cobros chicos se van juntando.
 - **Cartera y comprobantes**: valor de hoy con precios de Jupiter,
   rendimiento sobre lo que pusiste, los dividendos que xStocks reinvirtió
   por vos (leídos del multiplicador del token en la cadena), cada operación
@@ -37,21 +38,25 @@ gratis. No hay suscripción ni spread escondido.
 | $120 | $0,50 (tope) | 0,42 % |
 | $500 | $0,50 (tope) | 0,10 % |
 
-Aparte, Jupiter cobra su tarifa y, en modo sin gas, descuenta la red de la
-compra: cerca de 2 % en compras de 10 USDC (incluye crear la cuenta del
-token la primera vez), menos en montos más grandes. Se muestra en el ticket.
+Aparte, Jupiter cobra 0,10 % y la red la paga el usuario desde su reserva
+de SOL: menos de un centavo por operación, más unos 0,0025 SOL la primera
+vez que compra cada acción (abre la cuenta del token). La reserva se carga
+sola: 1 USDC cambiado a SOL por Ultra, sin gas, la primera vez y cada vez
+que baja de 0,004 SOL. Todo se muestra en el ticket.
 
 **Cómo se cobra.** Después de que la compra salió bien, una transferencia
-de USDC a la cuenta de comisiones (`NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`) con
-la red pagada por nuestro relayer: `/api/withdraw` con `purpose: "fee"`,
-que solo cofirma transferencias hacia esa cuenta y desde 0,01 USDC. Si
-falla, la pierde Camalote, no el usuario, y la app lo dice en el
-comprobante. La comisión no se apaga por configuración.
+de USDC a la cuenta de comisiones (`NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`) que
+el usuario firma y paga desde su reserva: `/api/withdraw` con
+`purpose: "fee"` arma la transferencia y, ya firmada, la valida y la
+reenvía (el servidor no firma nada). Si falla, la pierde Camalote, no el
+usuario, y la app lo dice en el comprobante. Si la cuenta de comisiones no
+tiene abierta su cuenta de USDC, no se cobra: esa cuenta la abre Camalote,
+no el usuario. La comisión no se apaga por configuración.
 
 **Números honestos.** Un usuario que invierte 200 dólares por mes en
 compras de 50 paga 0,90 por mes. Mil usuarios así son 900 dólares por mes.
 El negocio es volumen. Las palancas siguientes (más activos, canastas, la
-tarifa de referido de Jupiter fuera del modo sin gas) no están construidas.
+tarifa de referido de Jupiter) no están construidas.
 
 ## Cómo funciona por dentro
 
@@ -63,10 +68,11 @@ tarifa de referido de Jupiter fuera del modo sin gas) no están construidas.
    │                                          junta hasta 10 USDC
    │                                                 │
    ▼                                                 ▼
- /api/invest/order  ◄── quoteStock ── Jupiter Ultra arma la orden (sin gas)
+ /api/invest/order side=fuel ── sin SOL en la cuenta: 1 USDC → SOL (Ultra, sin gas)
+ /api/invest/order  ◄── quoteStock ── Jupiter Ultra arma la orden
  firma con la billetera embebida
- /api/invest/execute ── Jupiter cofirma, paga la red y ejecuta
- /api/withdraw purpose=fee ── comisión a la cuenta de Camalote (relayer paga la red)
+ /api/invest/execute ── Jupiter ejecuta (la red sale de la reserva del usuario)
+ /api/withdraw purpose=fee ── comisión a la cuenta de Camalote (el usuario paga la red)
    │
    ▼
  xStocks (Token-2022) en la cuenta del usuario · cartera desde la cadena
@@ -124,50 +130,51 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
 1. **Privy** ([dashboard.privy.io](https://dashboard.privy.io)): app con
    login por email y embedded wallets de **Solana** ("create on login").
    `NEXT_PUBLIC_PRIVY_APP_ID`.
-2. **Relayer de Solana**: `pnpm relayer` genera la clave;
-   `RELAYER_SOLANA_SECRET` en `.env.local`. Paga la red de retiros y de
-   la comisión (~0,00001 SOL cada uno).
-3. **SOL para el relayer**: la app corre solo en mainnet. Mandale algo de
-   SOL al relayer (0,01 alcanza para empezar).
-4. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>` (si falta,
+2. **Nada para la red**: no hay relayer. El usuario paga la red desde su
+   reserva de SOL, que la app carga sola. (`pnpm relayer` y
+   `RELAYER_SOLANA_SECRET` quedan solo para el módulo oculto de cobros.)
+3. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>` (si falta,
    usa la cuenta por defecto de `src/lib/config.ts`). Siempre se cobra.
-5. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
+   Esa cuenta tiene que tener abierta su cuenta de USDC (recibir USDC una
+   vez alcanza); mientras no la tenga, la compra sale igual y la comisión
+   se marca como no cobrada.
+4. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
    `api.jup.ag`; sin clave usa `lite-api.jup.ag`.
-6. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.
+5. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.
 
 Prueba: entrá con tu email, mandá USDC a tu cuenta de Solana, armá la
 regla o comprá a mano. Verificá el comprobante en Solscan y la
 transferencia de la comisión a tu cuenta.
 
-**Mínimos.** La compra a mano acepta desde 2 USDC (`NEXT_PUBLIC_BUY_MIN_UNITS`):
-es el piso desde el que Jupiter arma una compra sin gas (observado el
-2026-09-12: 1,99 pasa, 1,50 no). Cotizaciones de ese día para una cuenta
-sin SOL: 2 USDC pagan 7,65 % de red y Jupiter, 5 USDC 3,12 %, 10 USDC
-1,61 %, 50 USDC 0,41 %. El ticket muestra el porcentaje real antes de
-confirmar. La regla junta hasta 10 USDC (`NEXT_PUBLIC_INVEST_MIN_UNITS`)
-para que la red no se coma la compra.
+**Mínimos.** La compra a mano acepta desde 2 USDC (`NEXT_PUBLIC_BUY_MIN_UNITS`).
+La reserva de red lleva 1 USDC más la primera vez (queda en la cuenta como
+SOL). Con la reserva cargada, Jupiter cobra 0,10 % y la red menos de un
+centavo, así que el costo ya no depende del monto; el ticket lo muestra
+antes de confirmar. (Referencia: sin reserva, en modo sin gas, Jupiter
+descontaba de la compra 7,65 % en 2 USDC y 1,61 % en 10, medido el
+2026-09-12; por eso la reserva.) La regla junta hasta 10 USDC
+(`NEXT_PUBLIC_INVEST_MIN_UNITS`).
 
-**Prueba mínima, con 2 USDC.** Opcional, un RPC dedicado en vez del público:
+**Prueba mínima, con 3 USDC.** Opcional, un RPC dedicado en vez del público:
 
 ```bash
 NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
 ```
 
-Con 2 USDC probás comprar a mano y vender (el mismo camino que usa la
-regla); 3 deja margen. Para ver la regla hacen falta 20 USDC al 50 %, o
-bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`. El cobro de la comisión necesita que
-el relayer tenga ~0,003 SOL en mainnet (crea la cuenta de USDC del
-destinatario la primera vez); si no los tiene, la compra igual se completa
-y la app dice que la comisión no se pudo cobrar.
+Con 3 USDC probás comprar a mano y vender (el mismo camino que usa la
+regla): 1 va a la reserva de red y 2 a la compra. Para ver la regla hacen
+falta 22 USDC al 50 %, o bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`.
 
 ## Seguridad y límites conocidos
 
-- Cada compra y venta la firma el usuario con su billetera embebida. Jupiter
-  cofirma solo para pagar la red. Nuestro relayer cofirma únicamente
+- Cada compra y venta la firma el usuario con su billetera embebida y paga
+  la red desde su reserva de SOL. `/api/withdraw` arma y reenvía
   transferencias de USDC del firmante (retiros) o hacia la cuenta de
-  comisiones (fee), validadas estructuralmente (`withdrawTx.ts`).
-- `/api/invest/order` solo arma órdenes entre USDC y el catálogo: no es un
-  proxy genérico. Rate limit simple por IP en memoria.
+  comisiones (fee), validadas estructuralmente (`withdrawTx.ts`); el
+  servidor no firma nada. No hay relayer en invertir.
+- `/api/invest/order` solo arma órdenes entre USDC y el catálogo, más el
+  cambio fijo de 1 USDC a SOL de la reserva: no es un proxy genérico. Rate
+  limit simple por IP en memoria.
 - La regla corre en el navegador: si la app está cerrada, no compra. Es
   una limitación real y se dice en la app y en el FAQ.
 - xStocks: *permanent delegate* de Backed (puede congelar o retirar),

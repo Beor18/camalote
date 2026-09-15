@@ -13,26 +13,32 @@ import {
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
 
 /**
- * Retiro de USDC en Solana con gas pagado por el relayer.
+ * Transferencia de USDC en Solana con la red pagada por el propio dueño
+ * (desde su reserva de SOL). Sirve para retirar y para cobrar la comisión.
  *
  * El servidor arma la transacción, el usuario la firma con su billetera
- * embebida y el relayer la cofirma como fee payer. Antes de cofirmar, el
- * servidor la valida estructuralmente: solo puede contener "crear la cuenta
- * destino si falta" + "transferir USDC del dueño que firma". Nada más.
+ * embebida y el servidor la reenvía a la red. Antes de reenviar la valida
+ * estructuralmente: solo puede contener "crear la cuenta destino si falta"
+ * + "transferir USDC del dueño que firma". Nada más, así nadie usa el
+ * endpoint como puente genérico.
  */
 
 export interface WithdrawParams {
-  relayer: PublicKey;
   owner: PublicKey;
   destinationOwner: PublicKey;
   usdcMint: PublicKey;
   amountUnits: bigint;
   blockhash: string;
+  /**
+   * Crear la cuenta de USDC del destino si falta (la paga el dueño). En un
+   * retiro sí; para la comisión no: nuestra cuenta no se la cobramos a nadie.
+   */
+  createDestination?: boolean;
 }
 
 export function buildWithdrawTransaction(params: WithdrawParams): Transaction {
-  const { relayer, owner, destinationOwner, usdcMint, amountUnits, blockhash } =
-    params;
+  const { owner, destinationOwner, usdcMint, amountUnits, blockhash } = params;
+  const createDestination = params.createDestination ?? true;
   const sourceAta = getAssociatedTokenAddressSync(usdcMint, owner, true);
   const destinationAta = getAssociatedTokenAddressSync(
     usdcMint,
@@ -42,13 +48,19 @@ export function buildWithdrawTransaction(params: WithdrawParams): Transaction {
 
   const tx = new Transaction().add(
     ComputeBudgetProgram.setComputeUnitLimit({ units: 80_000 }),
-    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }),
-    createAssociatedTokenAccountIdempotentInstruction(
-      relayer,
-      destinationAta,
-      destinationOwner,
-      usdcMint
-    ),
+    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 })
+  );
+  if (createDestination) {
+    tx.add(
+      createAssociatedTokenAccountIdempotentInstruction(
+        owner,
+        destinationAta,
+        destinationOwner,
+        usdcMint
+      )
+    );
+  }
+  tx.add(
     createTransferCheckedInstruction(
       sourceAta,
       usdcMint,
@@ -58,7 +70,7 @@ export function buildWithdrawTransaction(params: WithdrawParams): Transaction {
       USDC_DECIMALS
     )
   );
-  tx.feePayer = relayer;
+  tx.feePayer = owner;
   tx.recentBlockhash = blockhash;
   return tx;
 }
@@ -74,24 +86,23 @@ export interface ValidatedWithdraw {
 }
 
 /**
- * Rechaza cualquier transacción que el relayer no deba cofirmar.
- * Devuelve el dueño firmante y el monto si todo está en orden.
+ * Rechaza cualquier transacción que no sea exactamente una transferencia de
+ * USDC del dueño que firma, con la red pagada por él. Devuelve el dueño y
+ * el monto si todo está en orden.
  */
 export function validateWithdrawTransaction(
   tx: Transaction,
-  opts: { relayer: PublicKey; usdcMint: PublicKey; minUnits: bigint }
+  opts: { usdcMint: PublicKey; minUnits: bigint }
 ): ValidatedWithdraw {
-  const { relayer, usdcMint, minUnits } = opts;
+  const { usdcMint, minUnits } = opts;
 
-  if (!tx.feePayer || !tx.feePayer.equals(relayer)) {
-    throw new Error("Fee payer inválido.");
-  }
   if (tx.instructions.length > 4) {
     throw new Error("Demasiadas instrucciones.");
   }
 
   let transfer: ValidatedWithdraw | null = null;
   let createdAta: PublicKey | null = null;
+  let ataPayer: PublicKey | null = null;
   let transferDestination: PublicKey | null = null;
 
   for (const ix of tx.instructions) {
@@ -107,6 +118,7 @@ export function validateWithdrawTransaction(
       ) {
         throw new Error("Instrucción de cuenta no permitida.");
       }
+      const payer = ix.keys[0]?.pubkey;
       const mint = ix.keys[3]?.pubkey;
       const ata = ix.keys[1]?.pubkey;
       const ataOwner = ix.keys[2]?.pubkey;
@@ -120,7 +132,11 @@ export function validateWithdrawTransaction(
       ) {
         throw new Error("Cuenta destino inconsistente.");
       }
+      if (createdAta) {
+        throw new Error("Más de una cuenta a crear.");
+      }
       createdAta = ata;
+      ataPayer = payer ?? null;
       continue;
     }
     if (ix.programId.equals(TOKEN_PROGRAM_ID)) {
@@ -138,9 +154,6 @@ export function validateWithdrawTransaction(
       }
       if (!ownerMeta.isSigner) {
         throw new Error("El dueño no firma la transferencia.");
-      }
-      if (owner.equals(relayer)) {
-        throw new Error("El relayer no puede ser el origen.");
       }
       if (!source.equals(getAssociatedTokenAddressSync(usdcMint, owner, true))) {
         throw new Error("El origen no es la cuenta del firmante.");
@@ -167,9 +180,16 @@ export function validateWithdrawTransaction(
   if (!transfer || !transferDestination) {
     throw new Error("Falta la transferencia.");
   }
-  // Si la transacción crea una cuenta, tiene que ser exactamente la destino.
+  // La red la paga el mismo dueño que transfiere: nadie firma por otro.
+  if (!tx.feePayer || !tx.feePayer.equals(transfer.owner)) {
+    throw new Error("Fee payer inválido.");
+  }
+  // Si la transacción crea una cuenta, tiene que ser exactamente la destino y pagarla el dueño.
   if (createdAta && !createdAta.equals(transferDestination)) {
     throw new Error("La cuenta creada no coincide con el destino.");
+  }
+  if (createdAta && (!ataPayer || !ataPayer.equals(transfer.owner))) {
+    throw new Error("La cuenta destino la paga el dueño.");
   }
   return transfer;
 }

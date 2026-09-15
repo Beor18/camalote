@@ -14,7 +14,6 @@ import { formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/ru
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
-const STEPS: BuyStep[] = ["signing", "sending", "fee"];
 
 /** El monto sugerido como texto editable ("10", "4,97"). */
 function suggestedAmount(balanceUnits: bigint | null, lang: Lang): string {
@@ -37,6 +36,7 @@ type State =
  */
 export function BuyCard({
   balanceUnits,
+  fuelUnits,
   defaultAsset,
   demo,
   bare,
@@ -44,6 +44,8 @@ export function BuyCard({
   onBuy,
 }: {
   balanceUnits: bigint | null;
+  /** Reserva de red que se carga antes de la compra (0 si la cuenta ya tiene SOL). */
+  fuelUnits: bigint;
   defaultAsset: XStockSymbol;
   demo: boolean;
   /** Sin borde: cuando vive adentro de una hoja. */
@@ -55,9 +57,12 @@ export function BuyCard({
   const frame = bare ? "border-0" : "";
   const minText = formatUsdc(BUY_MIN_UNITS, 0, lang);
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
+  // Lo que se puede invertir: el saldo menos la reserva de red, si hay que cargarla.
+  const spendableUnits =
+    balanceUnits === null ? null : balanceUnits > fuelUnits ? balanceUnits - fuelUnits : 0n;
   // null = el usuario todavía no escribió: se muestra el monto sugerido.
   const [typed, setTyped] = useState<string | null>(null);
-  const amountText = typed ?? suggestedAmount(balanceUnits, lang);
+  const amountText = typed ?? suggestedAmount(spendableUnits, lang);
   const [state, setState] = useState<State>({ phase: "idle" });
 
   const amountUnits = useMemo(() => parseUsdc(amountText), [amountText]);
@@ -68,8 +73,13 @@ export function BuyCard({
         ? t.invest.buyAmountInvalid
         : amountUnits < BUY_MIN_UNITS
           ? t.invest.buyAmountMin(minText)
-          : balanceUnits !== null && amountUnits > balanceUnits
-            ? t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
+          : balanceUnits !== null && amountUnits + fuelUnits > balanceUnits
+            ? fuelUnits > 0n
+              ? t.invest.buyInsufficientFuel(
+                  formatUsdc(balanceUnits, 2, lang),
+                  formatUsdc(fuelUnits, 0, lang)
+                )
+              : t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
             : null;
   const canQuote = amountUnits !== null && amountError === null && state.phase === "idle";
 
@@ -127,6 +137,11 @@ export function BuyCard({
               : t.invest.camaloteFeeSkipped}{" "}
             {t.invest.feeLine(pct(p.feeBps))}
           </p>
+          {p.fuelUnits && BigInt(p.fuelUnits) > 0n && (
+            <p className="text-xs text-muted-foreground">
+              {t.invest.fuelDoneLine(formatUsdc(BigInt(p.fuelUnits), 2, lang))}
+            </p>
+          )}
           {demo ? (
             <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
           ) : (
@@ -148,9 +163,16 @@ export function BuyCard({
   }
 
   if (state.phase === "running") {
-    const activeIndex = STEPS.indexOf(state.step);
+    const steps: BuyStep[] = [
+      ...(state.quote.fuelUnits > 0n ? (["fuel"] as BuyStep[]) : []),
+      "signing",
+      "sending",
+      "fee",
+    ];
+    const activeIndex = steps.indexOf(state.step);
     const labels: Record<BuyStep, string> = {
       quoting: t.invest.quoteLoading,
+      fuel: t.invest.stepFuel,
       signing: t.invest.stepSigning,
       sending: t.invest.stepSending,
       fee: t.invest.stepFee,
@@ -158,7 +180,7 @@ export function BuyCard({
     return (
       <Card className={`p-6 ${frame}`} data-testid="invest-buy" aria-live="polite">
         <ol className="flex flex-col gap-3">
-          {STEPS.map((step, i) => {
+          {steps.map((step, i) => {
             const s = i < activeIndex ? "done" : i === activeIndex ? "active" : "pending";
             return (
               <li key={step} className="flex items-center gap-3">
@@ -253,7 +275,9 @@ export function BuyCard({
             </p>
           ) : (
             <p id="buy-amount-hint" className="text-xs text-muted-foreground">
-              {t.invest.buyAmountHint(minText)}
+              {fuelUnits > 0n
+                ? t.invest.buyAmountHintFuel(minText, formatUsdc(fuelUnits, 0, lang))
+                : t.invest.buyAmountHint(minText)}
             </p>
           )}
         </div>
@@ -263,6 +287,11 @@ export function BuyCard({
             <Row label={t.invest.rowSpend}>
               {formatUsdc(quoted.usdcUnits, 2, lang)} {t.common.usdc}
             </Row>
+            {quoted.fuelUnits > 0n && (
+              <Row label={t.invest.rowFuel}>
+                + {formatUsdc(quoted.fuelUnits, 2, lang)} {t.common.usdc}
+              </Row>
+            )}
             <Row label={t.invest.rowCamaloteFee(pct(FEE_BPS))}>
               − {fee(quoted.camaloteFeeUnits)} {t.common.usdc}
             </Row>
@@ -275,11 +304,18 @@ export function BuyCard({
                 {quoted.asset}
               </dd>
             </div>
-            {!quoted.gasless && (
+            {quoted.fuelUnits > 0n ? (
               <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
                 <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                {t.invest.quoteNotGasless}
+                {t.invest.fuelNote}
               </p>
+            ) : (
+              !quoted.gasless && (
+                <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
+                  <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                  {t.invest.quoteNotGasless}
+                </p>
+              )
             )}
             <p className="text-xs text-muted-foreground">{t.invest.quoteValid}</p>
           </dl>

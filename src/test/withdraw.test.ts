@@ -1,36 +1,49 @@
 import { describe, expect, it } from "vitest";
 import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { createTransferCheckedInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import {
   buildWithdrawTransaction,
   validateWithdrawTransaction,
 } from "@/lib/solana/withdrawTx";
 
-const relayer = Keypair.generate().publicKey;
 const owner = Keypair.generate().publicKey;
 const destination = Keypair.generate().publicKey;
-const usdcMint = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+const stranger = Keypair.generate().publicKey;
+const usdcMint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const BLOCKHASH = "EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k";
 const MIN = 100000n;
 
-function build(amount = 25_000_000n) {
+function build(amount = 25_000_000n, createDestination = true) {
   return buildWithdrawTransaction({
-    relayer,
     owner,
     destinationOwner: destination,
     usdcMint,
     amountUnits: amount,
     blockhash: BLOCKHASH,
+    createDestination,
   });
 }
 
-const opts = { relayer, usdcMint, minUnits: MIN };
+const opts = { usdcMint, minUnits: MIN };
 
-describe("retiro en Solana: validación del relayer", () => {
-  it("acepta la transacción que él mismo armaría", () => {
-    const result = validateWithdrawTransaction(build(), opts);
+describe("transferencia de USDC en Solana: la red la paga el dueño", () => {
+  it("acepta la transacción que el servidor mismo armaría", () => {
+    const tx = build();
+    expect(tx.feePayer?.equals(owner)).toBe(true);
+    const result = validateWithdrawTransaction(tx, opts);
     expect(result.owner.equals(owner)).toBe(true);
     expect(result.amountUnits).toBe(25_000_000n);
+  });
+
+  it("para la comisión no crea la cuenta destino (no se la cobra al usuario)", () => {
+    const tx = build(500_000n, false);
+    expect(tx.instructions).toHaveLength(3);
+    const result = validateWithdrawTransaction(tx, opts);
+    expect(result.destination.equals(getAssociatedTokenAddressSync(usdcMint, destination, true))).toBe(true);
   });
 
   it("sobrevive a un roundtrip de serialización", () => {
@@ -42,18 +55,33 @@ describe("retiro en Solana: validación del relayer", () => {
     expect(result.amountUnits).toBe(25_000_000n);
   });
 
-  it("rechaza fee payer distinto del relayer", () => {
+  it("rechaza que otro pague la red", () => {
     const tx = build();
-    tx.feePayer = owner;
+    tx.feePayer = stranger;
     expect(() => validateWithdrawTransaction(tx, opts)).toThrow(/Fee payer/);
   });
 
-  it("rechaza instrucciones extra (drenar SOL del relayer)", () => {
+  it("rechaza que otro pague la cuenta destino", () => {
+    const tx = build(25_000_000n, false);
+    tx.instructions.splice(
+      2,
+      0,
+      createAssociatedTokenAccountIdempotentInstruction(
+        stranger,
+        getAssociatedTokenAddressSync(usdcMint, destination, true),
+        destination,
+        usdcMint
+      )
+    );
+    expect(() => validateWithdrawTransaction(tx, opts)).toThrow(/la paga el dueño/);
+  });
+
+  it("rechaza instrucciones extra (mover SOL)", () => {
     const tx = build();
     tx.add(
       SystemProgram.transfer({
-        fromPubkey: relayer,
-        toPubkey: owner,
+        fromPubkey: owner,
+        toPubkey: stranger,
         lamports: 1_000_000,
       })
     );
@@ -76,7 +104,6 @@ describe("retiro en Solana: validación del relayer", () => {
   });
 
   it("rechaza si el origen no es la cuenta del firmante", () => {
-    const stranger = Keypair.generate().publicKey;
     const tx = build();
     tx.instructions[3] = createTransferCheckedInstruction(
       getAssociatedTokenAddressSync(usdcMint, stranger, true), // fondos ajenos

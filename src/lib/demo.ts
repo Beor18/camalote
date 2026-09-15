@@ -3,6 +3,7 @@
 import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
 import type { XStockSymbol } from "@/lib/invest/catalog";
+import { DEMO_FUEL_LAMPORTS, fuelUnitsFor } from "@/lib/invest/fuel";
 import { investFee, tokensForUsdc, valueOfTokens } from "@/lib/invest/rules";
 import type {
   BuyResult,
@@ -12,7 +13,7 @@ import type {
   StockQuote,
 } from "@/lib/invest/types";
 import type { IncomingPayment } from "@/lib/paylink";
-import type { BuyStep } from "@/components/bridge/types";
+import type { BuyStep, WithdrawStep } from "@/components/bridge/types";
 
 /**
  * Modo demo: recorre exactamente los mismos estados que el flujo real,
@@ -35,12 +36,38 @@ const DEMO_QUOTE_OPTS = { feeBps: FEE_BPS, feeEnabled: true };
 export interface DemoBalances {
   baseUnits: string;
   solanaUnits: string;
+  /** Reserva de red (SOL, en lamports). Sin valor = cero, como una cuenta nueva. */
+  solLamports?: string;
 }
 
 const DEFAULT_BALANCES: DemoBalances = {
   baseUnits: "250000000", // 250 USDC en Base
   solanaUnits: "12340000", // 12,34 USDC en Solana
 };
+
+/** SOL de la cuenta demo (la reserva de red). */
+export function loadDemoLamports(email: string): bigint {
+  return BigInt(loadDemoBalances(email).solLamports ?? "0");
+}
+
+/**
+ * Carga la reserva de red si falta: cambia 1 USDC por SOL, como hace la app
+ * real con Jupiter. Devuelve lo que salió del saldo (0 si no hizo falta).
+ */
+async function demoEnsureFuel(email: string, onStep?: () => void): Promise<bigint> {
+  const balances = loadDemoBalances(email);
+  const fuelUnits = fuelUnitsFor(BigInt(balances.solLamports ?? "0"));
+  if (fuelUnits === 0n) return 0n;
+  if (fuelUnits > BigInt(balances.solanaUnits)) {
+    throw new Error("No te alcanza el saldo para la reserva de red.");
+  }
+  onStep?.();
+  await wait(900);
+  balances.solanaUnits = (BigInt(balances.solanaUnits) - fuelUnits).toString();
+  balances.solLamports = (BigInt(balances.solLamports ?? "0") + DEMO_FUEL_LAMPORTS).toString();
+  saveDemoBalances(email, balances);
+  return fuelUnits;
+}
 
 function balancesKey(email: string): string {
   return BALANCES_PREFIX + email.trim().toLowerCase();
@@ -164,20 +191,30 @@ export interface DemoRunCallbacks {
   onDone: (solanaSignature: string) => void;
 }
 
-/** Simula un retiro en Solana: descuenta el saldo y devuelve una firma falsa. */
+/**
+ * Simula un retiro en Solana: carga la reserva de red si falta, descuenta el
+ * saldo y devuelve una firma falsa.
+ */
 export async function runDemoWithdraw(
   email: string,
   destination: string,
-  amountUnits: bigint
+  amountUnits: bigint,
+  onStep?: (step: WithdrawStep) => void
 ): Promise<string> {
   if (destination.length < 32 || destination.length > 44) {
     throw new Error("Esa dirección de Solana no parece válida.");
   }
-  const balances = loadDemoBalances(email);
-  if (amountUnits > BigInt(balances.solanaUnits)) {
+  const before = loadDemoBalances(email);
+  const fuelUnits = fuelUnitsFor(BigInt(before.solLamports ?? "0"));
+  if (amountUnits + fuelUnits > BigInt(before.solanaUnits)) {
     throw new Error("No te alcanza el saldo en Solana.");
   }
-  await wait(1800);
+  await demoEnsureFuel(email, () => onStep?.("fuel"));
+  onStep?.("signing");
+  await wait(600);
+  onStep?.("sending");
+  await wait(1200);
+  const balances = loadDemoBalances(email);
   balances.solanaUnits = (BigInt(balances.solanaUnits) - amountUnits).toString();
   saveDemoBalances(email, balances);
   return randomBase58(88);
@@ -268,12 +305,16 @@ export function simulateDemoIncoming(solanaAddress: string, amountUnits: bigint)
   });
 }
 
-/** Cotización de compra del demo: misma comisión que la real, 1 % de Jupiter y red. */
+/**
+ * Cotización de compra del demo: misma comisión que la real, 1 % de Jupiter
+ * y red, y la reserva de red si la cuenta todavía no tiene SOL.
+ */
 export function demoQuoteStock(
   asset: XStockSymbol,
   usdcUnits: bigint,
   priceUsd: number,
-  multiplier = 1
+  multiplier = 1,
+  fuelUnits = 0n
 ): StockQuote {
   const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS });
   const swapUnits = usdcUnits - camaloteFeeUnits;
@@ -286,24 +327,28 @@ export function demoQuoteStock(
     swapUnits,
     expectedTokenUnits,
     jupiterFeeBps: DEMO_SWAP_FEE_BPS,
-    gasless: true,
+    gasless: false,
     multiplier,
+    fuelUnits,
   };
 }
 
 /**
- * Simula la compra cotizada: descuenta los USDC de la cuenta Solana (con la
- * comisión incluida) y acredita el token, con el mismo ritmo que la real.
+ * Simula la compra cotizada: carga la reserva de red si falta, descuenta los
+ * USDC de la cuenta Solana (con la comisión incluida) y acredita el token,
+ * con el mismo ritmo que la real.
  */
 export async function runDemoBuy(
   email: string,
   quote: StockQuote,
   onStep?: (step: BuyStep) => void
 ): Promise<BuyResult> {
-  const balances = loadDemoBalances(email);
-  if (quote.usdcUnits > BigInt(balances.solanaUnits)) {
+  const before = loadDemoBalances(email);
+  const fuelNeeded = fuelUnitsFor(BigInt(before.solLamports ?? "0"));
+  if (quote.usdcUnits + fuelNeeded > BigInt(before.solanaUnits)) {
     throw new Error("No te alcanza el saldo en Solana.");
   }
+  const fuelUnits = await demoEnsureFuel(email, () => onStep?.("fuel"));
   onStep?.("signing");
   await wait(700);
   onStep?.("sending");
@@ -313,6 +358,7 @@ export async function runDemoBuy(
     await wait(500);
   }
 
+  const balances = loadDemoBalances(email);
   balances.solanaUnits = (BigInt(balances.solanaUnits) - quote.usdcUnits).toString();
   saveDemoBalances(email, balances);
   adjustDemoHolding(email, quote.asset, quote.expectedTokenUnits);
@@ -325,6 +371,7 @@ export async function runDemoBuy(
     camaloteFeeUnits: quote.camaloteFeeUnits,
     feeSignature: quote.camaloteFeeUnits > 0n ? randomBase58(88) : undefined,
     multiplier: quote.multiplier,
+    fuelUnits,
   };
 }
 
@@ -343,7 +390,7 @@ export function demoQuoteSell(
     tokenUnits,
     expectedUsdcUnits,
     jupiterFeeBps: DEMO_SWAP_FEE_BPS,
-    gasless: true,
+    gasless: false,
     multiplier,
   };
 }

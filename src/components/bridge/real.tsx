@@ -25,6 +25,7 @@ import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
+import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
@@ -92,12 +93,13 @@ export function useRealEngine(): Engine {
 
   const [baseUnits, setBaseUnits] = useState<bigint | null>(null);
   const [solanaUnits, setSolanaUnits] = useState<bigint | null>(null);
+  const [solanaLamports, setSolanaLamports] = useState<bigint | null>(null);
 
   // Mientras los saldos son null, la UI muestra esqueletos; después los
   // refrescos actualizan los números en su lugar (sin parpadeo).
   const refresh = useCallback(async () => {
     if (!baseAddress && !solanaAddress) return;
-    const [baseResult, solanaResult] = await Promise.allSettled([
+    const [baseResult, solanaResult, lamportsResult] = await Promise.allSettled([
       baseAddress
         ? publicClient.readContract({
             address: ADDRESSES.base.usdc,
@@ -107,12 +109,16 @@ export function useRealEngine(): Engine {
           })
         : Promise.resolve(null),
       solanaAddress ? fetchSolanaUsdcBalance(solanaAddress) : Promise.resolve(null),
+      solanaAddress ? fetchSolLamports(solanaAddress) : Promise.resolve(null),
     ]);
     if (baseResult.status === "fulfilled" && baseResult.value !== null) {
       setBaseUnits(baseResult.value);
     }
     if (solanaResult.status === "fulfilled" && solanaResult.value !== null) {
       setSolanaUnits(solanaResult.value);
+    }
+    if (lamportsResult.status === "fulfilled" && lamportsResult.value !== null) {
+      setSolanaLamports(lamportsResult.value);
     }
   }, [baseAddress, solanaAddress]);
 
@@ -136,6 +142,7 @@ export function useRealEngine(): Engine {
   const balances: BridgeBalances = {
     baseUnits,
     solanaUnits,
+    solanaLamports,
     loading: false,
     refresh,
   };
@@ -196,50 +203,21 @@ export function useRealEngine(): Engine {
         const result = await relayWithRetries(baseTxHash, owner);
         return result.signature ?? null;
       },
-      withdrawSolana: async (destination, amountUnits) => {
+      withdrawSolana: async (destination, amountUnits, onStep) => {
         const wallet = solanaWallets[0];
-        if (!wallet || !solanaAddress) {
-          throw new Error(
-            "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos."
+        const owner = requireAccount(solanaAddress);
+        if (!wallet) throw new Error(ACCOUNT_PENDING);
+        const sign = (transaction: Uint8Array) =>
+          signTransaction({ transaction, wallet, chain: "solana:mainnet" }).then(
+            (r) => r.signedTransaction
           );
-        }
-
-        const buildRes = await fetch("/api/withdraw", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "build",
-            owner: solanaAddress,
-            destination,
-            amountUnits: amountUnits.toString(),
-          }),
-        });
-        const built = await buildRes.json();
-        if (!buildRes.ok) {
-          throw new Error(built.error ?? "No pudimos preparar el retiro.");
-        }
-
-        const { signedTransaction } = await signTransaction({
-          transaction: base64ToBytes(built.transactionBase64),
-          wallet,
-          chain: "solana:mainnet",
-        });
-
-        const submitRes = await fetch("/api/withdraw", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "submit",
-            transaction: bytesToBase64(signedTransaction),
-            blockhash: built.blockhash,
-            lastValidBlockHeight: built.lastValidBlockHeight,
-          }),
-        });
-        const result = await submitRes.json();
-        if (!submitRes.ok) {
-          throw new Error(result.error ?? "No pudimos completar el retiro.");
-        }
-        return result.signature as string;
+        // Sin SOL no hay con qué pagar la red: primero la reserva.
+        await ensureFuel(owner, sign, onStep);
+        onStep?.("signing");
+        const built = await buildTransfer(owner, destination, amountUnits, "withdraw");
+        const signed = await sign(base64ToBytes(built.transactionBase64));
+        onStep?.("sending");
+        return submitTransfer(signed, built, "withdraw");
       },
       listIncoming: async () => {
         if (!solanaAddress) return [];
@@ -267,9 +245,10 @@ export function useRealEngine(): Engine {
         const taker = requireAccount(solanaAddress);
         const camaloteFeeUnits = investFee(usdcUnits);
         const swapUnits = usdcUnits - camaloteFeeUnits;
-        const [order, { multipliers }] = await Promise.all([
+        const [order, { multipliers }, lamports] = await Promise.all([
           fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker }),
           fetchPrices(),
+          fetchSolLamports(taker),
         ]);
         return {
           asset,
@@ -280,6 +259,7 @@ export function useRealEngine(): Engine {
           jupiterFeeBps: order.feeBps,
           gasless: order.gasless,
           multiplier: multipliers[asset] ?? 1,
+          fuelUnits: fuelUnitsFor(lamports),
           order: {
             transaction: order.transaction,
             requestId: order.requestId,
@@ -297,7 +277,29 @@ export function useRealEngine(): Engine {
           signTransaction({ transaction, wallet, chain: "solana:mainnet" }).then(
             (r) => r.signedTransaction
           );
-        const result = await signAndExecute(quote.order, sign, onStep);
+
+        // Primero la reserva de red, si falta. Con SOL en la cuenta Jupiter
+        // arma la compra normal (el usuario paga la red, sale más barata que
+        // la cotizada sin gas), así que se vuelve a pedir la orden.
+        let order = quote.order;
+        let feeBps = quote.jupiterFeeBps;
+        const fuelUnits = quote.fuelUnits > 0n ? await ensureFuel(owner, sign, onStep) : 0n;
+        if (fuelUnits > 0n) {
+          try {
+            const fresh = await fetchUltraOrder({
+              side: "buy",
+              asset: quote.asset,
+              units: quote.swapUnits,
+              taker: owner,
+            });
+            order = { transaction: fresh.transaction, requestId: fresh.requestId, expiresAt: null };
+            feeBps = fresh.feeBps;
+          } catch (err) {
+            // La orden cotizada sigue siendo válida hasta que venza.
+            console.warn("[invest] no se pudo recotizar tras cargar la reserva", err);
+          }
+        }
+        const result = await signAndExecute(order, sign, onStep);
 
         // La comisión se cobra después de que la compra salió bien: si esto
         // falla, la pierde Camalote, no el usuario.
@@ -314,10 +316,11 @@ export function useRealEngine(): Engine {
           signature: result.signature,
           usdcUnits: quote.usdcUnits,
           tokenUnits: BigInt(result.outputAmountResult ?? quote.expectedTokenUnits.toString()),
-          feeBps: quote.jupiterFeeBps,
+          feeBps,
           camaloteFeeUnits: feeSignature ? quote.camaloteFeeUnits : 0n,
           feeSignature,
           multiplier: quote.multiplier,
+          fuelUnits,
         };
       },
       quoteSell: async (asset, tokenUnits) => {
@@ -381,6 +384,12 @@ async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {
   }
 }
 
+/** SOL de la cuenta: la reserva con la que el usuario paga la red. */
+async function fetchSolLamports(owner: string): Promise<bigint> {
+  const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+  return BigInt(await connection.getBalance(new PublicKey(owner), "confirmed"));
+}
+
 const ACCOUNT_PENDING =
   "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos.";
 
@@ -400,28 +409,50 @@ interface UltraOrderJson {
 }
 
 async function fetchUltraOrder(params: {
-  side: "buy" | "sell";
-  asset: XStockSymbol;
+  side: "buy" | "sell" | "fuel";
+  asset?: XStockSymbol;
   units: bigint;
   taker: string;
 }): Promise<UltraOrderJson> {
   const query = new URLSearchParams({
     side: params.side,
-    asset: params.asset,
     units: params.units.toString(),
     taker: params.taker,
   });
+  if (params.asset) query.set("asset", params.asset);
   const res = await fetch(`/api/invest/order?${query}`);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.order?.transaction) {
-    throw new Error(
-      data.error ?? (params.side === "buy" ? "No pudimos cotizar la compra." : "No pudimos cotizar la venta.")
-    );
+    const fallback =
+      params.side === "buy"
+        ? "No pudimos cotizar la compra."
+        : params.side === "sell"
+          ? "No pudimos cotizar la venta."
+          : "No pudimos preparar la reserva de red.";
+    throw new Error(data.error ?? fallback);
   }
   return data.order as UltraOrderJson;
 }
 
 type Signer = (transaction: Uint8Array) => Promise<Uint8Array>;
+
+/**
+ * La reserva de red: si la cuenta tiene menos SOL que el mínimo, cambia
+ * 1 USDC por SOL con Jupiter (sin gas, que para eso no hay) y devuelve lo
+ * que salió del saldo. Con reserva suficiente no hace nada.
+ */
+async function ensureFuel(
+  owner: string,
+  sign: Signer,
+  onStep?: (step: "fuel") => void
+): Promise<bigint> {
+  const lamports = await fetchSolLamports(owner);
+  if (!needsFuel(lamports)) return 0n;
+  onStep?.("fuel");
+  const order = await fetchUltraOrder({ side: "fuel", units: FUEL_UNITS, taker: owner });
+  await signAndExecute({ transaction: order.transaction, requestId: order.requestId }, sign);
+  return FUEL_UNITS;
+}
 
 /** Firma la orden de Jupiter con la billetera embebida y la manda a ejecutar. */
 async function signAndExecute(
@@ -450,40 +481,75 @@ async function signAndExecute(
   };
 }
 
+type TransferPurpose = "withdraw" | "fee";
+
+interface BuiltTransfer {
+  transactionBase64: string;
+  blockhash: string;
+  lastValidBlockHeight: number;
+}
+
 /**
- * Cobra la comisión de Camalote: una transferencia de USDC a la cuenta de
- * comisiones, con la red pagada por nuestro relayer (el mismo camino que el
- * retiro, con propósito "fee": el servidor solo cofirma hacia esa cuenta).
+ * Una transferencia de USDC del usuario (retiro o comisión), con la red
+ * pagada por él desde su reserva de SOL. El servidor la arma y, ya firmada,
+ * la valida y la reenvía: nunca firma nada.
  */
-async function collectFee(owner: string, feeUnits: bigint, sign: Signer): Promise<string> {
-  const buildRes = await fetch("/api/withdraw", {
+async function buildTransfer(
+  owner: string,
+  destination: string,
+  amountUnits: bigint,
+  purpose: TransferPurpose
+): Promise<BuiltTransfer> {
+  const res = await fetch("/api/withdraw", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "build",
-      purpose: "fee",
+      purpose,
       owner,
-      destination: FEE_RECIPIENT_SOLANA,
-      amountUnits: feeUnits.toString(),
+      destination,
+      amountUnits: amountUnits.toString(),
     }),
   });
-  const built = await buildRes.json();
-  if (!buildRes.ok) throw new Error(built.error ?? "No pudimos preparar la comisión.");
-  const signed = await sign(base64ToBytes(built.transactionBase64));
-  const submitRes = await fetch("/api/withdraw", {
+  const built = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      built.error ?? (purpose === "fee" ? "No pudimos preparar la comisión." : "No pudimos preparar el retiro.")
+    );
+  }
+  return built as BuiltTransfer;
+}
+
+async function submitTransfer(
+  signed: Uint8Array,
+  built: BuiltTransfer,
+  purpose: TransferPurpose
+): Promise<string> {
+  const res = await fetch("/api/withdraw", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "submit",
-      purpose: "fee",
+      purpose,
       transaction: bytesToBase64(signed),
       blockhash: built.blockhash,
       lastValidBlockHeight: built.lastValidBlockHeight,
     }),
   });
-  const result = await submitRes.json();
-  if (!submitRes.ok) throw new Error(result.error ?? "No pudimos cobrar la comisión.");
+  const result = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      result.error ?? (purpose === "fee" ? "No pudimos cobrar la comisión." : "No pudimos completar el retiro.")
+    );
+  }
   return result.signature as string;
+}
+
+/** Cobra la comisión de Camalote: USDC del usuario a la cuenta de comisiones. */
+async function collectFee(owner: string, feeUnits: bigint, sign: Signer): Promise<string> {
+  const built = await buildTransfer(owner, FEE_RECIPIENT_SOLANA, feeUnits, "fee");
+  const signed = await sign(base64ToBytes(built.transactionBase64));
+  return submitTransfer(signed, built, "fee");
 }
 
 /**

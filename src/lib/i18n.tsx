@@ -124,7 +124,7 @@ const es = {
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC de comisión (${pct} %, tope medio dólar).`,
     calcFootnote:
-      "Aparte va la tarifa de Jupiter y la red: cerca de 2 % en compras de 10 dólares, más en montos chicos y menos en grandes. Lo ves antes de confirmar.",
+      "Aparte va Jupiter, 0,10 %, y la red, que pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que queda en tu cuenta. Lo ves antes de confirmar.",
     trustTitle: "Pensado para que duermas tranquilo",
     trust: [
       {
@@ -152,7 +152,7 @@ const es = {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter y la red: cerca de 2 % en compras de 10 dólares y cerca de 8 % en compras de 2.",
+        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter cobra 0,10 % y la red la pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que se carga sola y queda en tu cuenta. La primera compra de cada acción abre su cuenta: unos 25 centavos, de esa reserva.",
       },
       {
         q: "¿Y si no me pagan en Solana?",
@@ -387,9 +387,14 @@ const es = {
     amountMin: "El retiro mínimo es 0,10 USDC.",
     amountInsufficient: (balance: string) =>
       `No te alcanza: tenés ${balance} USDC.`,
-    hint: "Mínimo 0,10 USDC. Costo de red: $0, lo cubrimos.",
+    amountInsufficientFuel: (available: string, fuel: string) =>
+      `Podés retirar hasta ${available} USDC: ${fuel} quedan para la reserva de red.`,
+    hint: "Mínimo 0,10 USDC. La red se paga desde tu reserva de SOL: menos de un centavo.",
+    hintFuel: (fuel: string) =>
+      `Mínimo 0,10 USDC. Primero se cargan ${fuel} USDC de reserva de red, que quedan en tu cuenta como SOL.`,
     submit: "Retirar",
     submitting: "Enviando",
+    stepFuel: "Cargando la reserva de red",
     doneTitle: "Retiro enviado",
     doneBody: (amount: string) => `${amount} USDC van en camino.`,
     doneBodyNoAmount: "Tus USDC van en camino.",
@@ -458,10 +463,14 @@ const es = {
     buySub: "Con los USDC de tu cuenta. Ves el precio y la comisión antes de confirmar.",
     buyAmountLabel: "¿Cuánto?",
     buyAmountHint: (min: string) => `Mínimo ${min} USDC por compra.`,
+    buyAmountHintFuel: (min: string, fuel: string) =>
+      `Mínimo ${min} USDC por compra. Esta vez se suma ${fuel} USDC de reserva de red, que queda en tu cuenta como SOL.`,
     buyAmountInvalid: "Escribí un monto válido, por ejemplo 10 o 25,50.",
     buyAmountMin: (min: string) => `El mínimo por compra es ${min} USDC.`,
     buyInsufficient: (balance: string) =>
       `No te alcanza: tenés ${balance} USDC en tu cuenta.`,
+    buyInsufficientFuel: (balance: string, fuel: string) =>
+      `No te alcanza: tenés ${balance} USDC y la reserva de red lleva ${fuel}.`,
     buyQuote: (asset: string) => `Ver precio de ${asset}`,
     quoteLoading: "Buscando el mejor precio…",
     rowSpend: "Invertís",
@@ -469,12 +478,15 @@ const es = {
     rowJupiter: (pct: string) => `Jupiter y red (${pct} %)`,
     rowIncluded: "en el precio",
     rowFeeShort: (fee: string) => `comisión ${fee}`,
+    rowFuel: "Reserva de red (una vez)",
+    fuelNote:
+      "Queda en tu cuenta como SOL y con eso pagás la red de todas tus operaciones. Se recarga sola cuando se gasta.",
     rowReceive: "Recibís",
     quoteValid: "El precio vale un minuto.",
-    quoteNotGasless:
-      "Para esta operación hace falta SOL en tu cuenta para pagar la red.",
+    quoteNotGasless: "La red se paga desde tu reserva de SOL: menos de un centavo.",
     confirmBuy: "Confirmar compra",
     changeAmount: "Cambiar",
+    stepFuel: "Cargando la reserva de red",
     stepSigning: "Firmando con tu cuenta",
     stepSending: "Comprando en Solana",
     stepSellSending: "Vendiendo en Solana",
@@ -485,6 +497,8 @@ const es = {
     camaloteFeeLine: (fee: string) => `Comisión de Camalote: ${fee} USDC.`,
     camaloteFeeSkipped: "Comisión de Camalote: esta vez no se pudo cobrar.",
     feeLine: (pct: string) => `Jupiter y red: ${pct} %, ya en el precio.`,
+    fuelDoneLine: (fuel: string) =>
+      `Reserva de red: ${fuel} USDC quedaron en tu cuenta como SOL.`,
     viewOnSolana: "Ver en Solana",
     buyAgain: "Comprar otra vez",
     genericError: "No pudimos completar la compra. Tus USDC no se movieron.",
@@ -629,7 +643,7 @@ const en: Dictionary = {
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC is our fee (${pct}%, capped at half a dollar).`,
     calcFootnote:
-      "On top comes Jupiter's fee and the network: around 2% on 10-dollar purchases, more on small amounts and less on large ones. You see it before confirming.",
+      "On top comes Jupiter, 0.10%, and the network, which you pay: under a cent per operation, from a 1-dollar reserve that stays in your account. You see it before confirming.",
     trustTitle: "Built so you can sleep at night",
     trust: [
       {
@@ -657,7 +671,7 @@ const en: Dictionary = {
       },
       {
         q: "How much does it cost?",
-        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter and the network: around 2% on 10-dollar purchases and around 8% on 2-dollar ones.",
+        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter charges 0.10% and you pay the network: under a cent per operation, from a 1-dollar reserve that loads on its own and stays in your account. The first purchase of each stock opens its account: about 25 cents, from that reserve.",
       },
       {
         q: "What if I don't get paid on Solana?",
@@ -889,9 +903,14 @@ const en: Dictionary = {
     amountMin: "The minimum withdrawal is 0.10 USDC.",
     amountInsufficient: (balance: string) =>
       `Not enough: you have ${balance} USDC.`,
-    hint: "Minimum 0.10 USDC. Network cost: $0, on us.",
+    amountInsufficientFuel: (available: string, fuel: string) =>
+      `You can withdraw up to ${available} USDC: ${fuel} stay for the network reserve.`,
+    hint: "Minimum 0.10 USDC. The network is paid from your SOL reserve: under a cent.",
+    hintFuel: (fuel: string) =>
+      `Minimum 0.10 USDC. First ${fuel} USDC go into a network reserve that stays in your account as SOL.`,
     submit: "Withdraw",
     submitting: "Sending",
+    stepFuel: "Loading the network reserve",
     doneTitle: "Withdrawal sent",
     doneBody: (amount: string) => `${amount} USDC are on their way.`,
     doneBodyNoAmount: "Your USDC are on their way.",
@@ -960,10 +979,14 @@ const en: Dictionary = {
     buySub: "With the USDC in your account. You see the price and the fee before confirming.",
     buyAmountLabel: "How much?",
     buyAmountHint: (min: string) => `Minimum ${min} USDC per purchase.`,
+    buyAmountHintFuel: (min: string, fuel: string) =>
+      `Minimum ${min} USDC per purchase. This time ${fuel} USDC more go into a network reserve that stays in your account as SOL.`,
     buyAmountInvalid: "Enter a valid amount, for example 10 or 25.50.",
     buyAmountMin: (min: string) => `The minimum per purchase is ${min} USDC.`,
     buyInsufficient: (balance: string) =>
       `Not enough: you have ${balance} USDC in your account.`,
+    buyInsufficientFuel: (balance: string, fuel: string) =>
+      `Not enough: you have ${balance} USDC and the network reserve takes ${fuel}.`,
     buyQuote: (asset: string) => `See ${asset} price`,
     quoteLoading: "Finding the best price…",
     rowSpend: "You invest",
@@ -971,12 +994,15 @@ const en: Dictionary = {
     rowJupiter: (pct: string) => `Jupiter and network (${pct}%)`,
     rowIncluded: "in the price",
     rowFeeShort: (fee: string) => `fee ${fee}`,
+    rowFuel: "Network reserve (once)",
+    fuelNote:
+      "It stays in your account as SOL and pays the network for all your operations. It tops up on its own when it runs out.",
     rowReceive: "You receive",
     quoteValid: "The price is good for a minute.",
-    quoteNotGasless:
-      "This operation needs SOL in your account to pay the network.",
+    quoteNotGasless: "The network is paid from your SOL reserve: under a cent.",
     confirmBuy: "Confirm purchase",
     changeAmount: "Change",
+    stepFuel: "Loading the network reserve",
     stepSigning: "Signing with your account",
     stepSending: "Buying on Solana",
     stepSellSending: "Selling on Solana",
@@ -987,6 +1013,8 @@ const en: Dictionary = {
     camaloteFeeLine: (fee: string) => `Camalote fee: ${fee} USDC.`,
     camaloteFeeSkipped: "Camalote fee: couldn't be collected this time.",
     feeLine: (pct: string) => `Jupiter and network: ${pct}%, already in the price.`,
+    fuelDoneLine: (fuel: string) =>
+      `Network reserve: ${fuel} USDC stayed in your account as SOL.`,
     viewOnSolana: "View on Solana",
     buyAgain: "Buy again",
     genericError: "We couldn't complete the purchase. Your USDC didn't move.",

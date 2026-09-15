@@ -10,6 +10,7 @@ import {
   loadDemoBaseBalance,
   loadDemoHoldings,
   loadDemoIncoming,
+  loadDemoLamports,
   registerDemoAccount,
   runDemoBridge,
   runDemoBuy,
@@ -18,6 +19,7 @@ import {
   simulateDemoDeposit,
   simulateDemoIncoming,
 } from "@/lib/demo";
+import { fuelUnitsFor } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import type {
   BridgeActions,
@@ -67,6 +69,7 @@ export function useDemoEngine(): Engine {
   const [email, setEmail] = useState<string | null>(null);
   const [baseUnits, setBaseUnits] = useState<bigint | null>(null);
   const [solanaUnits, setSolanaUnits] = useState<bigint | null>(null);
+  const [solanaLamports, setSolanaLamports] = useState<bigint | null>(null);
 
   useEffect(() => {
     // Lectura inicial de localStorage: sincronización con un sistema externo.
@@ -88,6 +91,7 @@ export function useDemoEngine(): Engine {
       const balances = loadDemoBalances(email);
       setBaseUnits(BigInt(balances.baseUnits));
       setSolanaUnits(BigInt(balances.solanaUnits));
+      setSolanaLamports(BigInt(balances.solLamports ?? "0"));
     }, 600);
   }, [email]);
 
@@ -124,12 +128,14 @@ export function useDemoEngine(): Engine {
       setEmail(null);
       setBaseUnits(null);
       setSolanaUnits(null);
+      setSolanaLamports(null);
     },
   };
 
   const balances: BridgeBalances = {
     baseUnits,
     solanaUnits,
+    solanaLamports,
     loading: false,
     refresh,
   };
@@ -158,9 +164,9 @@ export function useDemoEngine(): Engine {
           }
         );
       },
-      withdrawSolana: async (destination, amountUnits) => {
+      withdrawSolana: async (destination, amountUnits, onStep) => {
         if (!email) throw new Error("Entrá con tu email para continuar.");
-        return runDemoWithdraw(email, destination, amountUnits);
+        return runDemoWithdraw(email, destination, amountUnits, onStep);
       },
       // En el demo nada queda a medias: el reintento siempre "completa".
       retryDelivery: async () => null,
@@ -177,7 +183,8 @@ export function useDemoEngine(): Engine {
         // último dividendo real de esa acción: así la cartera muestra el
         // renglón de dividendos (etiquetado como simulación) con datos del mint.
         const multiplier = previousMultipliers[asset] ?? multipliers[asset] ?? 1;
-        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0, multiplier);
+        const fuelUnits = email ? fuelUnitsFor(loadDemoLamports(email)) : 0n;
+        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0, multiplier, fuelUnits);
       },
       buyStock: async (quote, onStep) => {
         if (!email) throw new Error("Entrá con tu email para continuar.");

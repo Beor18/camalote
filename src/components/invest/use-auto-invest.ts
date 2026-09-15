@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { executePurchase, reconcileInterrupted } from "@/lib/invest/execute";
+import { fitBuyToBalance, fuelUnitsFor } from "@/lib/invest/fuel";
 import { planInvestments } from "@/lib/invest/rules";
 import {
   INCOMING_EVENT,
@@ -30,10 +31,10 @@ const PAUSE_AFTER_ERROR_MS = 10 * 60 * 1000;
 export function useAutoInvest({ session, balances, actions }: Engine): void {
   const busy = useRef(false);
   const actionsRef = useRef(actions);
-  const refreshRef = useRef(balances.refresh);
+  const balancesRef = useRef(balances);
   useEffect(() => {
     actionsRef.current = actions;
-    refreshRef.current = balances.refresh;
+    balancesRef.current = balances;
   });
 
   const address = session.authenticated ? session.solanaAddress : null;
@@ -77,10 +78,23 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
         notifyInvest();
       }
       if (plan.buyUnits !== null) {
+        // Si además hay que cargar la reserva de red y el saldo no alcanza
+        // para las dos cosas, se invierte lo que entra y el resto sigue apartado.
+        const { solanaUnits, solanaLamports } = balancesRef.current;
+        const fit = fitBuyToBalance({
+          buyUnits: plan.buyUnits,
+          balanceUnits: solanaUnits,
+          fuelUnits: fuelUnitsFor(solanaLamports),
+        });
+        if (fit.buyUnits === 0n) {
+          saveRule(address, { ...plan.rule, pendingUnits: fit.leftoverUnits.toString() });
+          notifyInvest();
+          return;
+        }
         const purchase = await executePurchase({
           address,
           asset: rule.asset,
-          usdcUnits: plan.buyUnits,
+          usdcUnits: fit.buyUnits,
           source: "rule",
           actions: actionsRef.current,
           demo,
@@ -94,10 +108,15 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             lastError: purchase.errorMessage,
           });
         } else {
-          saveRule(address, { ...plan.rule, pausedUntil: undefined, lastError: undefined });
+          saveRule(address, {
+            ...plan.rule,
+            pendingUnits: fit.leftoverUnits.toString(),
+            pausedUntil: undefined,
+            lastError: undefined,
+          });
         }
         notifyInvest();
-        refreshRef.current();
+        balancesRef.current.refresh();
       }
     } catch {
       // el RPC público puede limitar: probamos en la próxima vuelta

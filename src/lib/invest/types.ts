@@ -38,6 +38,8 @@ export interface Purchase {
   feeBps: number;
   /** Comisión de Camalote descontada (solo compras), 6 decimales. */
   camaloteFeeUnits?: string;
+  /** Reserva de red cargada en esta operación (6 decimales de USDC), si hizo falta. */
+  fuelUnits?: string;
   signature?: string;
   /** Firma de la transferencia de la comisión, si se cobró. */
   feeSignature?: string;
@@ -68,6 +70,11 @@ export interface StockQuote {
   gasless: boolean;
   /** Multiplicador vigente de la acción (1 si no se pudo leer). */
   multiplier: number;
+  /**
+   * Reserva de red que se carga antes de comprar (1 USDC, o 0 si ya hay
+   * SOL): sale del saldo aparte de `usdcUnits` y queda en la cuenta.
+   */
+  fuelUnits: bigint;
   /** Real: la orden de Jupiter lista para firmar. Vence en alrededor de un minuto. */
   order?: { transaction: string; requestId: string; expiresAt: number | null };
 }
@@ -92,6 +99,8 @@ export interface BuyResult {
   feeSignature?: string;
   /** Multiplicador con el que queda registrada la compra (el de la cotización si falta). */
   multiplier?: number;
+  /** Reserva de red cargada en esta compra (0 si no hizo falta). */
+  fuelUnits?: bigint;
 }
 
 export interface SellResult {

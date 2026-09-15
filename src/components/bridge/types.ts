@@ -24,6 +24,8 @@ export interface BridgeSession {
 export interface BridgeBalances {
   baseUnits: bigint | null;
   solanaUnits: bigint | null;
+  /** SOL en la cuenta: la reserva con la que el usuario paga la red. */
+  solanaLamports: bigint | null;
   loading: boolean;
   refresh: () => void;
 }
@@ -51,8 +53,11 @@ export interface RunOptions {
   recipientOwner?: string;
 }
 
-/** Pasos de una compra o venta de acciones tokenizadas. */
-export type BuyStep = "quoting" | "signing" | "sending" | "fee";
+/** Pasos de una compra o venta de acciones tokenizadas ("fuel" = cargar la reserva de red). */
+export type BuyStep = "quoting" | "fuel" | "signing" | "sending" | "fee";
+
+/** Pasos de un retiro. */
+export type WithdrawStep = "fuel" | "signing" | "sending";
 
 export interface BridgeActions {
   getQuote: (units: bigint) => Promise<Quote>;
@@ -61,8 +66,15 @@ export interface BridgeActions {
     onUpdate: (update: RunUpdate) => void,
     options?: RunOptions
   ) => Promise<void>;
-  /** Retira USDC de la cuenta Solana del usuario a otra dirección. Devuelve la firma. */
-  withdrawSolana: (destination: string, amountUnits: bigint) => Promise<string>;
+  /**
+   * Retira USDC de la cuenta Solana del usuario a otra dirección, cargando
+   * antes la reserva de red si falta. Devuelve la firma.
+   */
+  withdrawSolana: (
+    destination: string,
+    amountUnits: bigint,
+    onStep?: (step: WithdrawStep) => void
+  ) => Promise<string>;
   /**
    * Reintenta la entrega en Solana de una transferencia que quedó a medias
    * (los USDC ya salieron de Base). Devuelve la firma, o null si otra
@@ -87,7 +99,8 @@ export interface BridgeActions {
   quoteStock: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
   /**
    * Ejecuta la compra cotizada con USDC de la cuenta Solana del usuario
-   * (Jupiter Ultra, modo sin gas) y después cobra la comisión de Camalote.
+   * (carga la reserva de red si falta, compra por Jupiter Ultra) y después
+   * cobra la comisión de Camalote.
    */
   buyStock: (quote: StockQuote, onStep?: (step: BuyStep) => void) => Promise<BuyResult>;
   /** Cotiza una venta a USDC. */

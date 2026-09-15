@@ -22,6 +22,7 @@ import { formatUsdc, parseUsdc, truncateAddress } from "@/lib/format";
 import { baseExplorerTx, solanaExplorerTx } from "@/lib/config";
 import { MIN_TRANSFER_UNITS } from "@/lib/config";
 import { useLang, type Dictionary, type Lang } from "@/lib/i18n";
+import { fuelUnitsFor } from "@/lib/invest/fuel";
 import type { Quote } from "@/lib/cctp/quote";
 import {
   loadHistory,
@@ -296,10 +297,11 @@ export function BridgePanel({
         open={modal === "withdraw"}
         onClose={closeModal}
         balanceUnits={balances.solanaUnits}
+        fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         ownAddress={session.solanaAddress}
         demo={session.demo}
-        onWithdraw={async (destination, amountUnits) => {
-          const sig = await actions.withdrawSolana(destination, amountUnits);
+        onWithdraw={async (destination, amountUnits, onStep) => {
+          const sig = await actions.withdrawSolana(destination, amountUnits, onStep);
           saveTransfer({
             id: `w-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             createdAt: Date.now(),

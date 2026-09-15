@@ -48,8 +48,11 @@ fácil" y una pregunta en el FAQ.
   guarda en `pendingUnits` y se compra todo junto cuando llega. Así los
   cobros chicos también invierten. 10 USDC es el piso del modo sin gas de
   Jupiter Ultra.
-- **Sin gas para el usuario**: Ultra cofirma y paga la red, descontándola
-  de la compra (`feeBps` en la orden). La billetera embebida de Solana
+- **La red la paga el usuario** (desde el 2026-09-15): una reserva de SOL
+  que la app carga sola cambiando 1 USDC por Ultra, sin gas, la primera
+  vez y cada vez que baja de 0,004 SOL (`src/lib/invest/fuel.ts`). Antes
+  Ultra cofirmaba y descontaba la red de la compra (`feeBps`), y en
+  montos chicos eso costaba hasta 8 %. La billetera embebida de Solana
   firma con Privy, igual que el retiro.
 - **Sin contratos propios ni custodia**: la orden la arma Jupiter, la firma
   el usuario, los tokens quedan en su cuenta.
@@ -89,7 +92,8 @@ fácil" y una pregunta en el FAQ.
    valida (solo USDC → catálogo, mínimo 10) y pide la orden a Ultra.
 2. El cliente firma la transacción (bytes) con `useSignTransaction` de Privy.
 3. `POST /api/invest/execute { signedTransaction, requestId }`: Jupiter
-   cofirma (sin gas) y envía. Devuelve firma y unidades recibidas.
+   envía (la red sale de la reserva del usuario). Devuelve firma y
+   unidades recibidas.
 4. Se guarda la compra (USDC, unidades, `feeBps`, firma) y se refrescan
    tenencias y saldos.
 

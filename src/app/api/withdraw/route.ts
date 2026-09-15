@@ -9,7 +9,7 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// El relayer paga el gas del retiro: mismo límite simple por IP que el relay.
+// Límite simple por IP: el endpoint arma y reenvía transferencias, nada más.
 const hits = new Map<string, { count: number; windowStart: number }>();
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 10;
@@ -38,9 +38,10 @@ function isValidAddress(value: unknown): value is string {
 /**
  * POST /api/withdraw
  *  { action: "build", owner, destination, amountUnits, purpose? }  → transacción a firmar
- *  { action: "submit", transaction, blockhash, lastValidBlockHeight, purpose? } → firma del relayer + envío
+ *  { action: "submit", transaction, blockhash, lastValidBlockHeight, purpose? } → validación + envío
  * purpose: "withdraw" (default) o "fee" (comisión de una compra de acciones,
- * solo hacia la cuenta de comisiones).
+ * solo hacia la cuenta de comisiones). La red la paga el usuario desde su
+ * reserva de SOL; el servidor no firma nada.
  */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";

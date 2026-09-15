@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { MIN_WITHDRAW_UNITS, solanaExplorerTx } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
+import type { WithdrawStep } from "@/components/bridge/types";
 
 const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 /**
  * Retiro de USDC desde la cuenta Solana del usuario hacia cualquier
- * dirección (su Phantom, un amigo, un exchange). El costo de red lo
- * cubre Camalote.
+ * dirección (su Phantom, un amigo, un exchange). La red la paga el usuario
+ * desde su reserva de SOL; si todavía no la tiene, se carga primero.
  */
 export function WithdrawModal({
   open,
   onClose,
   balanceUnits,
+  fuelUnits,
   ownAddress,
   demo,
   onWithdraw,
@@ -25,17 +27,28 @@ export function WithdrawModal({
   open: boolean;
   onClose: () => void;
   balanceUnits: bigint | null;
+  /** Reserva de red que se carga antes del retiro (0 si la cuenta ya tiene SOL). */
+  fuelUnits: bigint;
   ownAddress: string | null;
   demo: boolean;
-  onWithdraw: (destination: string, amountUnits: bigint) => Promise<string>;
+  onWithdraw: (
+    destination: string,
+    amountUnits: bigint,
+    onStep: (step: WithdrawStep) => void
+  ) => Promise<string>;
 }) {
   const { lang, t } = useLang();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [destination, setDestination] = useState("");
   const [amountText, setAmountText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState<WithdrawStep | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Lo que se puede retirar: el saldo menos la reserva de red, si hay que cargarla.
+  const availableUnits =
+    balanceUnits === null ? null : balanceUnits > fuelUnits ? balanceUnits - fuelUnits : 0n;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -50,6 +63,7 @@ export function WithdrawModal({
     setSignature(null);
     setError(null);
     setSubmitting(false);
+    setStep(null);
   };
 
   const close = () => {
@@ -72,12 +86,15 @@ export function WithdrawModal({
     if (amountUnits === null) return t.withdrawModal.amountInvalid;
     if (amountUnits === 0n) return null;
     if (amountUnits < MIN_WITHDRAW_UNITS) return t.withdrawModal.amountMin;
-    if (balanceUnits !== null && amountUnits > balanceUnits)
-      return t.withdrawModal.amountInsufficient(
-        formatUsdc(balanceUnits, 2, lang)
-      );
+    if (availableUnits !== null && amountUnits > availableUnits)
+      return fuelUnits > 0n
+        ? t.withdrawModal.amountInsufficientFuel(
+            formatUsdc(availableUnits, 2, lang),
+            formatUsdc(fuelUnits, 0, lang)
+          )
+        : t.withdrawModal.amountInsufficient(formatUsdc(availableUnits, 2, lang));
     return null;
-  }, [amountText, amountUnits, balanceUnits, t, lang]);
+  }, [amountText, amountUnits, availableUnits, fuelUnits, t, lang]);
 
   const canSubmit =
     destination.trim() !== "" &&
@@ -92,7 +109,7 @@ export function WithdrawModal({
     setSubmitting(true);
     setError(null);
     try {
-      const sig = await onWithdraw(destination.trim(), amountUnits);
+      const sig = await onWithdraw(destination.trim(), amountUnits, setStep);
       setSignature(sig);
     } catch (err) {
       setError(
@@ -102,6 +119,7 @@ export function WithdrawModal({
       );
     } finally {
       setSubmitting(false);
+      setStep(null);
     }
   };
 
@@ -224,9 +242,9 @@ export function WithdrawModal({
                 <button
                   type="button"
                   onClick={() => {
-                    if (balanceUnits !== null)
+                    if (availableUnits !== null)
                       setAmountText(
-                        formatUsdc(balanceUnits, 2, lang).replace(
+                        formatUsdc(availableUnits, 2, lang).replace(
                           lang === "es" ? /\./g : /,/g,
                           ""
                         )
@@ -247,13 +265,19 @@ export function WithdrawModal({
               </p>
             ) : (
               <p id="withdraw-amount-hint" className="text-xs text-muted-foreground">
-                {t.withdrawModal.hint}
+                {fuelUnits > 0n
+                  ? t.withdrawModal.hintFuel(formatUsdc(fuelUnits, 0, lang))
+                  : t.withdrawModal.hint}
               </p>
             )}
           </div>
 
           <Button type="submit" loading={submitting} disabled={!canSubmit} className="w-full">
-            {submitting ? t.withdrawModal.submitting : t.withdrawModal.submit}
+            {submitting
+              ? step === "fuel"
+                ? t.withdrawModal.stepFuel
+                : t.withdrawModal.submitting
+              : t.withdrawModal.submit}
           </Button>
         </form>
       )}

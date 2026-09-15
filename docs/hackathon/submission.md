@@ -47,7 +47,7 @@ you can switch off in one tap.
 Business model, in plain sight: 0.45% per purchase, capped at 50 cents,
 taken from the purchase and shown on the ticket. Selling is free. The fee
 is collected on-chain after the swap succeeds (a USDC transfer to
-Camalote's account, network paid by our relayer). No subscription, no
+Camalote's account, signed by the user and paid from their SOL reserve). No subscription, no
 hidden spread. Honest numbers: a user investing 200 dollars a month pays
 about 0.90 a month; this is a volume business.
 
@@ -60,9 +60,11 @@ open it if USDC landed meanwhile).
 → completar · video → completar.
 
 **Tech**: Next.js 16, Privy (email login, embedded Solana wallet), Jupiter
-Ultra (gasless swaps, buy and sell) and Price API, Token-2022 (xStocks:
+Ultra (buy and sell; a 1-USDC SOL reserve loaded gasless by Ultra the first
+time pays the network from then on) and Price API, Token-2022 (xStocks:
 amounts shown with the Scaled UI Amount multiplier, dividends derived from
-it), a small Solana relayer that co-signs fee and withdrawal transfers.
+it). No relayer and no custody: withdrawals and the fee are plain USDC
+transfers the user signs and pays.
 
 **Country**: Argentina
 
@@ -123,3 +125,5 @@ Grabar: `node scripts/demo-video.mjs docs/demo` (dev server en demo, :3001).
 - Argentina: 94 % del volumen cripto en pesos es stablecoin (a16z, ago-2026).
 - Jupiter Ultra: modo sin gas para takers sin SOL, probado el 2026-09-11
   con una orden de 10 USDC a SPYx (feeBps 200, cuenta nueva).
+- Jupiter Ultra: cambio USDC → SOL sin gas desde 1 USDC (feeBps 2), probado
+  el 2026-09-15 en dos rondas de 1 a 5 USDC. Es lo que carga la reserva.
