@@ -27,7 +27,6 @@ const es = {
     free: "Gratis",
     close: "Cerrar",
     demoBadge: "Modo demo",
-    testnetBadge: "Red de prueba",
     demoNote: "Simulación: no se movieron fondos reales.",
   },
   landing: {
@@ -441,8 +440,6 @@ const es = {
       `Juntando: ${pending} de ${min} USDC`,
     paused: (msg: string) =>
       `La última compra no salió (${msg}). Lo apartado sigue guardado y reintentamos en un rato.`,
-    testnetNote:
-      "Las acciones tokenizadas existen solo en la red principal de Solana. Acá podés armar tu regla y ver cómo funciona; las compras se activan en la red principal.",
     portfolioTitle: "Tus acciones",
     valueLabel: "Vale hoy",
     investedLabel: "Pusiste",
@@ -535,7 +532,6 @@ const en: Dictionary = {
     free: "Free",
     close: "Close",
     demoBadge: "Demo mode",
-    testnetBadge: "Test network",
     demoNote: "Simulation: no real funds were moved.",
   },
   landing: {
@@ -946,8 +942,6 @@ const en: Dictionary = {
       `Adding up: ${pending} of ${min} USDC`,
     paused: (msg: string) =>
       `The last purchase didn't go through (${msg}). What was set aside is kept and we'll retry in a while.`,
-    testnetNote:
-      "Tokenized stocks only exist on Solana mainnet. Here you can set your rule and see how it works; purchases switch on with mainnet.",
     portfolioTitle: "Your stocks",
     valueLabel: "Worth today",
     investedLabel: "You put in",

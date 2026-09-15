@@ -1,18 +1,15 @@
-import { MAINNET, TESTNET, type NetworkAddresses } from "@/lib/cctp/constants";
+import { MAINNET, type NetworkAddresses } from "@/lib/cctp/constants";
 
 /**
  * Configuración compartida cliente/servidor.
  *
- * - NEXT_PUBLIC_NETWORK: "testnet" (default) | "mainnet"
+ * Camalote corre solo en la red principal de Solana: no hay interruptor de
+ * red. Lo único que cambia entre entornos es si hay Privy o no:
  * - NEXT_PUBLIC_DEMO_MODE: "true" fuerza demo; si falta el App ID de Privy,
  *   la app entra en demo automáticamente (fallback controlado, misma UX).
  */
 
-export const NETWORK: "testnet" | "mainnet" =
-  process.env.NEXT_PUBLIC_NETWORK === "mainnet" ? "mainnet" : "testnet";
-
-export const ADDRESSES: NetworkAddresses =
-  NETWORK === "mainnet" ? MAINNET : TESTNET;
+export const ADDRESSES: NetworkAddresses = MAINNET;
 
 export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
 
@@ -83,10 +80,7 @@ export const BASE_RPC_URL =
   process.env.NEXT_PUBLIC_BASE_RPC_URL ?? ADDRESSES.base.rpcUrl;
 
 export function solanaExplorerTx(signature: string): string {
-  const base = `https://solscan.io/tx/${signature}`;
-  return ADDRESSES.solana.cluster === "devnet"
-    ? `${base}?cluster=devnet`
-    : base;
+  return `https://solscan.io/tx/${signature}`;
 }
 
 export function baseExplorerTx(hash: string): string {

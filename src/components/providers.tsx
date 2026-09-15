@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
-import { base, baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import {
   createSolanaRpc,
   createSolanaRpcSubscriptions,
@@ -21,21 +21,14 @@ import { ADDRESSES, DEMO_MODE, PRIVY_APP_ID } from "@/lib/config";
 export function Providers({ children }: { children: ReactNode }) {
   if (DEMO_MODE) return <>{children}</>;
 
-  const chain = ADDRESSES.network === "mainnet" ? base : baseSepolia;
+  const chain = base;
 
   // Privy necesita saber a qué RPC de Solana hablar cuando la billetera
   // embebida firma (retiros); sin esto tira "No RPC configuration found".
-  const solanaChain =
-    ADDRESSES.network === "mainnet"
-      ? ("solana:mainnet" as const)
-      : ("solana:devnet" as const);
+  const solanaChain = "solana:mainnet" as const;
   // El público de mainnet se satura rápido: con NEXT_PUBLIC_SOLANA_RPC_URL
   // (Helius gratis alcanza) Privy firma contra ese mismo RPC.
-  const solanaHttp =
-    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
-    (ADDRESSES.network === "mainnet"
-      ? "https://api.mainnet-beta.solana.com"
-      : "https://api.devnet.solana.com");
+  const solanaHttp = process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? ADDRESSES.solana.rpcUrl;
 
   return (
     <PrivyProvider

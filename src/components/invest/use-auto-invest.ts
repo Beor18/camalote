@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { ADDRESSES } from "@/lib/config";
 import { executePurchase, reconcileInterrupted } from "@/lib/invest/execute";
 import { planInvestments } from "@/lib/invest/rules";
 import {
@@ -39,7 +38,6 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
 
   const address = session.authenticated ? session.solanaAddress : null;
   const demo = session.demo;
-  const canBuy = demo || ADDRESSES.solana.cluster === "mainnet-beta";
 
   const tick = useCallback(async () => {
     if (!address || busy.current) return;
@@ -57,7 +55,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
         saveRule(address, rule);
       }
       if (restoredUnits > 0n) notifyInvest();
-      if (!canBuy || !rule?.enabled) return;
+      if (!rule?.enabled) return;
       if (rule.pausedUntil !== undefined && rule.pausedUntil > Date.now()) return;
 
       // Lo que vuelve de una venta propia no es un ingreso: no se reinvierte.
@@ -106,7 +104,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
     } finally {
       busy.current = false;
     }
-  }, [address, canBuy, demo]);
+  }, [address, demo]);
 
   useEffect(() => {
     if (!address) return;

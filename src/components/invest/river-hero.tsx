@@ -33,7 +33,6 @@ export function RiverHero({
   summary,
   holdingsLoading,
   purchases,
-  testnetNote,
   onToggleRule,
   onEditRule,
 }: Engine & {
@@ -41,7 +40,6 @@ export function RiverHero({
   summary: PortfolioSummary;
   holdingsLoading: boolean;
   purchases: Purchase[];
-  testnetNote: boolean;
   onToggleRule: () => void;
   onEditRule: () => void;
 }) {
@@ -165,17 +163,13 @@ export function RiverHero({
           </div>
         )}
 
-        {(paused || testnetNote) && (
+        {paused && (
           <p
             role="status"
             className="mt-3 flex items-start gap-2 rounded-xl bg-muted p-3 text-xs text-muted-foreground"
           >
             <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-            <span>
-              {testnetNote
-                ? t.invest.testnetNote
-                : t.invest.paused(rule.lastError ?? t.invest.genericError)}
-            </span>
+            <span>{t.invest.paused(rule.lastError ?? t.invest.genericError)}</span>
           </p>
         )}
 

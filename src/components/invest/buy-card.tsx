@@ -39,7 +39,6 @@ export function BuyCard({
   balanceUnits,
   defaultAsset,
   demo,
-  disabled,
   bare,
   onQuote,
   onBuy,
@@ -47,8 +46,6 @@ export function BuyCard({
   balanceUnits: bigint | null;
   defaultAsset: XStockSymbol;
   demo: boolean;
-  /** Real en devnet: la compra no puede hacerse. */
-  disabled?: boolean;
   /** Sin borde: cuando vive adentro de una hoja. */
   bare?: boolean;
   onQuote: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
@@ -74,8 +71,7 @@ export function BuyCard({
           : balanceUnits !== null && amountUnits > balanceUnits
             ? t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
             : null;
-  const canQuote =
-    !disabled && amountUnits !== null && amountError === null && state.phase === "idle";
+  const canQuote = amountUnits !== null && amountError === null && state.phase === "idle";
 
   const pct = (bps: number) =>
     (bps / 100).toLocaleString(lang === "es" ? "es" : "en", {
@@ -225,7 +221,7 @@ export function BuyCard({
             value={asset}
             onChange={setAsset}
             idPrefix="buy"
-            disabled={disabled || state.phase !== "idle"}
+            disabled={state.phase !== "idle"}
           />
         </div>
 
@@ -241,7 +237,7 @@ export function BuyCard({
               autoComplete="off"
               spellCheck={false}
               value={amountText}
-              disabled={disabled || state.phase !== "idle"}
+              disabled={state.phase !== "idle"}
               onChange={(e) => setTyped(e.target.value)}
               aria-invalid={amountError ? "true" : undefined}
               aria-describedby={amountError ? "buy-amount-error" : "buy-amount-hint"}

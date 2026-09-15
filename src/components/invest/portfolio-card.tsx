@@ -27,7 +27,6 @@ export function StocksSection({
   demo,
   onBuy,
   onSell,
-  actionsDisabled,
 }: {
   summary: PortfolioSummary;
   loading: boolean;
@@ -35,8 +34,6 @@ export function StocksSection({
   demo: boolean;
   onBuy: () => void;
   onSell: (asset: XStockSymbol) => void;
-  /** Real en devnet: no se puede comprar ni vender. */
-  actionsDisabled?: boolean;
 }) {
   const { lang, t } = useLang();
   const hasRows = summary.rows.length > 0;
@@ -47,7 +44,7 @@ export function StocksSection({
         <h2 id="stocks-title" className="text-sm font-medium text-muted-foreground">
           {t.invest.portfolioTitle}
         </h2>
-        <Button size="sm" onClick={onBuy} disabled={actionsDisabled} data-testid="buy-open">
+        <Button size="sm" onClick={onBuy} data-testid="buy-open">
           <ShoppingCart className="size-4" aria-hidden="true" />
           {t.invest.buyOpen}
         </Button>
@@ -84,7 +81,6 @@ export function StocksSection({
                       <Button
                         variant="secondary"
                         size="sm"
-                        disabled={actionsDisabled}
                         onClick={() => onSell(row.asset)}
                         data-testid={`sell-${row.asset}`}
                       >

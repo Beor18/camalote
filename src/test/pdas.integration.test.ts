@@ -4,13 +4,13 @@ import { deriveReceiveMessagePdas } from "@/lib/cctp/solanaPdas";
 import { ADDRESSES } from "@/lib/config";
 
 /**
- * Verificación contra devnet: si nuestras derivaciones de PDA son correctas,
+ * Verificación contra mainnet: si nuestras derivaciones de PDA son correctas,
  * las cuentas de configuración de CCTP v2 EXISTEN on-chain.
  * Corre solo con RUN_INTEGRATION=1 (necesita red).
  */
 const enabled = process.env.RUN_INTEGRATION === "1";
 
-describe.skipIf(!enabled)("PDAs de CCTP v2 en devnet", () => {
+describe.skipIf(!enabled)("PDAs de CCTP v2 en mainnet", () => {
   it("las cuentas de configuración existen on-chain", async () => {
     const connection = new Connection(ADDRESSES.solana.rpcUrl, "confirmed");
     const pdas = deriveReceiveMessagePdas(new Uint8Array(32));

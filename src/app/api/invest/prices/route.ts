@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { MAINNET } from "@/lib/cctp/constants";
-import { NETWORK, SOLANA_RPC_URL } from "@/lib/config";
+import { SOLANA_RPC_URL } from "@/lib/config";
 import { XSTOCKS } from "@/lib/invest/catalog";
 import { effectiveMultiplier, type ScaledUiAmountState } from "@/lib/invest/multiplier";
 import type { MultiplierMap } from "@/lib/invest/types";
@@ -22,12 +21,9 @@ interface Payload {
 
 let cached: Payload | null = null;
 
-// Las acciones tokenizadas viven en mainnet aunque la app corra en devnet.
-const MAINNET_RPC = NETWORK === "mainnet" ? SOLANA_RPC_URL : MAINNET.solana.rpcUrl;
-
 /** Lee del mint de cada acción su "scaled UI amount": dividendos reinvertidos y splits. */
 async function readMultipliers(): Promise<{ current: MultiplierMap; previous: MultiplierMap }> {
-  const connection = new Connection(MAINNET_RPC, "confirmed");
+  const connection = new Connection(SOLANA_RPC_URL, "confirmed");
   const infos = await connection.getMultipleParsedAccounts(
     XSTOCKS.map((s) => new PublicKey(s.mint))
   );

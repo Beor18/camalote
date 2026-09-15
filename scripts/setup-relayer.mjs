@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Crea (o muestra) la billetera relayer de Solana que paga el gas de la
- * entrega. En testnet además pide un airdrop de SOL en devnet.
+ * Crea (o muestra) la billetera relayer de Solana que paga la red de los
+ * retiros y del cobro de la comisión. Camalote corre solo en mainnet: el
+ * relayer necesita SOL real (0,01 SOL alcanza para empezar).
  *
- * Uso: node scripts/setup-relayer.mjs [--mainnet]
+ * Uso: node scripts/setup-relayer.mjs
  */
 import { Keypair, Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import bs58 from "bs58";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const mainnet = process.argv.includes("--mainnet");
 const envPath = join(process.cwd(), ".env.local");
 
 let secret = process.env.RELAYER_SOLANA_SECRET;
@@ -35,31 +35,16 @@ if (secret) {
   console.log("Dirección pública:", keypair.publicKey.toBase58());
 }
 
-const rpc = mainnet
-  ? "https://api.mainnet-beta.solana.com"
-  : "https://api.devnet.solana.com";
+const rpc =
+  process.env.SOLANA_RPC_URL ??
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
+  "https://api.mainnet-beta.solana.com";
 const connection = new Connection(rpc, "confirmed");
 const balance = await connection.getBalance(keypair.publicKey);
-console.log(`\nSaldo en ${mainnet ? "mainnet" : "devnet"}: ${balance / LAMPORTS_PER_SOL} SOL`);
+console.log(`\nSaldo en mainnet: ${balance / LAMPORTS_PER_SOL} SOL`);
 
-if (!mainnet && balance < 0.5 * LAMPORTS_PER_SOL) {
-  console.log("Pidiendo airdrop de 1 SOL en devnet…");
-  try {
-    const sig = await connection.requestAirdrop(
-      keypair.publicKey,
-      LAMPORTS_PER_SOL
-    );
-    await connection.confirmTransaction(sig, "confirmed");
-    console.log("✓ Airdrop confirmado.");
-  } catch {
-    console.log(
-      "El airdrop falló (los grifos de devnet tienen cupos). Probá en https://faucet.solana.com con la dirección de arriba."
-    );
-  }
-}
-
-if (mainnet && balance === 0) {
+if (balance === 0) {
   console.log(
-    "⚠ En mainnet tenés que fondear el relayer con SOL real (~0,05 SOL alcanza para cientos de entregas)."
+    "⚠ Mandale SOL a esa dirección: sin saldo no se pueden pagar retiros ni cobrar la comisión (0,01 SOL alcanza para empezar)."
   );
 }

@@ -94,8 +94,9 @@ tarifa de referido de Jupiter fuera del modo sin gas) no están construidas.
   (cruda × multiplicador), guarda el multiplicador en cada operación y la
   cartera muestra "Dividendos reinvertidos" con la diferencia. En demo la
   compra se registra como anterior al último dividendo real, etiquetada.
-- **Solo mainnet**: xStocks no existen en devnet. En testnet real se arma
-  la regla y la app lo explica; en demo todo se simula con precios reales.
+- **Solo mainnet**: la app corre únicamente en la red principal de Solana,
+  sin interruptor de red (xStocks no existen en devnet). En demo todo se
+  simula con precios reales.
 - **Regla y operaciones** viven en el dispositivo por cuenta
   (`camalote.invest.rule.v1:<cuenta>`, `camalote.invest.purchases.v1:<cuenta>`).
   Una operación interrumpida (pestaña cerrada) se cierra al volver.
@@ -126,8 +127,8 @@ node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
 2. **Relayer de Solana**: `pnpm relayer` genera la clave;
    `RELAYER_SOLANA_SECRET` en `.env.local`. Paga la red de retiros y de
    la comisión (~0,00001 SOL cada uno).
-3. **Mainnet**: `NEXT_PUBLIC_NETWORK=mainnet` (las acciones tokenizadas
-   existen solo ahí). Fondeá el relayer con algo de SOL.
+3. **SOL para el relayer**: la app corre solo en mainnet. Mandale algo de
+   SOL al relayer (0,01 alcanza para empezar).
 4. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>` (si falta,
    usa la cuenta por defecto de `src/lib/config.ts`). Siempre se cobra.
 5. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
@@ -146,10 +147,9 @@ sin SOL: 2 USDC pagan 7,65 % de red y Jupiter, 5 USDC 3,12 %, 10 USDC
 confirmar. La regla junta hasta 10 USDC (`NEXT_PUBLIC_INVEST_MIN_UNITS`)
 para que la red no se coma la compra.
 
-**Prueba mínima, con 2 USDC.**
+**Prueba mínima, con 2 USDC.** Opcional, un RPC dedicado en vez del público:
 
 ```bash
-NEXT_PUBLIC_NETWORK=mainnet
 NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
 ```
 

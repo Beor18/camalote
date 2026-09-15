@@ -9,7 +9,6 @@ import { PurchasesList } from "@/components/invest/purchases-list";
 import { RiverHero } from "@/components/invest/river-hero";
 import { RuleSheet } from "@/components/invest/rule-sheet";
 import { SellModal } from "@/components/invest/sell-modal";
-import { ADDRESSES } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
@@ -37,7 +36,6 @@ const PRICES_MS = 60_000;
 export function InvestPanel({ session, balances, actions }: Engine) {
   const { t } = useLang();
   const address = session.solanaAddress;
-  const realTestnet = !session.demo && ADDRESSES.solana.cluster !== "mainnet-beta";
 
   const [rule, setRule] = useState<InvestRule | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -170,7 +168,6 @@ export function InvestPanel({ session, balances, actions }: Engine) {
           summary={summary}
           holdingsLoading={holdings === null}
           purchases={purchases}
-          testnetNote={realTestnet}
           onToggleRule={toggleRule}
           onEditRule={() => setEditing(true)}
         />
@@ -185,7 +182,6 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         demo={session.demo}
         onBuy={() => setBuying(true)}
         onSell={(asset) => setSelling(asset)}
-        actionsDisabled={realTestnet}
       />
 
       <PurchasesList purchases={purchases} multipliers={multipliers} />
@@ -223,7 +219,6 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         balanceUnits={balances.solanaUnits}
         defaultAsset={rule?.asset ?? "SPYx"}
         demo={session.demo}
-        disabled={realTestnet}
         onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}
         onBuy={buyNow}
       />

@@ -55,9 +55,9 @@ fácil" y una pregunta en el FAQ.
   el usuario, los tokens quedan en su cuenta.
 - **Camalote no cobra por invertir.** El negocio sigue siendo la comisión
   del cobro. (Ultra admite referral fee; queda como palanca futura.)
-- **Solo mainnet**: xStocks no existen en devnet. En real+devnet se puede
-  armar la regla y se explica que las compras se activan en mainnet. En
-  demo todo se simula con precios reales y 1 % de costo.
+- **Solo mainnet**: xStocks no existen en devnet. Desde el 2026-09-15 la
+  app corre únicamente en mainnet, sin interruptor de red. En demo todo se
+  simula con precios reales y 1 % de costo.
 - **Solo cuentan los ingresos posteriores a prender la regla**, cada uno
   una sola vez (firmas vistas). Si una compra falla, lo apartado vuelve y
   se pausa 10 minutos (sin loops contra Jupiter).

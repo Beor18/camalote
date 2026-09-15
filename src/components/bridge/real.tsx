@@ -222,10 +222,7 @@ export function useRealEngine(): Engine {
         const { signedTransaction } = await signTransaction({
           transaction: base64ToBytes(built.transactionBase64),
           wallet,
-          chain:
-            ADDRESSES.solana.cluster === "devnet"
-              ? "solana:devnet"
-              : "solana:mainnet",
+          chain: "solana:mainnet",
         });
 
         const submitRes = await fetch("/api/withdraw", {
@@ -263,12 +260,11 @@ export function useRealEngine(): Engine {
           args: [address as `0x${string}`],
         }),
       listHoldings: async () => {
-        // Las acciones tokenizadas existen solo en mainnet: en devnet no hay nada que leer.
-        if (!solanaAddress || ADDRESSES.solana.cluster !== "mainnet-beta") return [];
+        if (!solanaAddress) return [];
         return fetchXStockHoldings(solanaAddress);
       },
       quoteStock: async (asset, usdcUnits) => {
-        const taker = requireMainnetAccount(solanaAddress);
+        const taker = requireAccount(solanaAddress);
         const camaloteFeeUnits = investFee(usdcUnits);
         const swapUnits = usdcUnits - camaloteFeeUnits;
         const [order, { multipliers }] = await Promise.all([
@@ -293,7 +289,7 @@ export function useRealEngine(): Engine {
       },
       buyStock: async (quote, onStep) => {
         const wallet = solanaWallets[0];
-        const owner = requireMainnetAccount(solanaAddress);
+        const owner = requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
 
@@ -325,7 +321,7 @@ export function useRealEngine(): Engine {
         };
       },
       quoteSell: async (asset, tokenUnits) => {
-        const taker = requireMainnetAccount(solanaAddress);
+        const taker = requireAccount(solanaAddress);
         const [order, { multipliers }] = await Promise.all([
           fetchUltraOrder({ side: "sell", asset, units: tokenUnits, taker }),
           fetchPrices(),
@@ -346,7 +342,7 @@ export function useRealEngine(): Engine {
       },
       sellStock: async (quote, onStep) => {
         const wallet = solanaWallets[0];
-        requireMainnetAccount(solanaAddress);
+        requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
         const sign = (transaction: Uint8Array) =>
@@ -388,14 +384,9 @@ async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {
 const ACCOUNT_PENDING =
   "Tu cuenta de Solana todavía se está preparando. Probá en unos segundos.";
 
-/** Las acciones tokenizadas existen solo en mainnet; devuelve la cuenta lista. */
-function requireMainnetAccount(solanaAddress: string | null): string {
+/** Devuelve la cuenta de Solana lista para operar. */
+function requireAccount(solanaAddress: string | null): string {
   if (!solanaAddress) throw new Error(ACCOUNT_PENDING);
-  if (ADDRESSES.solana.cluster !== "mainnet-beta") {
-    throw new Error(
-      "Las acciones tokenizadas existen solo en la red principal de Solana. Esta versión corre en la red de prueba."
-    );
-  }
   return solanaAddress;
 }
 
