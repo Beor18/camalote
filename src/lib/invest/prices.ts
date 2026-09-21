@@ -1,6 +1,7 @@
 "use client";
 
 import { fallbackPrices } from "@/lib/invest/catalog";
+import type { MarketMap, ReferenceMap } from "@/lib/invest/guards";
 import type { MultiplierMap, PriceMap } from "@/lib/invest/types";
 
 export interface PricesResult {
@@ -11,6 +12,10 @@ export interface PricesResult {
   multipliers: MultiplierMap;
   /** El anterior al último cambio, para el demo. */
   previousMultipliers: MultiplierMap;
+  /** Horario de Wall Street por acción (Pyth); vacío si no se pudo leer. */
+  market: MarketMap;
+  /** Referencia de PreStocks por empresa pre-IPO; vacío si no se pudo leer. */
+  reference: ReferenceMap;
   updatedAt: number;
 }
 
@@ -27,9 +32,46 @@ function readMultipliers(raw: unknown, known: PriceMap): MultiplierMap {
   return out;
 }
 
+function readMarket(raw: unknown, known: PriceMap): MarketMap {
+  const out: MarketMap = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [symbol, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!(symbol in known) || !value || typeof value !== "object") continue;
+    const v = value as { open?: unknown; nextOpen?: unknown; nextClose?: unknown };
+    if (typeof v.open !== "boolean") continue;
+    const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) ? n : null);
+    out[symbol as keyof MarketMap] = { open: v.open, nextOpen: num(v.nextOpen), nextClose: num(v.nextClose) };
+  }
+  return out;
+}
+
+function readReference(raw: unknown, known: PriceMap): ReferenceMap {
+  const out: ReferenceMap = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [symbol, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!(symbol in known) || !value || typeof value !== "object") continue;
+    const v = value as { markPrice?: unknown; tokenPrice?: unknown; premiumBps?: unknown };
+    if (
+      typeof v.markPrice !== "number" ||
+      typeof v.tokenPrice !== "number" ||
+      typeof v.premiumBps !== "number" ||
+      !Number.isFinite(v.premiumBps)
+    ) {
+      continue;
+    }
+    out[symbol as keyof ReferenceMap] = {
+      markPrice: v.markPrice,
+      tokenPrice: v.tokenPrice,
+      premiumBps: v.premiumBps,
+    };
+  }
+  return out;
+}
+
 /**
- * Precios de las acciones tokenizadas. Pasa por nuestro servidor (cache de
- * 30 s) y, si no responde, usa los de referencia del catálogo: la pantalla
+ * Precios de los activos del catálogo, con el horario de Wall Street y la
+ * referencia de PreStocks. Pasa por nuestro servidor (cache de 30 s) y, si
+ * no responde, usa los precios de referencia del catálogo: la pantalla
  * nunca queda vacía y avisa que son de referencia.
  */
 export async function fetchPrices(): Promise<PricesResult> {
@@ -44,6 +86,8 @@ export async function fetchPrices(): Promise<PricesResult> {
       prices?: PriceMap;
       multipliers?: unknown;
       previousMultipliers?: unknown;
+      market?: unknown;
+      reference?: unknown;
       updatedAt?: number;
     };
     const prices: PriceMap = { ...fallback };
@@ -59,6 +103,8 @@ export async function fetchPrices(): Promise<PricesResult> {
       live: any,
       multipliers: readMultipliers(data.multipliers, fallback),
       previousMultipliers: readMultipliers(data.previousMultipliers, fallback),
+      market: readMarket(data.market, fallback),
+      reference: readReference(data.reference, fallback),
       updatedAt: data.updatedAt ?? Date.now(),
     };
   } catch {
@@ -67,6 +113,8 @@ export async function fetchPrices(): Promise<PricesResult> {
       live: false,
       multipliers: {},
       previousMultipliers: {},
+      market: {},
+      reference: {},
       updatedAt: Date.now(),
     };
   }

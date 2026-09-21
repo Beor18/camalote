@@ -19,6 +19,7 @@ import {
   simulateDemoDeposit,
   simulateDemoIncoming,
 } from "@/lib/demo";
+import { isPreIpo } from "@/lib/invest/catalog";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import type {
@@ -182,7 +183,10 @@ export function useDemoEngine(): Engine {
         // La compra del demo se cotiza y registra como si fuera anterior al
         // último dividendo real de esa acción: así la cartera muestra el
         // renglón de dividendos (etiquetado como simulación) con datos del mint.
-        const multiplier = previousMultipliers[asset] ?? multipliers[asset] ?? 1;
+        // Las pre-IPO no tienen dividendos que simular: van con el multiplicador de hoy.
+        const multiplier = isPreIpo(asset)
+          ? (multipliers[asset] ?? 1)
+          : (previousMultipliers[asset] ?? multipliers[asset] ?? 1);
         const fuelUnits = email ? fuelUnitsFor(loadDemoLamports(email)) : 0n;
         return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0, multiplier, fuelUnits);
       },

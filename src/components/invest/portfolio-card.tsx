@@ -4,7 +4,8 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import { formatPremium, type ReferenceMap } from "@/lib/invest/guards";
 import {
   formatTokens,
   formatTokensPrecise,
@@ -24,6 +25,7 @@ export function StocksSection({
   summary,
   loading,
   pricesLive,
+  reference,
   demo,
   onBuy,
   onSell,
@@ -31,6 +33,8 @@ export function StocksSection({
   summary: PortfolioSummary;
   loading: boolean;
   pricesLive: boolean | null;
+  /** Referencia de PreStocks por empresa pre-IPO, para mostrar la distancia del token. */
+  reference?: ReferenceMap;
   demo: boolean;
   onBuy: () => void;
   onSell: (asset: XStockSymbol) => void;
@@ -75,7 +79,7 @@ export function StocksSection({
                           {formatUsdc(row.valueUnits, 2, lang)} {t.common.usdc}
                         </p>
                         <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                          {formatTokens(row.displayUnits, lang)} {row.asset}
+                          {formatTokens(row.displayUnits, lang, decimalsOf(row.asset))} {row.asset}
                         </p>
                       </div>
                       <Button
@@ -91,11 +95,23 @@ export function StocksSection({
                   {row.dividendUnits > 0n && (
                     <p className="text-xs text-success" data-testid={`dividends-${row.asset}`}>
                       {t.invest.dividendsLine(
-                        formatUsdc(valueOfTokens(row.dividendUnits, row.priceEachUsd), 2, lang),
-                        formatTokensPrecise(row.dividendUnits, lang),
+                        formatUsdc(
+                          valueOfTokens(row.dividendUnits, row.priceEachUsd, decimalsOf(row.asset)),
+                          2,
+                          lang
+                        ),
+                        formatTokensPrecise(row.dividendUnits, lang, decimalsOf(row.asset)),
                         row.asset
                       )}
                       {demo ? t.invest.sim : ""}
+                    </p>
+                  )}
+                  {stock?.kind === "preipo" && reference?.[row.asset] && (
+                    <p className="text-xs text-muted-foreground" data-testid={`reference-${row.asset}`}>
+                      {t.invest.referenceLine(
+                        formatUsd(reference[row.asset]!.markPrice, lang),
+                        formatPremium(reference[row.asset]!.premiumBps, lang)
+                      )}
                     </p>
                   )}
                 </li>

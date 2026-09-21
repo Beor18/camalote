@@ -11,6 +11,7 @@ import { INVEST_MIN_UNITS } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { findXStock } from "@/lib/invest/catalog";
+import { formatNextOpen, formatPremium } from "@/lib/invest/guards";
 import { notifyIncoming } from "@/lib/invest/storage";
 import type { PortfolioSummary } from "@/lib/invest/rules";
 import type { InvestRule, Purchase } from "@/lib/invest/types";
@@ -155,7 +156,11 @@ export function RiverHero({
             <p className="text-xs text-muted-foreground" data-testid="rule-pending">
               {inFlight
                 ? t.invest.crossing
-                : t.invest.pendingLabel(formatUsdc(pending, 2, lang), formatUsdc(min, 0, lang))}
+                : rule.waiting?.reason === "market"
+                  ? t.invest.waitingMarket(formatNextOpen(rule.waiting.nextOpen, lang) ?? t.invest.soon)
+                  : rule.waiting?.reason === "premium"
+                    ? t.invest.waitingPremium(stockName, formatPremium(rule.waiting.premiumBps, lang))
+                    : t.invest.pendingLabel(formatUsdc(pending, 2, lang), formatUsdc(min, 0, lang))}
             </p>
             <Button variant="ghost" size="sm" className="-mr-2 px-2 text-primary" onClick={onEditRule} data-testid="rule-edit">
               {t.invest.ruleChange}

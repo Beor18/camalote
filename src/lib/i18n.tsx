@@ -72,7 +72,7 @@ const es = {
     whyItems: [
       {
         claim: "Acá viven las acciones tokenizadas",
-        body: "Más de 60 acciones y ETFs de Estados Unidos ya son tokens en Solana: el 93 % de todo lo tokenizado vive acá. Comprás una fracción desde 2 dólares.",
+        body: "Más de 60 acciones y ETFs de Estados Unidos, y empresas que todavía no salieron a bolsa como SpaceX u OpenAI, ya son tokens en Solana: el 93 % de todo lo tokenizado vive acá. Comprás una fracción desde 2 dólares.",
       },
       {
         claim: "Mover plata cuesta una fracción de centavo",
@@ -161,6 +161,10 @@ const es = {
       {
         q: "¿Cuándo se compra?",
         a: "En segundos, mientras la app está abierta. Si te llegan USDC con la app cerrada, se compra cuando la abrís. Los cobros chicos se juntan hasta 10 dólares.",
+      },
+      {
+        q: "¿Qué son las empresas antes de salir a bolsa?",
+        a: "Tokens de PreStocks que siguen el valor de empresas privadas como SpaceX, OpenAI o Anthropic. No son acciones ni dan derechos. El precio es lo que el mercado cree que valen y puede alejarse mucho de la referencia que publica PreStocks: la app te lo muestra, y la regla no compra si el token está más de 5 % caro. PreStocks cobra 1 % por transferencia. Es más riesgo que una acción que cotiza.",
       },
       {
         q: "¿Es legal desde Argentina?",
@@ -436,6 +440,24 @@ const es = {
     toggleLabel: "Invertir una parte de cada cobro",
     percentLabel: "¿Qué parte de lo que te llega?",
     assetLabel: "¿En qué?",
+    assetGroupStocks: "Acciones",
+    assetGroupPreIpo: "Antes de salir a bolsa",
+    preIpoPickerNote:
+      "Tokens de PreStocks que siguen el valor de empresas privadas. Más riesgo: sin derechos, 1 % por transferencia y un precio que puede alejarse de su referencia.",
+    waitMarketLabel: "Comprar solo con Wall Street abierto",
+    waitMarketHint: "Fuera de horario el token puede alejarse del precio de la acción. Horario de Pyth.",
+    preIpoRuleNote:
+      "Sin horario de mercado. La regla no compra si el token está más de 5 % arriba de su valor de referencia de PreStocks.",
+    waitingMarket: (when: string) => `Listo para comprar. Esperando a que abra Wall Street (${when}).`,
+    waitingPremium: (asset: string, pct: string) =>
+      `Listo para comprar, pero ${asset} está ${pct} arriba de su referencia. Esperando a que baje.`,
+    soon: "pronto",
+    marketOpenNote: (when: string) => `Wall Street está abierto. Cierra ${when}.`,
+    marketClosedNote: (when: string) =>
+      `Wall Street está cerrado hasta ${when}. Fuera de horario el token puede alejarse del precio de la acción.`,
+    referenceLine: (mark: string, pct: string) => `Referencia PreStocks: $${mark} · el token está ${pct}.`,
+    premiumHighNote: "Está caro. Podés esperar.",
+    transferFeeNote: (pct: string) => `PreStocks cobra ${pct} % por transferencia, ya en el precio.`,
     ruleSummary: (pct: string, asset: string) =>
       `De cada cobro, el ${pct} % va a ${asset}.`,
     ruleMin: (min: string) => `Cuando esa parte junta ${min} USDC, se compra sola.`,
@@ -532,6 +554,8 @@ const es = {
       "Los dividendos se reinvierten solos: cuando la acción paga, tu cantidad crece un poco. Lo ves en tu cartera.",
       "Backed puede congelarlas o retirarlas si la ley se lo exige. Esa parte no es solo tuya, como sí lo son tus USDC.",
       "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
+      "Las empresas antes de salir a bolsa son tokens de PreStocks: exposición al valor de empresas privadas, sin derechos ni dividendos, con 1 % por transferencia y un precio que a veces se aleja mucho de su referencia. Más riesgo que una acción que cotiza. Tampoco para residentes de Estados Unidos.",
+      "El horario de Wall Street sale de los datos públicos de Pyth. Fuera de horario, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
     ],
   },
@@ -591,7 +615,7 @@ const en: Dictionary = {
     whyItems: [
       {
         claim: "This is where tokenized stocks live",
-        body: "More than 60 US stocks and ETFs already exist on Solana as tokens: 93% of everything tokenized lives here. You buy a fraction from 2 dollars.",
+        body: "More than 60 US stocks and ETFs, plus companies that haven't gone public yet like SpaceX or OpenAI, already exist on Solana as tokens: 93% of everything tokenized lives here. You buy a fraction from 2 dollars.",
       },
       {
         claim: "Moving money costs a fraction of a cent",
@@ -680,6 +704,10 @@ const en: Dictionary = {
       {
         q: "When does it buy?",
         a: "In seconds, while the app is open. If USDC land while it's closed, it buys when you open it. Small payments add up to 10 dollars.",
+      },
+      {
+        q: "What are pre-IPO companies?",
+        a: "PreStocks tokens that track the value of private companies like SpaceX, OpenAI or Anthropic. They aren't shares and carry no rights. The price is what the market thinks they're worth and can drift far from the reference PreStocks publishes: the app shows it, and the rule doesn't buy while the token is more than 5% expensive. PreStocks charges 1% per transfer. It's riskier than a listed stock.",
       },
       {
         q: "Is it legal from Argentina?",
@@ -952,6 +980,24 @@ const en: Dictionary = {
     toggleLabel: "Invest part of every payment",
     percentLabel: "How much of what comes in?",
     assetLabel: "Into what?",
+    assetGroupStocks: "Stocks",
+    assetGroupPreIpo: "Pre-IPO",
+    preIpoPickerNote:
+      "PreStocks tokens that track the value of private companies. Riskier: no rights, a 1% transfer fee and a price that can drift from its reference.",
+    waitMarketLabel: "Buy only while Wall Street is open",
+    waitMarketHint: "Outside market hours the token can drift from the stock's price. Hours from Pyth.",
+    preIpoRuleNote:
+      "No market hours. The rule doesn't buy while the token trades more than 5% above its PreStocks reference value.",
+    waitingMarket: (when: string) => `Ready to buy. Waiting for Wall Street to open (${when}).`,
+    waitingPremium: (asset: string, pct: string) =>
+      `Ready to buy, but ${asset} is ${pct} above its reference. Waiting for it to come down.`,
+    soon: "soon",
+    marketOpenNote: (when: string) => `Wall Street is open. It closes ${when}.`,
+    marketClosedNote: (when: string) =>
+      `Wall Street is closed until ${when}. Outside market hours the token can drift from the stock's price.`,
+    referenceLine: (mark: string, pct: string) => `PreStocks reference: $${mark} · the token is ${pct}.`,
+    premiumHighNote: "It's expensive. You can wait.",
+    transferFeeNote: (pct: string) => `PreStocks charges ${pct}% per transfer, already in the price.`,
     ruleSummary: (pct: string, asset: string) =>
       `${pct}% of every payment goes to ${asset}.`,
     ruleMin: (min: string) => `Once that part adds up to ${min} USDC, it buys itself.`,
@@ -1048,6 +1094,8 @@ const en: Dictionary = {
       "Dividends reinvest on their own: when the stock pays, your amount grows a little. You see it in your portfolio.",
       "Backed can freeze or claw them back if the law requires it. That part isn't yours alone, the way your USDC are.",
       "Not available to residents of the United States, United Kingdom, Canada and Australia.",
+      "Pre-IPO companies are PreStocks tokens: exposure to the value of private companies, with no rights or dividends, a 1% transfer fee and a price that sometimes drifts far from its reference. Riskier than a listed stock. Also not for US residents.",
+      "Wall Street hours come from Pyth's public data. Outside market hours a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",
     ],
   },

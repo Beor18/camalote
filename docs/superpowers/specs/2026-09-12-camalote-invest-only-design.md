@@ -35,6 +35,32 @@ Base, el cruce Base→Solana por CCTP, el Paymaster de Coinbase. Flag
   decía que rompía el modo sin gas, que sigue haciendo falta para cargar
   la reserva. Queda como palanca si Jupiter lo aclara.
 
+## Stocklana: PreStocks y Pyth (2026-09-21)
+
+Stocklana corrió el cierre al 25 de septiembre y sumó bounties. Fernando
+eligió cubrir PreStocks y Pyth y saltear Tessera (excluyente con PreStocks)
+y los que piden lanzar un token (Clawpump, Meteora DBC).
+
+- Catálogo (`catalog.ts`): `kind: "stock" | "preipo"`, `issuer`, `pyth`
+  (símbolo del feed), `transferFeeBps`. Ocho PreStocks con 9 decimales; la
+  matemática de tokens toma los decimales del activo (`decimalsOf`).
+- `/api/invest/prices` suma `market` (horario de Wall Street por acción,
+  de `hermes.pyth.network/v2/price_feeds`, que no pide clave) y
+  `reference` (valor de referencia y precio del token de
+  `prestocks.com/api/prestocks`, con la distancia en puntos básicos).
+  Además: Jupiter ya no manda `usdPricePrescaled`, así que el precio por
+  unidad cruda es precio visible × multiplicador (SpaceX va ×5).
+- `guards.ts` (puro, testeado): `buyBlockedBy` frena la regla si la
+  acción está fuera de horario y el usuario pidió esperar
+  (`rule.waitForMarketOpen`, por defecto sí), o si la pre-IPO está más de
+  5 % arriba de su referencia (`MAX_PREMIUM_BPS`). Sin datos no frena. La
+  regla guarda `waiting` y el río dice por qué espera. En demo el horario
+  no frena (si no, un fin de semana no habría nada que mostrar).
+- UI: el selector de activos tiene dos pestañas; la hoja de la regla trae
+  el interruptor de horario o la nota de pre-IPO; comprar y vender muestran
+  `MarketNote` (horario, o referencia + 1 % de transferencia); la cartera
+  muestra la referencia por fila. Dividendos solo para acciones.
+
 ## La reserva de red (2026-09-15)
 
 Fernando: "ocultá lo del relayer y dejá que el usuario pague, o que se

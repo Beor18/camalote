@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
+import { decimalsOf } from "@/lib/invest/catalog";
 import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
 import type { MultiplierMap, Purchase } from "@/lib/invest/types";
 
@@ -30,7 +31,11 @@ export function PurchasesList({
           const sell = p.kind === "sell";
           // Cantidad como la mostraba la billetera ese día (multiplicador de entonces).
           const multiplier = p.multiplier ?? multipliers?.[p.asset] ?? 1;
-          const tokens = formatTokens(toDisplayUnits(BigInt(p.tokenUnits), multiplier), lang);
+          const tokens = formatTokens(
+            toDisplayUnits(BigInt(p.tokenUnits), multiplier),
+            lang,
+            decimalsOf(p.asset)
+          );
           const usdc = `${formatUsdc(BigInt(p.usdcUnits), 2, lang)} ${t.common.usdc}`;
           const camaloteFee = BigInt(p.camaloteFeeUnits ?? "0");
           const feeText =

@@ -1,13 +1,19 @@
 # Camalote: paquete de submission
 
-Actualizado el 2026-09-12: Camalote es Invertir. Dos eventos, en este orden:
+Actualizado el 2026-09-21: Camalote es Invertir. Dos eventos, en este orden:
 
 1. **Stocklana** (Solana Foundation, hackathons.solana.com/hackathons/stocklana):
-   100.000 en premios, cierra el **viernes 18 de septiembre de 2026 a las
-   16:00 ET**, judging hasta el 2 de octubre. Categoría: **Investing**
-   (compras recurrentes, carteras automáticas). Criterio: "¿esto puede ser
-   una app real que la gente use?". Hace falta al menos un link (GitHub,
-   demo o video).
+   126.000 en premios, cierra el **viernes 25 de septiembre de 2026 a las
+   16:00 ET** (17:00 en Argentina; se corrió desde el 18), judging hasta el
+   2 de octubre. Categoría: **Investing** (compras recurrentes, carteras
+   automáticas). Criterio: "¿esto puede ser una app real que la gente
+   use?". Hace falta al menos un link (GitHub, demo o video).
+   Tracks a los que va Camalote: **principal** (100.000), **Best Use of
+   PreStocks** (10.000: las ocho empresas pre-IPO están en el catálogo con
+   su referencia y el freno de la regla) y **Best Use of Pyth Market Data**
+   (tres meses de Pyth Pro: el horario de Wall Street por acción, con la
+   regla que espera a la apertura). No va a Tessera (excluyente con
+   PreStocks), ni a Clawpump y Meteora DBC (piden lanzar un token propio).
 2. **Crypto World's Fair** (Colosseum, colosseum.com/worldsfair): del 14 de
    septiembre al 12 de octubre de 2026. Tracks y premios se publican el 14.
    Camalote va a la pista de Solana.
@@ -28,8 +34,18 @@ email, you get an account where USDC land (from a client, an exchange, a
 bounty), and you set one rule: "20% of whatever comes in goes to the
 S&P 500". Every time USDC arrive, that share is set aside; once it adds up
 to 10 USDC, Camalote buys the tokenized stock (xStocks by Backed: SPYx,
-QQQx, AAPLx, NVDAx, TSLAx) through Jupiter Ultra in gasless mode and leaves
-it in your own account. No broker, no SOL, no seed phrase.
+QQQx, AAPLx, NVDAx, TSLAx) or the pre-IPO token (PreStocks: SpaceX, OpenAI,
+Anthropic, Kalshi, Neuralink, Anduril, Figure AI, Polymarket) through
+Jupiter Ultra and leaves it in your own account. No broker, no seed phrase;
+the network is paid from a 1-USDC SOL reserve the app loads on its own.
+
+Market data does real work here. For listed stocks, Pyth's public feed
+metadata tells the app whether Wall Street is open; by default the rule
+waits for the open, because outside market hours the token can drift from
+the stock. For pre-IPO tokens, PreStocks' reference value is compared with
+the token price on every screen, and the rule refuses to buy while the
+token trades more than 5% above it (OpenAI was +14% and SpaceX −23% on
+September 21).
 
 Why the income event and not a calendar: freelancers in Argentina and Latin
 America don't earn on a schedule, they earn when they get paid. Calendar
@@ -104,6 +120,30 @@ Grabar: `node scripts/demo-video.mjs docs/demo` (dev server en demo, :3001).
 - **¿Y si Jupiter apaga Ultra?** El flujo es orden, firma, ejecución; se
   cambia el proveedor de la orden sin tocar el producto.
 
+## Bounty tracks (en inglés, listos para pegar)
+
+**Best Use of PreStocks.** Camalote makes pre-IPO exposure a habit instead
+of a trade: "20% of every payment I get goes to SpaceX", bought on its own
+from USDC that already sits on Solana, with no broker. All eight PreStocks
+tokens are in the catalog (Token-2022, 9 decimals, the issuer's 1% transfer
+fee shown on the ticket). The app reads prestocks.com/api on the server,
+shows the reference value next to the token price on the picker, the ticket
+and the portfolio ("PreStocks reference: $995 · the token is +14.5%"), and
+the rule won't buy while the premium is above 5%: the user keeps
+accumulating and the app says why it's waiting. Value to the ecosystem:
+recurring, price-aware demand from people who get paid in USDC, and honest
+disclosure (no rights, no dividends, transfer fee, drift) inside the product.
+
+**Best Use of Pyth Market Data.** Pyth's feed metadata for SPY, QQQ, AAPL,
+NVDA and TSLA (`market_hours`: is_open, next_open, next_close) decides when
+the rule buys. Tokenized stocks trade 24/7 but drift from the underlying
+when Wall Street is closed, so by default Camalote waits for the open and
+tells the user "Waiting for Wall Street to open (Tuesday 10:30)"; buying and
+selling by hand show the same status. Honest note: since August 26, 2026
+Hermes price updates require an API key and equities need Pyth Pro, so the
+price comparison against the underlying is not built; the market-hours
+data is what Pyth publishes freely, and it's central to when the rule acts.
+
 ## Evidencia (para el pitch)
 
 - Ningún proyecto de los 5.400 de Colosseum invierte al recibir un pago;
@@ -127,3 +167,14 @@ Grabar: `node scripts/demo-video.mjs docs/demo` (dev server en demo, :3001).
   con una orden de 10 USDC a SPYx (feeBps 200, cuenta nueva).
 - Jupiter Ultra: cambio USDC → SOL sin gas desde 1 USDC (feeBps 2), probado
   el 2026-09-15 en dos rondas de 1 a 5 USDC. Es lo que carga la reserva.
+- PreStocks (2026-09-21): ocho tokens Token-2022 verificados en Jupiter,
+  liquidez en Meteora DLMM de 113.000 a 776.000 USD, compra sin gas de 10
+  USDC armada para SpaceX, OpenAI y Anthropic. Distancia a la referencia
+  ese día: OpenAI +14,5 %, Neuralink +25 %, SpaceX −23 %, Kalshi −3 %.
+  SpaceX tiene multiplicador ×5 en la cadena (cantidad visible = cruda × 5).
+- Pyth (2026-09-21): `price_feeds` sigue siendo público y trae
+  `market_hours` por acción; `updates/price/latest` devuelve 401 desde la
+  actualización del 26 de agosto de 2026. Plan gratis sin API; acciones
+  solo en Pro (2.500 USD por mes).
+- Jupiter Price v3 dejó de mandar `usdPricePrescaled` (null el 2026-09-21):
+  el precio por unidad cruda se calcula como precio visible × multiplicador.

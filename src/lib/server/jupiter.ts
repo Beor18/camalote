@@ -96,23 +96,36 @@ interface PriceV3Entry {
   decimals?: number;
 }
 
+export interface PriceV3Result {
+  /** Precio por unidad visible (la que muestran las billeteras). */
+  usdPrice: number;
+  /** Precio por unidad cruda, si Jupiter lo manda (desde sep-2026 suele venir vacío). */
+  prescaled: number | null;
+}
+
 /**
- * Precio en USD por unidad cruda de cada mint. Los xStocks usan la extensión
- * "scaled UI amount" (la cantidad visible crece con los dividendos): para
- * valuar unidades crudas hay que usar el precio "prescaled" cuando existe.
+ * Precio en USD de cada mint. Los tokens con "scaled UI amount" (xStocks,
+ * PreStocks) muestran cantidad cruda × multiplicador: Jupiter cotiza por
+ * unidad visible, y el precio por unidad cruda es ese × multiplicador (o el
+ * "prescaled", cuando lo manda). Quien llama tiene el multiplicador.
  */
-export async function priceV3(mints: string[]): Promise<Record<string, number>> {
+export async function priceV3(mints: string[]): Promise<Record<string, PriceV3Result>> {
   const res = await fetch(`${API_BASE}/price/v3?ids=${mints.join(",")}`, {
     headers: headers(),
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`Jupiter respondió ${res.status}.`);
   const data = (await res.json()) as Record<string, PriceV3Entry | null>;
-  const out: Record<string, number> = {};
+  const out: Record<string, PriceV3Result> = {};
   for (const mint of mints) {
     const entry = data[mint];
-    const price = entry?.usdPricePrescaled ?? entry?.usdPrice;
-    if (typeof price === "number" && price > 0) out[mint] = price;
+    const usdPrice = entry?.usdPrice;
+    if (typeof usdPrice !== "number" || !(usdPrice > 0)) continue;
+    const prescaled = entry?.usdPricePrescaled;
+    out[mint] = {
+      usdPrice,
+      prescaled: typeof prescaled === "number" && prescaled > 0 ? prescaled : null,
+    };
   }
   return out;
 }

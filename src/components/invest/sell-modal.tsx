@@ -7,8 +7,10 @@ import { ExplorerLink } from "@/components/bridge/panel";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import type { XStockSymbol } from "@/lib/invest/catalog";
+import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import { executeSale } from "@/lib/invest/execute";
+import { MarketNote } from "@/components/invest/market-note";
+import type { PricesResult } from "@/lib/invest/prices";
 import {
   formatTokens,
   fromDisplayUnits,
@@ -42,6 +44,7 @@ export function SellModal({
   address,
   actions,
   demo,
+  prices,
   onClose,
   onDone,
 }: {
@@ -53,6 +56,8 @@ export function SellModal({
   address: string | null;
   actions: BridgeActions;
   demo: boolean;
+  /** Horario de Wall Street y referencia de PreStocks, para avisar antes de vender. */
+  prices: PricesResult | null;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -60,6 +65,7 @@ export function SellModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [amountText, setAmountText] = useState("");
   const [state, setState] = useState<State>({ phase: "idle" });
+  const decimals = asset ? decimalsOf(asset) : 8;
   const displayHolding = toDisplayUnits(holdingUnits, multiplier);
 
   useEffect(() => {
@@ -78,7 +84,7 @@ export function SellModal({
     onClose();
   };
 
-  const amountUnits = useMemo(() => parseTokens(amountText), [amountText]);
+  const amountUnits = useMemo(() => parseTokens(amountText, decimals), [amountText, decimals]);
   const amountError =
     amountText.trim() === ""
       ? null
@@ -156,7 +162,8 @@ export function SellModal({
                     BigInt(state.purchase.tokenUnits),
                     state.purchase.multiplier ?? multiplier
                   ),
-                  lang
+                  lang,
+                  decimalsOf(state.purchase.asset)
                 ),
                 state.purchase.asset
               )}
@@ -267,7 +274,7 @@ export function SellModal({
                   type="button"
                   disabled={state.phase !== "idle"}
                   data-testid="sell-all"
-                  onClick={() => setAmountText(tokensToDecimal(displayHolding).replace(".", lang === "es" ? "," : "."))}
+                  onClick={() => setAmountText(tokensToDecimal(displayHolding, decimals).replace(".", lang === "es" ? "," : "."))}
                   className="rounded-lg px-2.5 py-2 text-xs font-semibold text-primary transition-colors duration-100 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer"
                 >
                   {t.invest.sellAll}
@@ -281,17 +288,25 @@ export function SellModal({
               </p>
             ) : (
               <p id="sell-amount-hint" className="text-xs text-muted-foreground">
-                {t.invest.sellHave(formatTokens(displayHolding, lang), asset ?? "")}
+                {t.invest.sellHave(formatTokens(displayHolding, lang, decimals), asset ?? "")}
               </p>
             )}
           </div>
+
+          {asset && (
+            <MarketNote
+              stock={findXStock(asset)}
+              market={prices?.market[asset]}
+              reference={prices?.reference[asset]}
+            />
+          )}
 
           {state.phase === "quoted" && (
             <dl className="flex flex-col gap-2 rounded-xl bg-muted p-4 text-sm" data-testid="sell-ticket">
               <div className="flex items-baseline justify-between gap-4">
                 <dt className="min-w-0 text-muted-foreground">{t.invest.sellRowSell}</dt>
                 <dd className="shrink-0 whitespace-nowrap font-mono tabular-nums">
-                  {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang)}{" "}
+                  {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang, decimals)}{" "}
                   {state.quote.asset}
                 </dd>
               </div>

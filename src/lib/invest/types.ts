@@ -19,6 +19,14 @@ export interface InvestRule {
   /** Si una compra falló, no se reintenta hasta este momento. */
   pausedUntil?: number;
   lastError?: string;
+  /**
+   * Comprar acciones solo con Wall Street abierto (horario de Pyth). Fuera
+   * de horario el token puede alejarse del precio de la acción. Sin valor
+   * en reglas anteriores = sí.
+   */
+  waitForMarketOpen?: boolean;
+  /** Por qué la regla tiene lo apartado listo pero no compra todavía. */
+  waiting?: { reason: "market"; nextOpen: number | null } | { reason: "premium"; premiumBps: number };
 }
 
 export type OperationKind = "buy" | "sell";

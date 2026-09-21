@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { findXStock } from "@/lib/invest/catalog";
 import { executePurchase, reconcileInterrupted } from "@/lib/invest/execute";
 import { fitBuyToBalance, fuelUnitsFor } from "@/lib/invest/fuel";
+import { buyBlockedBy } from "@/lib/invest/guards";
+import { fetchPrices } from "@/lib/invest/prices";
 import { planInvestments } from "@/lib/invest/rules";
 import {
   INCOMING_EVENT,
@@ -78,6 +81,31 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
         notifyInvest();
       }
       if (plan.buyUnits !== null) {
+        // Datos de mercado antes de comprar: fuera de horario de Wall Street
+        // (si el usuario pidió esperar) o con la pre-IPO muy arriba de su
+        // referencia, lo apartado queda listo y la regla espera.
+        const stock = findXStock(rule.asset);
+        const { market, reference } = await fetchPrices();
+        // En demo el horario no frena (si no, un fin de semana no habría nada
+        // que mostrar); la referencia de PreStocks sí, que es dato real.
+        const blocked = stock
+          ? buyBlockedBy({
+              kind: stock.kind,
+              waitForMarketOpen: rule.waitForMarketOpen ?? true,
+              market: demo ? null : market[rule.asset],
+              reference: reference[rule.asset],
+            })
+          : null;
+        if (blocked) {
+          saveRule(address, {
+            ...plan.rule,
+            pendingUnits: plan.buyUnits.toString(),
+            waiting: blocked,
+          });
+          notifyInvest();
+          return;
+        }
+
         // Si además hay que cargar la reserva de red y el saldo no alcanza
         // para las dos cosas, se invierte lo que entra y el resto sigue apartado.
         const { solanaUnits, solanaLamports } = balancesRef.current;
@@ -87,7 +115,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
           fuelUnits: fuelUnitsFor(solanaLamports),
         });
         if (fit.buyUnits === 0n) {
-          saveRule(address, { ...plan.rule, pendingUnits: fit.leftoverUnits.toString() });
+          saveRule(address, { ...plan.rule, pendingUnits: fit.leftoverUnits.toString(), waiting: undefined });
           notifyInvest();
           return;
         }
@@ -106,6 +134,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             pendingUnits: plan.buyUnits.toString(),
             pausedUntil: Date.now() + PAUSE_AFTER_ERROR_MS,
             lastError: purchase.errorMessage,
+            waiting: undefined,
           });
         } else {
           saveRule(address, {
@@ -113,6 +142,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             pendingUnits: fit.leftoverUnits.toString(),
             pausedUntil: undefined,
             lastError: undefined,
+            waiting: undefined,
           });
         }
         notifyInvest();

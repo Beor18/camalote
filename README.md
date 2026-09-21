@@ -7,7 +7,9 @@ a la vista.
 
 - **Una regla, una sola vez**: «el 20 % de lo que me llega, al S&P 500».
   Cinco acciones para empezar: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks,
-  de las 60+ que existen en Solana).
+  de las 60+ que existen en Solana). Y ocho empresas antes de salir a bolsa
+  (PreStocks): SpaceX, OpenAI, Anthropic, Kalshi, Neuralink, Anduril,
+  Figure AI y Polymarket, con su riesgo dicho en la app.
 - **Se compra sola cuando te pagan**: la app mira tu cuenta y, cuando lo
   apartado junta 10 USDC, compra por **Jupiter Ultra**. La red la pagás vos
   desde una reserva de SOL que la app carga sola con 1 USDC la primera vez.
@@ -93,7 +95,20 @@ tarifa de referido de Jupiter) no están construidas.
 - **Tenencias** desde la cadena: cuentas Token-2022 del usuario filtradas
   por el catálogo (`src/lib/invest/catalog.ts`, mints verificados contra
   la API de tokens de Jupiter). **Precios**: `/api/invest/prices` (cache
-  30 s) usa `usdPricePrescaled` porque xStocks escalan la cantidad visible.
+  30 s). Jupiter cotiza por unidad visible; el precio por unidad cruda es
+  ese × multiplicador (o `usdPricePrescaled` cuando Jupiter lo manda, que
+  desde septiembre de 2026 no lo hace). SpaceX, por ejemplo, va ×5.
+- **Empresas antes de salir a bolsa** (PreStocks, 9 decimales, 1 % de
+  transferencia del emisor): mismo camino de compra y venta por Ultra. El
+  mismo endpoint lee de `prestocks.com/api/prestocks` el valor de referencia
+  de cada empresa y a cuánto cotiza el token; la app muestra la distancia
+  ("el token está +14 %") y la regla no compra si está más de 5 % arriba
+  (`src/lib/invest/guards.ts`, `MAX_PREMIUM_BPS`). Sin dividendos.
+- **Horario de Wall Street** (Pyth): de los metadatos públicos del feed de
+  cada acción (`hermes.pyth.network/v2/price_feeds`, `market_hours`), que
+  no piden clave. La regla espera a la apertura si el usuario lo pide (por
+  defecto sí), y comprar y vender avisan si el mercado está cerrado. El
+  precio del feed necesita Pyth Pro, así que no se usa.
 - **Dividendos** (`src/lib/invest/multiplier.ts`): xStocks los reinvierte
   subiendo el multiplicador "scaled UI amount" del mint. El mismo endpoint
   de precios lo lee; la app muestra cantidades como cualquier billetera

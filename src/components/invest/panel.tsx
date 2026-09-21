@@ -180,6 +180,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         summary={summary}
         loading={holdings === null}
         pricesLive={prices ? prices.live : null}
+        reference={prices?.reference}
         demo={session.demo}
         onBuy={() => setBuying(true)}
         onSell={(asset) => setSelling(asset)}
@@ -221,6 +222,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         defaultAsset={rule?.asset ?? "SPYx"}
         demo={session.demo}
+        prices={prices}
         onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}
         onBuy={buyNow}
       />
@@ -233,6 +235,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         address={address}
         actions={actions}
         demo={session.demo}
+        prices={prices}
         onClose={() => setSelling(null)}
         onDone={() => {
           balances.refresh();

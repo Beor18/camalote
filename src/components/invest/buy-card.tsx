@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ExplorerLink } from "@/components/bridge/panel";
 import { AssetPicker } from "@/components/invest/asset-picker";
+import { MarketNote } from "@/components/invest/market-note";
 import { BUY_MIN_UNITS, FEE_BPS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang, type Lang } from "@/lib/i18n";
-import type { XStockSymbol } from "@/lib/invest/catalog";
+import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import type { PricesResult } from "@/lib/invest/prices";
 import { formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
@@ -39,6 +41,7 @@ export function BuyCard({
   fuelUnits,
   defaultAsset,
   demo,
+  prices,
   bare,
   onQuote,
   onBuy,
@@ -48,6 +51,8 @@ export function BuyCard({
   fuelUnits: bigint;
   defaultAsset: XStockSymbol;
   demo: boolean;
+  /** Horario de Wall Street y referencia de PreStocks, para avisar antes de comprar. */
+  prices: PricesResult | null;
   /** Sin borde: cuando vive adentro de una hoja. */
   bare?: boolean;
   onQuote: (asset: XStockSymbol, usdcUnits: bigint) => Promise<StockQuote>;
@@ -126,7 +131,7 @@ export function BuyCard({
           <h2 className="font-display text-2xl font-semibold">{t.invest.doneTitle}</h2>
           <p className="text-muted-foreground">
             {t.invest.doneBody(
-              formatTokens(toDisplayUnits(BigInt(p.tokenUnits), p.multiplier ?? 1), lang),
+              formatTokens(toDisplayUnits(BigInt(p.tokenUnits), p.multiplier ?? 1), lang, decimalsOf(p.asset)),
               p.asset,
               formatUsdc(BigInt(p.usdcUnits), 2, lang)
             )}
@@ -245,6 +250,13 @@ export function BuyCard({
             idPrefix="buy"
             disabled={state.phase !== "idle"}
           />
+          <div className="mt-2">
+            <MarketNote
+              stock={findXStock(asset)}
+              market={prices?.market[asset]}
+              reference={prices?.reference[asset]}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -300,7 +312,7 @@ export function BuyCard({
             <div className="flex items-baseline justify-between gap-4">
               <dt className="font-medium">{t.invest.rowReceive}</dt>
               <dd className="font-mono text-base font-semibold tabular-nums">
-                ~{formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang)}{" "}
+                ~{formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang, decimalsOf(quoted.asset))}{" "}
                 {quoted.asset}
               </dd>
             </div>

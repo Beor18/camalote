@@ -6,7 +6,7 @@ import {
   INVEST_MIN_UNITS,
 } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
-import { XSTOCK_DECIMALS, type XStockSymbol } from "@/lib/invest/catalog";
+import { XSTOCK_DECIMALS, decimalsOf, isPreIpo, type XStockSymbol } from "@/lib/invest/catalog";
 import type {
   Holding,
   InvestRule,
@@ -24,7 +24,8 @@ import type { IncomingPayment } from "@/lib/paylink";
 export const PERCENT_OPTIONS = [5, 10, 20, 30, 50] as const;
 const MAX_SEEN = 200;
 const USDC_UNIT = 10n ** BigInt(USDC_DECIMALS);
-const TOKEN_UNIT = 10n ** BigInt(XSTOCK_DECIMALS);
+/** Una unidad entera del token: 10^decimales (8 en xStocks, 9 en PreStocks). */
+const tokenUnit = (decimals: number) => 10n ** BigInt(decimals);
 /** Los precios en USD se manejan en millonésimas para no perder centavos. */
 const PRICE_SCALE = 1_000_000;
 
@@ -65,6 +66,7 @@ export function defaultRule(asset: XStockSymbol = "SPYx"): InvestRule {
     createdAt: Date.now(),
     pendingUnits: "0",
     seenSignatures: [],
+    waitForMarketOpen: true,
   };
 }
 
@@ -130,20 +132,21 @@ export function priceToMicro(priceUsd: number): bigint {
 export function tokensForUsdc(
   usdcUnits: bigint,
   priceUsd: number,
-  feeBps: number
+  feeBps: number,
+  decimals = XSTOCK_DECIMALS
 ): bigint {
   const priceMicro = priceToMicro(priceUsd);
   if (priceMicro === 0n || usdcUnits <= 0n) return 0n;
   const net = (usdcUnits * BigInt(10000 - feeBps)) / 10000n;
-  // usdc(6 dec) / precio(6 dec) → token(8 dec)
-  return (net * TOKEN_UNIT) / priceMicro;
+  // usdc(6 dec) / precio(6 dec) → token(decimales del token)
+  return (net * tokenUnit(decimals)) / priceMicro;
 }
 
 /** Valor en USDC (6 decimales) de `tokenUnits` a un precio dado. */
-export function valueOfTokens(tokenUnits: bigint, priceUsd: number): bigint {
+export function valueOfTokens(tokenUnits: bigint, priceUsd: number, decimals = XSTOCK_DECIMALS): bigint {
   const priceMicro = priceToMicro(priceUsd);
   if (priceMicro === 0n || tokenUnits <= 0n) return 0n;
-  return (tokenUnits * priceMicro) / TOKEN_UNIT;
+  return (tokenUnits * priceMicro) / tokenUnit(decimals);
 }
 
 /** Cantidad cruda → la que muestran las billeteras (cruda × multiplicador). */
@@ -162,6 +165,8 @@ export function fromDisplayUnits(displayUnits: bigint, multiplier = 1): bigint {
  * Dividendos reinvertidos desde Camalote, en unidades visibles por acción:
  * lo que creció el multiplicador desde cada compra, menos lo que dejó de
  * crecer desde cada venta. Solo cuentan operaciones con multiplicador guardado.
+ * Las pre-IPO no pagan dividendos: su multiplicador cambia por otros
+ * motivos (SpaceX ×5), así que quedan afuera.
  */
 export function dividendsSummary(
   purchases: Purchase[],
@@ -169,7 +174,7 @@ export function dividendsSummary(
 ): Partial<Record<XStockSymbol, bigint>> {
   const acc: Partial<Record<XStockSymbol, number>> = {};
   for (const p of purchases) {
-    if (p.status !== "done" || p.multiplier === undefined) continue;
+    if (p.status !== "done" || p.multiplier === undefined || isPreIpo(p.asset)) continue;
     const now = multipliers[p.asset];
     if (!now || !Number.isFinite(p.multiplier) || p.multiplier <= 0) continue;
     const growth = Number(p.tokenUnits) * (now - p.multiplier);
@@ -229,7 +234,7 @@ export function portfolioSummary(
         displayUnits: toDisplayUnits(h.tokenUnits, multiplier),
         priceUsd,
         priceEachUsd: priceUsd / multiplier,
-        valueUnits: valueOfTokens(h.tokenUnits, priceUsd),
+        valueUnits: valueOfTokens(h.tokenUnits, priceUsd, decimalsOf(h.asset)),
         dividendUnits: dividends[h.asset] ?? 0n,
       };
     })
@@ -265,19 +270,23 @@ export function formatTokens(
 }
 
 /** Para cantidades chiquitas (dividendos): dos cifras significativas en vez de "0,0000". */
-export function formatTokensPrecise(units: bigint, locale: "es" | "en" = "es"): string {
-  const value = Number(units) / 10 ** XSTOCK_DECIMALS;
-  if (value >= 0.001) return formatTokens(units, locale);
+export function formatTokensPrecise(
+  units: bigint,
+  locale: "es" | "en" = "es",
+  decimals = XSTOCK_DECIMALS
+): string {
+  const value = Number(units) / 10 ** decimals;
+  if (value >= 0.001) return formatTokens(units, locale, decimals);
   return value.toLocaleString(locale === "es" ? "es" : "en", { maximumSignificantDigits: 2 });
 }
 
-/** "0,0154" o "0.0154" → 1540000n (8 decimales). null si no es una cantidad válida. */
+/** "0,0154" o "0.0154" → 1540000n (con los decimales del token). null si no es una cantidad válida. */
 export function parseTokens(input: string, decimals = XSTOCK_DECIMALS): bigint | null {
   const clean = input.trim().replace(",", ".");
   if (!new RegExp(`^\\d+(\\.\\d{0,${decimals}})?$`).test(clean)) return null;
   const [whole, frac = ""] = clean.split(".");
   try {
-    return BigInt(whole) * TOKEN_UNIT + BigInt(frac.padEnd(decimals, "0"));
+    return BigInt(whole) * tokenUnit(decimals) + BigInt(frac.padEnd(decimals, "0"));
   } catch {
     return null;
   }
@@ -285,8 +294,9 @@ export function parseTokens(input: string, decimals = XSTOCK_DECIMALS): bigint |
 
 /** 1540000n → "0.0154" (texto exacto, sin ceros de más, con punto). */
 export function tokensToDecimal(units: bigint, decimals = XSTOCK_DECIMALS): string {
-  const whole = units / TOKEN_UNIT;
-  const frac = (units % TOKEN_UNIT).toString().padStart(decimals, "0").replace(/0+$/, "");
+  const unit = tokenUnit(decimals);
+  const whole = units / unit;
+  const frac = (units % unit).toString().padStart(decimals, "0").replace(/0+$/, "");
   return frac ? `${whole}.${frac}` : whole.toString();
 }
 

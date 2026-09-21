@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AssetPicker } from "@/components/invest/asset-picker";
 import { useLang } from "@/lib/i18n";
+import { findXStock } from "@/lib/invest/catalog";
 import { PERCENT_OPTIONS } from "@/lib/invest/rules";
 import type { InvestRule } from "@/lib/invest/types";
 
@@ -88,6 +89,26 @@ export function RuleSheet({
           <p className="mb-2 text-sm font-medium">{t.invest.assetLabel}</p>
           <AssetPicker value={rule.asset} onChange={(asset) => onChange({ asset })} idPrefix="rule" />
         </div>
+
+        {findXStock(rule.asset)?.kind === "preipo" ? (
+          <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground" data-testid="rule-preipo-note">
+            {t.invest.preIpoRuleNote}
+          </p>
+        ) : (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-muted p-3">
+            <input
+              type="checkbox"
+              checked={rule.waitForMarketOpen ?? true}
+              onChange={(e) => onChange({ waitForMarketOpen: e.target.checked })}
+              data-testid="rule-wait-market"
+              className="mt-0.5 size-4 shrink-0 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium">{t.invest.waitMarketLabel}</span>
+              <span className="block text-xs text-muted-foreground">{t.invest.waitMarketHint}</span>
+            </span>
+          </label>
+        )}
 
         <p className="text-xs text-muted-foreground">{t.invest.ruleOpenNote}</p>
 

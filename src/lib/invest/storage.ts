@@ -41,6 +41,7 @@ export function loadRule(solanaAddress: string): InvestRule | null {
     ...rule,
     pendingUnits: rule.pendingUnits ?? "0",
     seenSignatures: Array.isArray(rule.seenSignatures) ? rule.seenSignatures : [],
+    waitForMarketOpen: rule.waitForMarketOpen ?? true,
   };
 }
 
