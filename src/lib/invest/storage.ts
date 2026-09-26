@@ -37,11 +37,16 @@ function writeJson(key: string, value: unknown): void {
 export function loadRule(solanaAddress: string): InvestRule | null {
   const rule = readJson<InvestRule | null>(RULE_PREFIX + solanaAddress, null);
   if (!rule || typeof rule.percent !== "number" || !rule.asset) return null;
+  const goal =
+    rule.goal && typeof rule.goal.name === "string" && typeof rule.goal.startedAt === "number"
+      ? { ...rule.goal, targetUnits: rule.goal.targetUnits ?? "0", contributedUnits: rule.goal.contributedUnits ?? "0" }
+      : undefined;
   return {
     ...rule,
     pendingUnits: rule.pendingUnits ?? "0",
     seenSignatures: Array.isArray(rule.seenSignatures) ? rule.seenSignatures : [],
     waitForMarketOpen: rule.waitForMarketOpen ?? true,
+    goal,
   };
 }
 

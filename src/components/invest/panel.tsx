@@ -4,15 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BuySheet } from "@/components/invest/buy-sheet";
+import { GoalReachedSheet } from "@/components/invest/goal-reached-sheet";
 import { StocksSection } from "@/components/invest/portfolio-card";
 import { PurchasesList } from "@/components/invest/purchases-list";
 import { RiverHero } from "@/components/invest/river-hero";
 import { RuleSheet } from "@/components/invest/rule-sheet";
 import { SellModal } from "@/components/invest/sell-modal";
+import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
+import { goalProgress } from "@/lib/invest/goals";
 import { fetchPrices, type PricesResult } from "@/lib/invest/prices";
 import { defaultRule, portfolioSummary } from "@/lib/invest/rules";
 import {
@@ -35,7 +38,7 @@ const PRICES_MS = 60_000;
  * ejecuta `useAutoInvest` desde el shell.
  */
 export function InvestPanel({ session, balances, actions }: Engine) {
-  const { t } = useLang();
+  const { lang, t } = useLang();
   const address = session.solanaAddress;
 
   const [rule, setRule] = useState<InvestRule | null>(null);
@@ -105,6 +108,25 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     () => portfolioSummary(holdings ?? [], purchases, priceMap, multipliers),
     [holdings, purchases, priceMap, multipliers]
   );
+  // La meta de la regla: lo comprado desde que arrancó, a valor de hoy, más lo apartado.
+  const goal = useMemo(
+    () =>
+      rule?.goal
+        ? goalProgress({
+            goal: rule.goal,
+            purchases,
+            holdings: holdings ?? [],
+            prices: priceMap,
+            pendingUnits: BigInt(rule.pendingUnits || "0"),
+          })
+        : null,
+    [rule, purchases, holdings, priceMap]
+  );
+  // Se festeja una vez, con las tenencias ya leídas (si no, sería un falso
+  // "llegaste") y con la hoja de la regla cerrada.
+  const celebrating = Boolean(
+    rule?.goal && goal?.reached && !rule.goal.celebratedAt && holdings !== null && !editing
+  );
 
   const updateRule = useCallback(
     (patch: Partial<InvestRule>) => {
@@ -130,6 +152,21 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     // Recién prendida, elegís qué parte y en qué.
     if (enabled) setEditing(true);
   }, [rule, updateRule]);
+
+  // Llegaste a la meta: nada pasa solo. Seguir, elegir la próxima o vender.
+  const closeCelebration = useCallback(
+    (then?: "next" | "sell") => {
+      if (!rule?.goal || rule.goal.celebratedAt) return;
+      if (then === "next") {
+        updateRule({ goal: undefined });
+        setEditing(true);
+        return;
+      }
+      updateRule({ goal: { ...rule.goal, celebratedAt: Date.now() } });
+      if (then === "sell") setSelling(summary.rows[0]?.asset ?? rule.asset);
+    },
+    [rule, updateRule, summary.rows]
+  );
 
   const buyNow = useCallback(
     async (quote: StockQuote, onStep: (step: BuyStep) => void) => {
@@ -167,6 +204,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
           actions={actions}
           rule={rule}
           summary={summary}
+          goal={goal}
           holdingsLoading={holdings === null}
           purchases={purchases}
           onToggleRule={toggleRule}
@@ -174,6 +212,18 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         />
       ) : (
         <Skeleton className="h-80" />
+      )}
+
+      {rule?.goal && goal && (
+        <GoalReachedSheet
+          open={celebrating}
+          goalName={rule.goal.name}
+          emoji={rule.goal.emoji}
+          valueText={formatUsdc(goal.doneUnits, 2, lang)}
+          onKeep={() => closeCelebration()}
+          onNext={() => closeCelebration("next")}
+          onSell={() => closeCelebration("sell")}
+        />
       )}
 
       <StocksSection

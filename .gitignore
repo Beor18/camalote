@@ -47,3 +47,5 @@ codex-session.jsonl
 # videos de demo (pesados; se suben a YouTube)
 docs/demo/*.mp4
 docs/demo/*.webm
+docs/demo/*.scenes.json
+docs/demo/voice/

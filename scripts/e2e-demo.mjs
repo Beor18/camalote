@@ -4,6 +4,7 @@
  * mano con ticket, venta, depósito, y las rutas ocultas.
  *
  * Uso: node scripts/e2e-demo.mjs <carpeta-salida>   (dev server demo en :3001)
+ * Corre en inglés, tal como abre la app para alguien que nunca eligió idioma.
  */
 import { chromium } from "playwright-core";
 const OUT = process.argv[2];
@@ -52,27 +53,49 @@ await page.waitForSelector("[data-testid=invest-account]", { timeout: 15000 });
 await page.waitForTimeout(900);
 await shot("02-app");
 console.log("BALANCE:", await text("[data-testid=usdc-balance]"));
-console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Secciones]").count());
+console.log("LANG:", await page.evaluate(() => document.documentElement.lang));
+console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Sections]").count());
 
-// 3. Arma su regla: el 30 % de lo que le llega, al S&P 500
+// 3. Arma su regla: el 30 % de lo que le llega, para el viaje (300), al S&P 500
 await page.click("[data-testid=rule-toggle]");
-// Recién prendida, se abre la hoja para elegir qué parte y en qué.
+// Recién prendida, se abre la hoja para elegir qué parte, para qué y en qué.
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await page.click("[data-testid=rule-percent-30]");
+await page.click("[data-testid=rule-goal-trip]");
+await page.fill("#rule-goal-target", "300");
 await page.click("[data-testid=rule-asset-SPYx]");
 await shot("03-regla-hoja");
 await page.click("[data-testid=rule-done]");
 await page.waitForTimeout(800);
 await shot("03-regla");
 console.log("RULE:", await text("[data-testid=invest-rule] p"));
+console.log("GOAL:", await text("[data-testid=goal-name]"), "·", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 
-// 4. Le llegan 40 USDC (demo): el 30 % se compra solo
+// 4. Le llegan 40 USDC (demo): el 30 % se compra solo y la meta avanza
 await page.click("[data-testid=simulate-incoming]");
 await purchasesDone(1);
 await page.waitForTimeout(1200);
 await shot("04-compra-por-regla");
 console.log("PURCHASE:", await text("[data-testid=invest-purchases] p"));
-console.log("PORTFOLIO:", await text("[data-testid=portfolio-value]"));
+console.log("GOAL 2:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
+console.log("MOMENT:", await text("[data-testid=rule-moment]"));
+console.log("PACE:", await text("[data-testid=goal-pace]"));
+
+// 4b. Baja la meta a 10: ya llegó. Festejo y elige la próxima (el curso).
+await page.click("[data-testid=rule-edit]");
+await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
+await page.fill("#rule-goal-target", "10");
+await page.click("[data-testid=rule-done]");
+await page.waitForSelector("[data-testid=goal-reached][open]", { timeout: 10000 });
+await page.waitForTimeout(500);
+await shot("04c-meta-cumplida");
+console.log("REACHED:", (await text("[data-testid=goal-reached] h2")), "·", await text("[data-testid=goal-reached] p.text-sm"));
+await page.click("[data-testid=goal-next]");
+await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
+await page.click("[data-testid=rule-goal-course]");
+await page.click("[data-testid=rule-done]");
+await page.waitForTimeout(500);
+console.log("GOAL 3:", await text("[data-testid=goal-name]"), "·", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 // El multiplicador viene de un RPC público de mainnet: si no responde, el renglón no está (por diseño).
 try {
   await page.waitForSelector("[data-testid=dividends-SPYx]", { timeout: 8000 });
@@ -97,7 +120,7 @@ await page.waitForTimeout(500);
 await shot("05-ticket");
 console.log("TICKET:", (await text("[data-testid=buy-ticket]"))?.replace(/\s+/g, " "));
 await page.click("[data-testid=buy-confirm]");
-await page.waitForSelector("text=¡Compraste!", { timeout: 30000 });
+await page.waitForSelector("text=Bought!", { timeout: 30000 });
 await page.waitForTimeout(800);
 await shot("06-comprado");
 console.log("MANUAL BUY:", await text("[data-testid=invest-buy] p"));
@@ -115,12 +138,12 @@ await page.waitForTimeout(400);
 await shot("07-vender-ticket");
 console.log("SELL TICKET:", (await text("[data-testid=sell-ticket]"))?.replace(/\s+/g, " "));
 await page.click("[data-testid=sell-confirm]");
-await page.waitForSelector("text=¡Vendido!", { timeout: 30000 });
+await page.waitForSelector("text=Sold!", { timeout: 30000 });
 await page.waitForTimeout(800);
 await shot("08-vendido");
-await page.click("[data-testid=sell-modal] button:has-text('Listo')");
+await page.click("[data-testid=sell-modal] button:has-text('Done')");
 await page.waitForTimeout(1000);
-console.log("PORTFOLIO 2:", await text("[data-testid=portfolio-value]"));
+console.log("GOAL 4:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("BALANCE 3:", await text("[data-testid=usdc-balance]"));
 console.log("OPERATIONS:", await page.locator("[data-testid=invest-purchases] > div > div").count());
 

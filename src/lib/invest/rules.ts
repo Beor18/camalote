@@ -95,23 +95,42 @@ export function planInvestments(
   const nextSeen = [...rule.seenSignatures];
   let pending = BigInt(rule.pendingUnits || "0");
   let setAside = 0n;
+  let counted = 0n;
+  let count = 0;
+  let lastAt = 0;
 
   for (const inc of [...incoming].sort((a, b) => a.createdAt - b.createdAt)) {
     if (seen.has(inc.signature)) continue;
     seen.add(inc.signature);
     nextSeen.push(inc.signature);
     if (inc.createdAt < rule.createdAt) continue; // anterior a la regla
-    const share = (BigInt(inc.amountUnits) * BigInt(rule.percent)) / 100n;
+    const amount = BigInt(inc.amountUnits);
+    const share = (amount * BigInt(rule.percent)) / 100n;
     pending += share;
     setAside += share;
+    counted += amount;
+    count += 1;
+    lastAt = Math.max(lastAt, inc.createdAt);
   }
 
   const buyUnits = pending >= minUnits ? pending : null;
+  // Lo apartado también cuenta para la meta, y el último cobro queda
+  // guardado para decir "te llegaron 40, 12 ya son de la compu nueva".
+  const goal =
+    rule.goal && setAside > 0n
+      ? { ...rule.goal, contributedUnits: (BigInt(rule.goal.contributedUnits || "0") + setAside).toString() }
+      : rule.goal;
+  const lastIncoming =
+    count > 0
+      ? { amountUnits: counted.toString(), setAsideUnits: setAside.toString(), count, at: lastAt }
+      : rule.lastIncoming;
   return {
     rule: {
       ...rule,
       pendingUnits: (buyUnits === null ? pending : 0n).toString(),
       seenSignatures: nextSeen.slice(-MAX_SEEN),
+      goal,
+      lastIncoming,
     },
     buyUnits,
     setAsideUnits: setAside,

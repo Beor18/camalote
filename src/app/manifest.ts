@@ -2,15 +2,15 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Camalote · Invertí una parte de cada cobro",
+    name: "Camalote · Invest part of every payment",
     short_name: "Camalote",
     description:
-      "Cada vez que te llegan USDC, una parte compra acciones tokenizadas en Solana, sola. Desde 10 dólares, comisión nunca más de medio dólar.",
+      "Every time USDC land, a part buys tokenized stocks on Solana, on its own. From 10 dollars, the fee is never more than half a dollar.",
     start_url: "/app",
     display: "standalone",
     background_color: "#fbfaf8",
     theme_color: "#7c3aed",
-    lang: "es",
+    lang: "en",
     icons: [
       {
         src: "/icons/icon-192.png",

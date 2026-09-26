@@ -4,14 +4,16 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AssetPicker } from "@/components/invest/asset-picker";
+import { GoalEditor } from "@/components/invest/goal-editor";
 import { useLang } from "@/lib/i18n";
 import { findXStock } from "@/lib/invest/catalog";
 import { PERCENT_OPTIONS } from "@/lib/invest/rules";
 import type { InvestRule } from "@/lib/invest/types";
 
 /**
- * El editor de la regla: qué parte y en qué. Se abre solo la primera vez
- * que se prende la regla y cuando tocás "Cambiar". Cada toque guarda.
+ * El editor de la regla: qué parte, para qué y en qué. Se abre solo la
+ * primera vez que se prende la regla y cuando tocás "Cambiar". Cada toque
+ * guarda.
  */
 export function RuleSheet({
   open,
@@ -49,7 +51,9 @@ export function RuleSheet({
               {t.invest.ruleTitle}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t.invest.ruleSummary(String(rule.percent), rule.asset)}
+              {rule.goal
+                ? t.invest.ruleSummaryGoal(String(rule.percent), rule.goal.name, rule.asset)
+                : t.invest.ruleSummary(String(rule.percent), rule.asset)}
             </p>
           </div>
           <button
@@ -84,6 +88,12 @@ export function RuleSheet({
             })}
           </div>
         </fieldset>
+
+        <div>
+          <p className="mb-2 text-sm font-medium">{t.invest.goalLabel}</p>
+          {/* se monta de nuevo en cada apertura: los campos arrancan con lo guardado */}
+          {open && <GoalEditor goal={rule.goal} onChange={(goal) => onChange({ goal })} />}
+        </div>
 
         <div>
           <p className="mb-2 text-sm font-medium">{t.invest.assetLabel}</p>

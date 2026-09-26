@@ -256,6 +256,7 @@ const es = {
     historyPaymentTo: (who: string) => `Pago a ${who}`,
     tabBridge: "Llevar a Solana",
     tabBridgeShort: "Cruzar",
+    sectionsLabel: "Secciones",
     tabCobros: "Cobrar",
     tabInvest: "Invertir",
   },
@@ -460,6 +461,47 @@ const es = {
     transferFeeNote: (pct: string) => `PreStocks cobra ${pct} % por transferencia, ya en el precio.`,
     ruleSummary: (pct: string, asset: string) =>
       `De cada cobro, el ${pct} % va a ${asset}.`,
+    ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
+      `De cada cobro, el ${pct} % es para ${goal}, en ${asset}.`,
+    goalLabel: "¿Para qué?",
+    goalPresets: {
+      computer: "La compu nueva",
+      trip: "El viaje",
+      cushion: "Colchón de 3 meses",
+      move: "La mudanza",
+      course: "El curso",
+      custom: "Otra cosa",
+    },
+    goalNone: "Sin meta por ahora",
+    goalNameLabel: "Ponele nombre",
+    goalTargetLabel: "¿Cuánto?",
+    goalMonthlyLabel: "¿Cuánto necesitás por mes para vivir?",
+    goalCushionHint: (target: string) => `Tres meses de eso: ${target} USDC.`,
+    goalDueLabel: "¿Para cuándo?",
+    goalDueOptional: "Si querés",
+    goalMarketNote: "Cuenta lo que compres desde ahora, a valor de hoy: sube y baja con el mercado.",
+    heroGoalOf: (target: string) => `de ${target} USDC`,
+    heroGoalReached: "Meta cumplida",
+    goalProgressLabel: "Avance de la meta",
+    goalPaymentsToGo: (n: number) =>
+      n === 1 ? "Falta un cobro como el último." : `Faltan unos ${n} cobros como el último.`,
+    goalEta: (month: string) => `A este ritmo llegás en ${month}.`,
+    goalNeeded: (amount: string, month: string) =>
+      `Para llegar en ${month} necesitás apartar ${amount} USDC por mes.`,
+    goalMoment: (amount: string, share: string, goal: string, pct: string) =>
+      `Te llegaron ${amount} USDC. ${share} ya son de ${goal}: vas por el ${pct} %.`,
+    goalMomentNoGoal: (amount: string, share: string) =>
+      `Te llegaron ${amount} USDC. ${share} ya están apartados.`,
+    goalReachedTitle: "¡Llegaste!",
+    goalReachedBody: (goal: string, value: string) =>
+      `${goal}: ya hay ${value} USDC juntados, sin que te acordaras. Ahora decidís vos.`,
+    goalKeepGoing: "Seguir juntando",
+    goalNext: "Elegir la próxima meta",
+    goalSell: "Vender y retirar",
+    goalShare: "Contarlo",
+    goalShared: "Copiado",
+    goalShareText: (goal: string) =>
+      `Junté ${goal} sin acordarme: una parte de cada cobro se invirtió sola con Camalote.`,
     ruleMin: (min: string) => `Cuando esa parte junta ${min} USDC, se compra sola.`,
     ruleOpenNote:
       "La regla corre mientras Camalote está abierta. Si te llegan USDC con la app cerrada, se compra cuando la abrís.",
@@ -797,6 +839,7 @@ const en: Dictionary = {
     historyPaymentTo: (who: string) => `Payment to ${who}`,
     tabBridge: "Take to Solana",
     tabBridgeShort: "Move",
+    sectionsLabel: "Sections",
     tabCobros: "Get paid",
     tabInvest: "Invest",
   },
@@ -1000,6 +1043,47 @@ const en: Dictionary = {
     transferFeeNote: (pct: string) => `PreStocks charges ${pct}% per transfer, already in the price.`,
     ruleSummary: (pct: string, asset: string) =>
       `${pct}% of every payment goes to ${asset}.`,
+    ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
+      `${pct}% of every payment goes to ${goal}, in ${asset}.`,
+    goalLabel: "What for?",
+    goalPresets: {
+      computer: "The new laptop",
+      trip: "The trip",
+      cushion: "3-month cushion",
+      move: "Moving out",
+      course: "The course",
+      custom: "Something else",
+    },
+    goalNone: "No goal for now",
+    goalNameLabel: "Give it a name",
+    goalTargetLabel: "How much?",
+    goalMonthlyLabel: "How much do you need per month to live?",
+    goalCushionHint: (target: string) => `Three months of that: ${target} USDC.`,
+    goalDueLabel: "By when?",
+    goalDueOptional: "Optional",
+    goalMarketNote: "Counts what you buy from now on, at today's value: it goes up and down with the market.",
+    heroGoalOf: (target: string) => `of ${target} USDC`,
+    heroGoalReached: "Goal reached",
+    goalProgressLabel: "Goal progress",
+    goalPaymentsToGo: (n: number) =>
+      n === 1 ? "One more payment like the last one." : `About ${n} more payments like the last one.`,
+    goalEta: (month: string) => `At this pace you get there in ${month}.`,
+    goalNeeded: (amount: string, month: string) =>
+      `To get there by ${month} you need to set aside ${amount} USDC a month.`,
+    goalMoment: (amount: string, share: string, goal: string, pct: string) =>
+      `${amount} USDC landed. ${share} already belong to ${goal}: you're at ${pct}%.`,
+    goalMomentNoGoal: (amount: string, share: string) =>
+      `${amount} USDC landed. ${share} are already set aside.`,
+    goalReachedTitle: "You made it!",
+    goalReachedBody: (goal: string, value: string) =>
+      `${goal}: ${value} USDC are in, without you remembering once. Now it's your call.`,
+    goalKeepGoing: "Keep going",
+    goalNext: "Pick the next goal",
+    goalSell: "Sell and withdraw",
+    goalShare: "Tell someone",
+    goalShared: "Copied",
+    goalShareText: (goal: string) =>
+      `I saved up for ${goal} without remembering once: part of every payment invested itself with Camalote.`,
     ruleMin: (min: string) => `Once that part adds up to ${min} USDC, it buys itself.`,
     ruleOpenNote:
       "The rule runs while Camalote is open. If USDC land while the app is closed, it buys when you open it.",
@@ -1110,24 +1194,26 @@ interface LangContextValue {
   t: Dictionary;
 }
 
+/** Idioma por defecto: inglés. El castellano queda a un toque y se recuerda. */
+export const DEFAULT_LANG: Lang = "en";
+
 const LangContext = createContext<LangContextValue>({
-  lang: "es",
+  lang: DEFAULT_LANG,
   setLang: () => {},
-  t: es,
+  t: DICTIONARIES[DEFAULT_LANG],
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("es");
+  const [lang, setLangState] = useState<Lang>(DEFAULT_LANG);
 
   useEffect(() => {
-    // Sincronización inicial con localStorage / idioma del navegador.
+    // Solo se respeta lo que el usuario eligió en este dispositivo; el idioma
+    // del navegador no decide, así la app abre en inglés para todos.
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored === "en" || stored === "es") {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setLangState(stored);
-      } else if (!navigator.language.toLowerCase().startsWith("es")) {
-        setLangState("en");
       }
     } catch {
       // sin almacenamiento, queda el default
@@ -1165,9 +1251,9 @@ export function LangToggle() {
     <div
       className="flex items-center rounded-lg border border-border p-0.5"
       role="group"
-      aria-label="Idioma / Language"
+      aria-label="Language / Idioma"
     >
-      {(["es", "en"] as const).map((option) => (
+      {(["en", "es"] as const).map((option) => (
         <button
           key={option}
           type="button"

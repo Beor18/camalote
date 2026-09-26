@@ -1,4 +1,39 @@
 import type { XStockSymbol } from "@/lib/invest/catalog";
+import type { GoalPresetId } from "@/lib/invest/goals";
+
+/**
+ * La meta de la regla: para qué se junta. "La compu nueva, 1.500". Una por
+ * vez; cuando se llega, se festeja y se elige la siguiente. El avance es lo
+ * que se compró desde que arrancó la meta, a valor de hoy, más lo apartado.
+ */
+export interface InvestGoal {
+  /** "La compu nueva". */
+  name: string;
+  /** Emoji de la ficha elegida. */
+  emoji?: string;
+  preset?: GoalPresetId;
+  /** Meta en USDC (6 decimales, string para JSON). */
+  targetUnits: string;
+  /** Mes objetivo, "2027-03". Opcional. */
+  dueMonth?: string;
+  /** Desde cuándo cuentan las compras para esta meta. */
+  startedAt: number;
+  /** USDC que la regla apartó desde que arrancó la meta (para el ritmo). */
+  contributedUnits: string;
+  /** Ya se festejó la llegada. */
+  celebratedAt?: number;
+}
+
+/** El último cobro que la regla contó: para decir "te llegaron 40, 12 ya son de la meta". */
+export interface LastIncoming {
+  /** Suma de los cobros contados en esa pasada (6 decimales). */
+  amountUnits: string;
+  /** Lo que se apartó de esos cobros. */
+  setAsideUnits: string;
+  /** Cuántos cobros fueron. */
+  count: number;
+  at: number;
+}
 
 /**
  * La regla de inversión: "cada vez que me llegan USDC, el X % va a tal
@@ -27,6 +62,9 @@ export interface InvestRule {
   waitForMarketOpen?: boolean;
   /** Por qué la regla tiene lo apartado listo pero no compra todavía. */
   waiting?: { reason: "market"; nextOpen: number | null } | { reason: "premium"; premiumBps: number };
+  /** Para qué se junta. Sin meta, la regla funciona igual. */
+  goal?: InvestGoal;
+  lastIncoming?: LastIncoming;
 }
 
 export type OperationKind = "buy" | "sell";

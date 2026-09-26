@@ -14,6 +14,11 @@ a la vista.
   apartado junta 10 USDC, compra por **Jupiter Ultra**. La red la pagás vos
   desde una reserva de SOL que la app carga sola con 1 USDC la primera vez.
   Los cobros chicos se van juntando.
+- **Una meta con nombre**: «la compu nueva, 1.500», «el viaje», «tres meses
+  de colchón». La regla la va llenando sola cada vez que te pagan, y la app
+  te dice cuánto falta en cobros («faltan unos 6 cobros como el último») o
+  cuándo llegás a este ritmo. Al llegar, festejás y decidís: seguir, la
+  próxima meta, o vender y retirar.
 - **Cartera y comprobantes**: valor de hoy con precios de Jupiter,
   rendimiento sobre lo que pusiste, los dividendos que xStocks reinvirtió
   por vos (leídos del multiplicador del token en la cadena), cada operación
@@ -87,6 +92,10 @@ tarifa de referido de Jupiter) no están construidas.
   `planInvestments` cruza los ingresos de la cuenta con la regla. Solo
   cuentan los posteriores a prenderla, cada uno una sola vez, y lo que
   vuelve de una venta propia no cuenta.
+- **La meta** (`src/lib/invest/goals.ts`, puro y testeado): lo comprado
+  desde que arrancó la meta menos lo vendido, nunca más de lo que hay en la
+  cuenta, a precio de hoy, más lo apartado. El ritmo sale de lo que la
+  regla apartó desde entonces; los cobros que faltan, del último cobro.
 - **La comisión** (`investFee`): FEE_BPS con piso y tope, descontada antes
   de ir al mercado.
 - **Compra**: `quoteStock` pide la orden a Ultra por `usdc − comisión`;

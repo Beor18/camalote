@@ -261,7 +261,7 @@ export function SellModal({
                 inputMode="decimal"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="0,01"
+                placeholder={lang === "es" ? "0,01" : "0.01"}
                 value={amountText}
                 disabled={state.phase !== "idle"}
                 onChange={(e) => setAmountText(e.target.value)}

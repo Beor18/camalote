@@ -18,6 +18,12 @@ Actualizado el 2026-09-21: Camalote es Invertir. Dos eventos, en este orden:
    septiembre al 12 de octubre de 2026. Tracks y premios se publican el 14.
    Camalote va a la pista de Solana.
 
+## Formulario de Stocklana
+
+El paso 1 (Project Name, Short Description, Full Description en Markdown)
+está listo para pegar en `docs/hackathon/stocklana-form.md`, con los
+contadores verificados (269 de 280 y 3.977 de 5.000).
+
 ## Campos (en inglés, listos para pegar)
 
 **Project name**: Camalote
@@ -88,19 +94,37 @@ transfers the user signs and pays.
 on Base with email login). Lives the LatAm freelancer reality from
 Corrientes, Argentina.
 
-## Guion del video (55 s, castellano)
+## Video (en inglés, con voz)
 
-0:00 Landing: "Cobrás en dólares. ¿Cuánto te quedó el mes pasado?"
-0:06 Fer entra con su email. Su cuenta de Solana aparece: 12,34 USDC.
-0:12 Arma la regla: 30 %, S&P 500. "Cuando esa parte junta 10 USDC, se
-     compra sola."
-0:22 Le llegan 40 USDC (un cliente le pagó). Sin tocar nada, la compra
-     aparece: 0,0154 SPYx por 12 USDC, comisión de Camalote 0,05.
-0:38 La cartera: vale hoy, puesto, rendimiento. La operación con su
-     comprobante.
-0:50 "Que la próxima vez que cobres, una parte ya esté invertida."
+Desde el 2026-09-25 el video lleva el pitch en inglés hablado encima
+(voz neural de Edge, `edge-tts`; el guion está en `scripts/demo-pitch.mjs`
+y cada escena dura lo que dura su frase). Grabar con el dev server en demo
+en :3001: `node scripts/demo-video.mjs docs/demo` → `camalote-demo.mp4`
+(alrededor de un minuto y medio). Mudo: `CAMALOTE_VOICE=off`. En castellano
+(mudo, no hay guion en castellano): `CAMALOTE_LANG=es`.
 
-Grabar: `node scripts/demo-video.mjs docs/demo` (dev server en demo, :3001).
+El pitch, escena por escena (sirve también como descripción en YouTube):
+
+1. Landing. "You get paid in dollars. How much did you keep last month?
+   Camalote is a Solana account that invests part of every payment you
+   receive, on its own."
+2. Entra con su email. "You sign in with your email. That's your Solana
+   account, where USDC land from a client, an exchange or a bounty. No seed
+   phrase, no broker."
+3. Arma la regla (30 %, mira las pre-IPO, elige S&P 500). "You set one rule.
+   Thirty percent of whatever comes in goes to the S&P 500. Or to Nvidia. Or
+   to SpaceX and OpenAI before they go public, through PreStocks. For listed
+   stocks, the rule waits for Wall Street to open, using Pyth's market hours."
+4. Le llegan 40 USDC y el camalote cruza. "A client pays forty USDC. You
+   don't touch anything. Camalote sets aside the thirty percent and buys the
+   tokenized stock through Jupiter. It stays in your own account."
+5. La cartera. "Your portfolio shows today's value, your return, and the
+   dividends the token reinvested for you."
+6. La operación con su comprobante. "Every operation has a receipt on
+   Solscan. The fee is 0.45% per purchase, never more than fifty cents, shown
+   before you confirm. Selling is free."
+7. El cierre de la landing. "Next time you get paid, let part of it already
+   be invested. Camalote, on Solana."
 
 ## Preguntas que van a hacer los jurados
 

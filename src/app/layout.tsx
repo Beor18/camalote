@@ -27,11 +27,11 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Camalote · Invertí una parte de cada cobro",
+    default: "Camalote · Invest part of every payment",
     template: "%s · Camalote",
   },
   description:
-    "Elegís un porcentaje y una acción. Cada vez que te llegan USDC a tu cuenta de Solana, esa parte compra acciones tokenizadas, sola. Desde 10 dólares, sin broker, con la comisión a la vista.",
+    "Pick a percentage and a stock. Every time USDC land in your Solana account, that part buys tokenized stocks, on its own. From 10 dollars, no broker, with the fee in plain sight.",
   applicationName: "Camalote",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -54,7 +54,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="es"
+      lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

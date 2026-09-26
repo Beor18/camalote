@@ -125,7 +125,7 @@ function ViewTabs({ view }: { view: ShellView }) {
   ];
   return (
     <nav
-      aria-label="Secciones"
+      aria-label={t.app.sectionsLabel}
       className="mx-auto grid w-full max-w-lg grid-cols-3 rounded-xl border border-border bg-muted p-1"
     >
       {tabs.map(({ key, href, label, shortLabel, Icon }) => {

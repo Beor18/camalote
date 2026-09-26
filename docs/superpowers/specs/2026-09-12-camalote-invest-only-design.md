@@ -61,6 +61,55 @@ y los que piden lanzar un token (Clawpump, Meteora DBC).
   `MarketNote` (horario, o referencia + 1 % de transferencia); la cartera
   muestra la referencia por fila. Dividendos solo para acciones.
 
+## Metas con nombre (2026-09-26)
+
+Fernando: "nadie se emociona con el S&P 500; se emociona con la compu
+nueva". Metas tienen todas las fintech; la diferencia acá es que la meta se
+llena sola cada vez que te pagan, con acciones. Una meta activa por vez.
+
+- La regla guarda `goal` (`InvestGoal`: nombre, emoji, ficha, monto, mes
+  opcional, `startedAt`, `contributedUnits`, `celebratedAt`) y
+  `lastIncoming` (suma, apartado, cantidad y fecha del último lote de
+  cobros que contó). `planInvestments` mantiene los dos.
+- `goals.ts` (puro, testeado): seis fichas (`GOAL_PRESETS`: compu, viaje,
+  colchón de 3 meses, mudanza, curso, otra), `goalProgress` (lo comprado
+  desde `startedAt` menos lo vendido, nunca más de lo que hay, a precio de
+  hoy, más lo apartado), `paymentsToGo` ("faltan unos N cobros como el
+  último"), `etaFromPace` (recién después de una semana, tope 30 años),
+  `neededPerMonth` (si hay mes), `formatMonth`, `monthKey`.
+- Hoja de la regla: paso "¿Para qué?" (`GoalEditor`, se monta en cada
+  apertura) con fichas, nombre, monto (el colchón pide lo que necesitás por
+  mes y multiplica por tres), mes opcional y la nota de que sube y baja.
+- Río: la orilla derecha pasa a ser la meta (nombre, juntado, "de 300 ·
+  3,9 %", barra). El camalote sigue cruzando por compra. Debajo, una línea
+  de ritmo (mes pedido, ritmo real o cobros que faltan, en ese orden) y,
+  durante tres días, "Te llegaron 40. 12 ya son de la meta: vas por el
+  3,9 %". Sin meta, el río queda como estaba.
+- Llegar: `GoalReachedSheet`, una vez, con la hoja de la regla cerrada y
+  las tenencias leídas. Seguir juntando, elegir la próxima (la meta se
+  borra y se abre la hoja; la siguiente arranca de cero) o vender y retirar
+  (abre vender). "Contarlo" usa `navigator.share` o el portapapeles.
+- `useNow`: el "ahora" como estado, para no llamar `Date.now()` en el render.
+- E2E: viaje de 300, cobro de 40, bajar la meta a 10, festejo, próxima meta.
+
+## Inglés por defecto (2026-09-23)
+
+Fernando: "necesito que el inglés sea el idioma por default". La app abre
+en inglés para todos, sin mirar el idioma del navegador; el castellano
+queda en el toggle EN/ES y se recuerda en el dispositivo
+(`camalote.lang`). Cambian también `<html lang>`, los metadatos, el
+manifiesto y el `aria-label` de las pestañas ocultas. Los scripts corren
+en inglés: `e2e-demo.mjs` verifica ese camino y `demo-video.mjs` graba en
+inglés (con `CAMALOTE_LANG=es` sale `camalote-demo-es.mp4`).
+
+Desde el 2026-09-25 el video lleva el pitch hablado: `scripts/demo-pitch.mjs`
+tiene una frase por escena, `demo-video.mjs` genera cada clip con `edge-tts`
+(voz neural de Microsoft Edge, gratis, pide internet; cacheado por texto en
+`docs/demo/voice/`), sostiene cada escena hasta que termina su frase, anota
+el segundo en que empezó cada escena (`camalote-demo.scenes.json`) y mezcla
+los clips en ese segundo con ffmpeg (`adelay` + `amix` + `loudnorm`). Sin
+`apad` ni `-shortest`: en ffmpeg 4.4 esa combinación no termina nunca.
+
 ## La reserva de red (2026-09-15)
 
 Fernando: "ocultá lo del relayer y dejá que el usuario pague, o que se
