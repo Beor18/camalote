@@ -10,8 +10,9 @@
  * La voz sale de edge-tts (`pip3 install --user edge-tts`, usa internet) con
  * el guion de `scripts/demo-pitch.mjs`; cada escena dura al menos lo que
  * dura su frase. Sin edge-tts, o con CAMALOTE_VOICE=off, el video sale mudo.
- * Sale en inglés, como abre la app. Para la versión en castellano (muda,
- * no hay guion en castellano): CAMALOTE_LANG=es node scripts/demo-video.mjs docs/demo
+ * Sale en inglés, como abre la app (`camalote-demo.mp4`). En castellano
+ * rioplatense, con voz argentina: CAMALOTE_LANG=es node scripts/demo-video.mjs docs/demo
+ * (`camalote-demo-es.mp4`).
  */
 import { chromium } from "playwright-core";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -49,14 +50,24 @@ function prepareVoice() {
     const key = `${VOICES[LANG]}\n${line.text}`;
     const cached = existsSync(mp3) && existsSync(txt) && readFileSync(txt, "utf8") === key;
     if (!cached) {
-      try {
-        execFileSync("python3", [
-          "-m", "edge_tts", "--voice", VOICES[LANG],
-          "--text", line.text, "--write-media", mp3,
-        ], { stdio: ["ignore", "ignore", "pipe"] });
-        writeFileSync(txt, key);
-      } catch (err) {
-        console.log("sin voz: edge-tts falló", String(err.stderr ?? err.message).trim().split("\n").pop());
+      // El servicio a veces devuelve vacío sin motivo: se reintenta un par de veces.
+      let lastError = "";
+      let done = false;
+      for (let attempt = 0; attempt < 3 && !done; attempt++) {
+        try {
+          execFileSync("python3", [
+            "-m", "edge_tts", "--voice", VOICES[LANG],
+            "--text", line.text, "--write-media", mp3,
+          ], { stdio: ["ignore", "ignore", "pipe"] });
+          writeFileSync(txt, key);
+          done = true;
+        } catch (err) {
+          lastError = String(err.stderr ?? err.message).trim().split("\n").pop();
+          execFileSync("sleep", ["2"]);
+        }
+      }
+      if (!done) {
+        console.log(`sin voz: edge-tts falló en "${line.name}":`, lastError);
         return null;
       }
     }
@@ -144,25 +155,32 @@ await page.click("button[type=submit]");
 await page.waitForSelector("[data-testid=rule-toggle]", { timeout: 15000 });
 await endScene(2300);
 
-// Escena 3: arma su regla, el 30 % de lo que le llega al S&P 500 (y mira las pre-IPO)
+// Escena 3: arma su regla: el 30 %, para el viaje (300), al S&P 500 (y mira las pre-IPO)
 scene("rule");
 await page.click("[data-testid=rule-toggle]");
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await hold(900);
 await page.click("[data-testid=rule-percent-30]");
 await hold(900);
+await page.click("[data-testid=rule-goal-trip]");
+await hold(700);
+await page.fill("#rule-goal-target", "");
+await type("#rule-goal-target", "300");
+await hold(900);
+await page.locator("[data-testid=rule-asset-SPYx]").scrollIntoViewIfNeeded();
+await hold(400);
 await page.click("[data-testid=rule-group-preipo]");
-await hold(2200);
+await hold(2000);
 await page.click("[data-testid=rule-group-stock]");
-await hold(600);
+await hold(500);
 await page.click("[data-testid=rule-asset-SPYx]");
 await endScene(4200);
 await page.click("[data-testid=rule-done]");
 await hold(1000);
 
-// Escena 4: le llegan 40 USDC y el 30 % se compra solo
+// Escena 4: le llegan 40 USDC y el 30 % se compra solo (el camalote cruza)
 scene("incoming");
-await page.locator("[data-testid=invest-account]").scrollIntoViewIfNeeded();
+await page.evaluate(() => window.scrollTo({ top: 0 }));
 await hold(600);
 await page.click("[data-testid=simulate-incoming]");
 await page.waitForFunction(
@@ -175,8 +193,12 @@ await page.waitForFunction(
 );
 await endScene(3000);
 
-// Escena 5: la cartera
+// Escena 5: la meta en la orilla, "te llegaron 40", cuántos cobros faltan, y la cartera
 scene("portfolio");
+await page.evaluate(() => window.scrollTo({ top: 0 }));
+await hold(2600);
+await page.locator("[data-testid=rule-moment]").scrollIntoViewIfNeeded();
+await hold(2600);
 await page.locator("[data-testid=invest-portfolio]").scrollIntoViewIfNeeded();
 await endScene(2600);
 

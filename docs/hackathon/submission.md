@@ -94,37 +94,48 @@ transfers the user signs and pays.
 on Base with email login). Lives the LatAm freelancer reality from
 Corrientes, Argentina.
 
-## Video (en inglés, con voz)
+## Video (dos versiones, con voz)
 
-Desde el 2026-09-25 el video lleva el pitch en inglés hablado encima
-(voz neural de Edge, `edge-tts`; el guion está en `scripts/demo-pitch.mjs`
-y cada escena dura lo que dura su frase). Grabar con el dev server en demo
-en :3001: `node scripts/demo-video.mjs docs/demo` → `camalote-demo.mp4`
-(alrededor de un minuto y medio). Mudo: `CAMALOTE_VOICE=off`. En castellano
-(mudo, no hay guion en castellano): `CAMALOTE_LANG=es`.
+Desde el 2026-09-27 hay dos videos con el pitch hablado encima, grabados
+con el mismo recorrido: `camalote-demo.mp4` en inglés (voz Andrew) y
+`camalote-demo-es.mp4` en castellano rioplatense (voz argentina Tomás), los
+dos de alrededor de 1:40. Voz neural de Edge (`edge-tts`); el guion vive en
+`scripts/demo-pitch.mjs` y cada escena dura lo que dura su frase. Grabar
+con el dev server en demo en :3001: `node scripts/demo-video.mjs docs/demo`
+(inglés) y `CAMALOTE_LANG=es node scripts/demo-video.mjs docs/demo`
+(castellano). Mudo: `CAMALOTE_VOICE=off`.
 
-El pitch, escena por escena (sirve también como descripción en YouTube):
+El pitch vende la necesidad antes que el producto ("vendeme una pluma"):
+la servilleta es la primera escena, la urgencia la última. Escena por
+escena, en castellano (el inglés dice lo mismo; sirve de descripción en
+YouTube):
 
-1. Landing. "You get paid in dollars. How much did you keep last month?
-   Camalote is a Solana account that invests part of every payment you
-   receive, on its own."
-2. Entra con su email. "You sign in with your email. That's your Solana
-   account, where USDC land from a client, an exchange or a bounty. No seed
-   phrase, no broker."
-3. Arma la regla (30 %, mira las pre-IPO, elige S&P 500). "You set one rule.
-   Thirty percent of whatever comes in goes to the S&P 500. Or to Nvidia. Or
-   to SpaceX and OpenAI before they go public, through PreStocks. For listed
-   stocks, the rule waits for Wall Street to open, using Pyth's market hours."
-4. Le llegan 40 USDC y el camalote cruza. "A client pays forty USDC. You
-   don't touch anything. Camalote sets aside the thirty percent and buys the
-   tokenized stock through Jupiter. It stays in your own account."
-5. La cartera. "Your portfolio shows today's value, your return, and the
-   dividends the token reinvested for you."
-6. La operación con su comprobante. "Every operation has a receipt on
-   Solscan. The fee is 0.45% per purchase, never more than fifty cents, shown
-   before you confirm. Selling is free."
-7. El cierre de la landing. "Next time you get paid, let part of it already
-   be invested. Camalote, on Solana."
+1. Landing. "Cobrás en dólares. Bien. Ahora hacé una cuenta rápida: todo lo
+   que cobraste el año pasado. ¿Cuánto de eso sigue siendo tuyo hoy? Eso.
+   Trabajaste todo el año para el alquiler, las cuentas, la tarjeta. Para
+   vos quedó lo que sobró. Y nunca sobra."
+2. Entra con su email. "No es que no quieras invertir. Es que 'después' no
+   llega nunca. La plata entra y ya tiene dueño. El único que se salva es el
+   que cobra primero. Y ese tenés que ser vos."
+3. Arma la regla (30 %, la meta "El viaje" de 300, mira las pre-IPO, elige
+   S&P 500). "Entonces decidilo una sola vez, con la cabeza fría: de todo lo
+   que me paguen, el treinta por ciento es mío. ¿Para qué? Para el viaje.
+   ¿En qué? El S&P 500. O Nvidia. O SpaceX antes de que salga a bolsa. Una
+   decisión. No cuarenta por año."
+4. Le llegan 40 y el camalote cruza. "Te pagan cuarenta. Pero ya no son
+   cuarenta: son veintiocho para el mes, y doce que ya están en el S&P 500,
+   a nombre del viaje, antes de que los veas. No decidiste nada. Ya lo
+   habías decidido."
+5. La meta en la orilla, "te llegaron 40", los cobros que faltan, la
+   cartera. "Y un día abrís, y está. Cuánto va del viaje, cuántos cobros
+   faltan, cuánto vale hoy. Sube y baja, como todo lo que vale la pena. Pero
+   está. Es tuyo, en tu cuenta, y lo vendés cuando quieras."
+6. La operación con su comprobante. "Sin letra chica. Cada compra con su
+   comprobante, y la comisión a la vista antes de confirmar: nunca más de
+   medio dólar. Vender es gratis. Y si un día no querés más, lo apagás."
+7. El cierre de la landing. "El próximo cobro ya está en camino. ¿Qué va a
+   pasar con él? Camalote. Cobrá como siempre. Una parte ya va a estar
+   invertida."
 
 ## Preguntas que van a hacer los jurados
 
