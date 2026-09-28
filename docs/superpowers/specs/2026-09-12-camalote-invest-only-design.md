@@ -139,19 +139,37 @@ pague a través de Jupiter". Sin relayer, cada cuenta paga su propia red:
 
 ## Narrativa de la landing ("vendeme una pluma")
 
-1. Necesidad: "Cobrás en dólares. ¿Cuánto te quedó el mes pasado?"
-2. Falta: invertir "cuando sobre" no pasa nunca; abrir un broker desde acá
-   tampoco. Columnas: como hasta ahora vs. con Camalote. Nota de tus dólares.
-3. Por qué en Solana: acá viven las acciones tokenizadas, mover plata
-   cuesta una fracción de centavo, hay laburo que paga en USDC acá,
-   Argentina juega de local.
-4. Respuesta: tres pasos (email, elegí cuánto y en qué, cobrá como siempre).
-5. Prueba: números ciertos (mínimo 10, tope 0,50, vender gratis, 5
-   acciones), calculadora con la misma comisión de la app, confianza.
-6. FAQ honesto: qué comprás, puede bajar, cuánto cuesta, vender, si no te
-   pagan en Solana, cuándo compra (solo con la app abierta), qué es Solana,
-   legal desde Argentina.
-7. Cierre: "Que la próxima vez que cobres, una parte ya esté invertida."
+Reescrita el 2026-09-28 para que siga el pitch de los videos golpe por
+golpe ("pareciera que la landing no está equilibrada con el pitch"). Sin
+nombres de acciones ni de empresas en la venta (pedido de Fernando): eso
+queda en la app.
+
+1. La servilleta: "Cobrás en dólares. ¿Cuánto de lo del año pasado sigue
+   siendo tuyo?" y "Trabajaste todo el año para el alquiler, las cuentas,
+   la tarjeta. Para vos quedó lo que sobró. Y nunca sobra." Bajo el río:
+   "Te pagan 40. Ya no son 40: son 28 para el mes y 12 que ya están en tu
+   meta."
+2. "Hacé la cuenta." (`Napkin`): escribís lo que cobraste el año pasado,
+   elegís 10/20/30 % y ves en letra manuscrita "Hoy tendrías 2.400 USD
+   puestos en acciones, a tu nombre. Sin acordarte ni una vez." Solo lo
+   puesto, no lo que valdría: sin promesas.
+3. "«Después» no llega nunca.": la plata entra y ya tiene dueño; el que se
+   salva es el que cobra primero. Columnas de decisiones (acordarte cada
+   mes, cuarenta decisiones por año vs. decidís una vez, para algo
+   concreto, se aparta antes de que lo veas). La nota de tus dólares:
+   "llegamos 40, doce nos fuimos al viaje".
+4. "Decidilo una sola vez": email; cuánto, para qué y en qué; cobrá como
+   siempre y la app te dice cuántos cobros faltan.
+5. "Sin letra chica.": los cuatro números (mínimo 2, 0,45 %, tope 0,50,
+   vender gratis) y las tres promesas (tu cuenta es tuya, sin promesas, lo
+   apagás cuando quieras). La calculadora de comisión salió de la landing
+   (`MiniCalc` queda en el repo); la cuenta de la comisión está en la FAQ.
+6. "¿Y por qué en Solana?", al final y en tres líneas, para el que ya está
+   convencido.
+7. FAQ (con "¿Qué es la meta?") y cierre: "El próximo cobro ya está en
+   camino. ¿Qué va a pasar con él?"
+
+En teléfono: 7,2 pantallas (6,9 antes de la servilleta).
 
 ## La app es tu río (rediseño del 2026-09-13)
 

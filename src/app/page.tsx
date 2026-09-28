@@ -20,16 +20,17 @@ import {
 import { CamaloteLogo, CamaloteMark } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { MiniCalc } from "@/components/landing/mini-calc";
+import { Napkin } from "@/components/landing/napkin";
 import { InstallCta } from "@/components/install-cta";
 import { DEMO_MODE } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 
 /**
- * La landing cuenta una sola historia, en este orden: la necesidad (cobrás
- * en dólares y no te queda nada), la falta (invertir "cuando sobre" no pasa
- * nunca), la respuesta (una regla que aparta antes de que gastes), la prueba
- * (números, precio, confianza) y la acción.
+ * La landing sigue el pitch, golpe por golpe: la servilleta (cobrás en
+ * dólares, ¿cuánto sigue siendo tuyo?), la cuenta hecha en un toque,
+ * "después" no llega nunca, decidilo una sola vez (con una meta), sin letra
+ * chica, y el próximo cobro ya está en camino. "¿Por qué Solana?" va al
+ * final, para el que ya está convencido.
  */
 export default function LandingPage() {
   return (
@@ -37,12 +38,11 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         <Hero />
+        <Napkin />
         <Showdown />
-        <WhySolana />
         <HowItWorks />
-        <FactsBand />
-        <Pricing />
-        <Trust />
+        <NoFinePrint />
+        <WhySolana />
         <Faq />
         <FinalCta />
       </main>
@@ -390,16 +390,18 @@ function HowItWorks() {
   );
 }
 
-/** Datos ciertos, sin números inflados: lo que hay hoy. */
-function FactsBand() {
+const TRUST_ICONS = [ShieldCheck, Lock, HeartHandshake];
+
+/** Sin letra chica: los números ciertos y las tres promesas que sí hacemos. */
+function NoFinePrint() {
   const { t } = useLang();
   return (
-    <section className="border-t border-border py-10 sm:py-16">
+    <section id="precio" className="border-t border-border py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.landing.factsTitle}
         </h2>
-        <dl className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-8 text-center sm:grid-cols-4">
+        <dl className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-8 text-center sm:mt-12 sm:grid-cols-4">
           {t.landing.facts.map((cell) => (
             <div key={cell.label} className="flex flex-col-reverse gap-1">
               <dt className="text-sm text-muted-foreground">{cell.label}</dt>
@@ -407,39 +409,7 @@ function FactsBand() {
             </div>
           ))}
         </dl>
-      </div>
-    </section>
-  );
-}
-
-function Pricing() {
-  const { t } = useLang();
-  return (
-    <section id="precio" className="border-t border-border py-10 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t.landing.pricingTitle}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{t.landing.pricingSub}</p>
-        </div>
-        <MiniCalc />
-      </div>
-    </section>
-  );
-}
-
-const TRUST_ICONS = [ShieldCheck, Lock, HeartHandshake];
-
-function Trust() {
-  const { t } = useLang();
-  return (
-    <section className="py-10 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.trustTitle}
-        </h2>
-        <div className="mx-auto mt-8 grid max-w-4xl gap-5 sm:mt-12 sm:grid-cols-3 sm:gap-6">
+        <div className="mx-auto mt-10 grid max-w-4xl gap-5 border-t border-border pt-10 sm:mt-14 sm:grid-cols-3 sm:gap-6 sm:pt-14">
           {t.landing.trust.map((point, i) => {
             const Icon = TRUST_ICONS[i];
             return (
