@@ -51,7 +51,7 @@ export function AssetPicker({
               disabled={disabled}
               data-testid={`${idPrefix}-group-${g.kind}`}
               onClick={() => setGroup(g.kind)}
-              className={`h-9 flex-1 rounded-lg px-2 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
+              className={`h-9 flex-1 whitespace-nowrap rounded-lg px-1 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
                 active ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -86,13 +86,14 @@ export function AssetPicker({
             >
               {dollars ? (
                 <>
-                  <span className="truncate text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
-                  <span className="truncate text-xs text-muted-foreground">{t.invest.dollarsChipSub}</span>
+                  <span className="max-w-full text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
+                  {/* la ficha ocupa todo el ancho: el subtítulo baja de línea si hace falta */}
+                  <span className="max-w-full text-xs leading-snug text-muted-foreground">{t.invest.dollarsChipSub}</span>
                 </>
               ) : (
                 <>
-                  <span className="truncate font-mono text-sm font-semibold">{stock.symbol}</span>
-                  <span className="truncate text-xs text-muted-foreground">{assetName(stock.symbol, lang)}</span>
+                  <span className="max-w-full truncate font-mono text-sm font-semibold">{stock.symbol}</span>
+                  <span className="max-w-full truncate text-xs text-muted-foreground">{assetName(stock.symbol, lang)}</span>
                 </>
               )}
             </button>

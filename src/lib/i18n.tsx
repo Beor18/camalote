@@ -479,7 +479,7 @@ const es = {
     percentLabel: "¿Qué parte de lo que te llega?",
     assetLabel: "¿En qué?",
     assetGroupStocks: "Acciones",
-    assetGroupPreIpo: "Antes de salir a bolsa",
+    assetGroupPreIpo: "Privadas",
     assetGroupDollars: "Dólares",
     dollarsChipSub: "Cerca del 4 % anual, sin el sube y baja de las acciones",
     dollarsPickerNote:
