@@ -244,6 +244,15 @@ cambiaba; y en desktop la columna de teléfono quedaba estirada.
   `ruleGoesTo`, `stepOf`, `next`, `back`, `turnOn`, `save`, `review*`,
   `percentExample`, `buyOnce`, `emptyPortfolioNoRule`); se fueron
   `heroLeft/Right`, `ruleChange`, `ruleOff`, `buyOpen`.
+- **Dólares: otro verbo** (mismo día, "¿compro dólares o pongo a rendir
+  dólares?"): con USDC en la mano no se "compran dólares". Cuando el
+  destino es USDY, la hoja de compra dice "Poner dólares a rendir", "¿Cuánto
+  ponés a rendir?", "Ver cuánto queda rindiendo", y el ticket muestra
+  "Queda rindiendo ~9,89 USD" (la cantidad de USDY, como detalle), porque
+  "ponés 10, recibís 8,61 USDY" parecía una pérdida. Vender es "Sacar los
+  dólares": se escribe en USD, "Todo" saca exactamente lo que hay, y la
+  fila de la cartera dice "Cerca del 4 % anual" con el botón "Sacar". En
+  movimientos, "Sacaste Dólares que rinden".
 - E2E y video: `rule-setup` → `rule-next` → `rule-done`; editar es
   `rule-edit` → `rule-review-goal` → `rule-step-done` → `rule-done`; pausa y
   reanudación (`rule-toggle`, `rule-resume`) cubiertas.

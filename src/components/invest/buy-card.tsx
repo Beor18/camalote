@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, CircleCheck, Info, Loader2, RotateCcw, ShoppingCart } from "lucide-react";
+import { Check, CircleCheck, Coins, Info, Loader2, RotateCcw, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ExplorerLink } from "@/components/bridge/panel";
@@ -10,9 +10,23 @@ import { MarketNote } from "@/components/invest/market-note";
 import { BUY_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang, type Lang } from "@/lib/i18n";
-import { assetName, decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import {
+  assetName,
+  decimalsOf,
+  fallbackPrices,
+  findXStock,
+  isDollars,
+  type XStockSymbol,
+} from "@/lib/invest/catalog";
 import type { PricesResult } from "@/lib/invest/prices";
-import { feeBpsFor, formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
+import {
+  feeBpsFor,
+  formatTokens,
+  formatUsd,
+  suggestedBuyUnits,
+  toDisplayUnits,
+  valueOfTokens,
+} from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
@@ -62,6 +76,10 @@ export function BuyCard({
   const frame = bare ? "border-0" : "";
   const minText = formatUsdc(BUY_MIN_UNITS, 0, lang);
   const [asset, setAsset] = useState<XStockSymbol>(defaultAsset);
+  // Con USDC en la mano no se "compran dólares": se ponen a rendir. Toda la
+  // hoja cambia de verbo, y lo que queda se muestra en dólares, no en USDY.
+  const dollars = isDollars(asset);
+  const priceOf = (sym: XStockSymbol) => prices?.prices[sym] ?? fallbackPrices()[sym] ?? 0;
   // Lo que se puede invertir: el saldo menos la reserva de red, si hay que cargarla.
   const spendableUnits =
     balanceUnits === null ? null : balanceUnits > fuelUnits ? balanceUnits - fuelUnits : 0n;
@@ -122,19 +140,24 @@ export function BuyCard({
   if (state.phase === "done") {
     const p = state.purchase;
     const camaloteFee = BigInt(p.camaloteFeeUnits ?? "0");
+    const pd = isDollars(p.asset);
+    const tokensText = formatTokens(
+      toDisplayUnits(BigInt(p.tokenUnits), p.multiplier ?? 1),
+      lang,
+      decimalsOf(p.asset)
+    );
+    const usdcText = formatUsdc(BigInt(p.usdcUnits), 2, lang);
     return (
       <Card className={`p-6 animate-pop ${frame}`} data-testid="invest-buy">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="flex size-14 items-center justify-center rounded-full bg-brand-gradient">
             <Check className="size-7 text-white" strokeWidth={3} aria-hidden="true" />
           </span>
-          <h2 className="font-display text-2xl font-semibold">{t.invest.doneTitle}</h2>
+          <h2 className="font-display text-2xl font-semibold">
+            {pd ? t.invest.dollarsDoneTitle : t.invest.doneTitle}
+          </h2>
           <p className="text-muted-foreground">
-            {t.invest.doneBody(
-              formatTokens(toDisplayUnits(BigInt(p.tokenUnits), p.multiplier ?? 1), lang, decimalsOf(p.asset)),
-              p.asset,
-              formatUsdc(BigInt(p.usdcUnits), 2, lang)
-            )}
+            {pd ? t.invest.dollarsDoneBody(usdcText, tokensText) : t.invest.doneBody(tokensText, p.asset, usdcText)}
           </p>
           <p className="text-xs text-muted-foreground">
             {camaloteFee > 0n
@@ -160,7 +183,7 @@ export function BuyCard({
           )}
           <Button variant="secondary" className="mt-1" onClick={() => setState({ phase: "idle" })}>
             <RotateCcw className="size-4" aria-hidden="true" />
-            {t.invest.buyAgain}
+            {pd ? t.invest.dollarsAgain : t.invest.buyAgain}
           </Button>
         </div>
       </Card>
@@ -179,7 +202,7 @@ export function BuyCard({
       quoting: t.invest.quoteLoading,
       fuel: t.invest.stepFuel,
       signing: t.invest.stepSigning,
-      sending: t.invest.stepSending,
+      sending: isDollars(state.quote.asset) ? t.invest.dollarsStepSending : t.invest.stepSending,
       fee: t.invest.stepFee,
     };
     return (
@@ -223,10 +246,18 @@ export function BuyCard({
   return (
     <Card className={`p-5 sm:p-6 ${frame}`} data-testid="invest-buy">
       <div className="flex items-center gap-2">
-        <ShoppingCart className="size-4 text-primary" aria-hidden="true" />
-        <h2 className="font-display text-lg font-semibold">{t.invest.buyTitle}</h2>
+        {dollars ? (
+          <Coins className="size-4 text-primary" aria-hidden="true" />
+        ) : (
+          <ShoppingCart className="size-4 text-primary" aria-hidden="true" />
+        )}
+        <h2 className="font-display text-lg font-semibold" data-testid="buy-title">
+          {dollars ? t.invest.dollarsBuyTitle : t.invest.buyTitle}
+        </h2>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">{t.invest.buySub}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {dollars ? t.invest.dollarsBuySub : t.invest.buySub}
+      </p>
 
       <form
         onSubmit={(e) => {
@@ -261,7 +292,7 @@ export function BuyCard({
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="buy-amount" className="text-sm font-medium">
-            {t.invest.buyAmountLabel}
+            {dollars ? t.invest.dollarsAmountLabel : t.invest.buyAmountLabel}
           </label>
           <div className="relative">
             <input
@@ -296,7 +327,7 @@ export function BuyCard({
 
         {quoted && (
           <dl className="flex flex-col gap-2 rounded-xl bg-muted p-4 text-sm" data-testid="buy-ticket">
-            <Row label={t.invest.rowSpend}>
+            <Row label={dollars ? t.invest.dollarsRowSpend : t.invest.rowSpend}>
               {formatUsdc(quoted.usdcUnits, 2, lang)} {t.common.usdc}
             </Row>
             {quoted.fuelUnits > 0n && (
@@ -309,13 +340,42 @@ export function BuyCard({
             </Row>
             <Row label={t.invest.rowJupiter(pct(quoted.jupiterFeeBps))}>{t.invest.rowIncluded}</Row>
             <div className="my-1 border-t border-border" role="presentation" />
-            <div className="flex items-baseline justify-between gap-4">
-              <dt className="font-medium">{t.invest.rowReceive}</dt>
-              <dd className="font-mono text-base font-semibold tabular-nums">
-                ~{formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang, decimalsOf(quoted.asset))}{" "}
-                {quoted.asset}
-              </dd>
-            </div>
+            {dollars ? (
+              // "Ponés 10, recibís 8,61 USDY" parece una pérdida: se muestra lo que
+              // queda rindiendo en dólares, y la cantidad de USDY como detalle.
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="font-medium">{t.invest.dollarsRowReceive}</dt>
+                <dd className="text-right">
+                  <span className="block font-mono text-base font-semibold tabular-nums">
+                    ~
+                    {formatUsdc(
+                      valueOfTokens(
+                        toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier),
+                        priceOf(quoted.asset),
+                        decimalsOf(quoted.asset)
+                      ),
+                      2,
+                      lang
+                    )}{" "}
+                    USD
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {t.invest.dollarsRowUnits(
+                      formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang, decimalsOf(quoted.asset)),
+                      formatUsd(priceOf(quoted.asset), lang)
+                    )}
+                  </span>
+                </dd>
+              </div>
+            ) : (
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="font-medium">{t.invest.rowReceive}</dt>
+                <dd className="font-mono text-base font-semibold tabular-nums">
+                  ~{formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang, decimalsOf(quoted.asset))}{" "}
+                  {quoted.asset}
+                </dd>
+              </div>
+            )}
             {quoted.fuelUnits > 0n ? (
               <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
                 <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
@@ -336,7 +396,7 @@ export function BuyCard({
         {quoted ? (
           <div className="flex flex-col gap-2">
             <Button type="submit" className="w-full" data-testid="buy-confirm">
-              {t.invest.confirmBuy}
+              {dollars ? t.invest.dollarsConfirm : t.invest.confirmBuy}
             </Button>
             <button
               type="button"
@@ -354,7 +414,11 @@ export function BuyCard({
             className="w-full"
             data-testid="buy-quote"
           >
-            {state.phase === "quoting" ? t.invest.quoteLoading : t.invest.buyQuote(assetName(asset, lang))}
+            {state.phase === "quoting"
+              ? t.invest.quoteLoading
+              : dollars
+                ? t.invest.dollarsQuote
+                : t.invest.buyQuote(assetName(asset, lang))}
           </Button>
         )}
       </form>

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { assetName, decimalsOf } from "@/lib/invest/catalog";
+import { assetName, decimalsOf, isDollars } from "@/lib/invest/catalog";
 import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
 import type { MultiplierMap, Purchase } from "@/lib/invest/types";
 
@@ -65,7 +65,9 @@ export function PurchasesList({
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {sell ? `${t.invest.kindSell} ${assetName(p.asset, lang)}` : assetName(p.asset, lang)}
+                    {sell
+                      ? `${isDollars(p.asset) ? t.invest.kindTakeOut : t.invest.kindSell} ${assetName(p.asset, lang)}`
+                      : assetName(p.asset, lang)}
                     <span className="font-mono font-normal tabular-nums text-muted-foreground"> · {usdc}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">

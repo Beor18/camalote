@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, CircleCheck, Info, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExplorerLink } from "@/components/bridge/panel";
 import { solanaExplorerTx } from "@/lib/config";
-import { formatUsdc } from "@/lib/format";
+import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { assetName, decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import {
+  assetName,
+  decimalsOf,
+  fallbackPrices,
+  findXStock,
+  isDollars,
+  type XStockSymbol,
+} from "@/lib/invest/catalog";
 import { executeSale } from "@/lib/invest/execute";
 import { MarketNote } from "@/components/invest/market-note";
 import type { PricesResult } from "@/lib/invest/prices";
@@ -17,6 +24,7 @@ import {
   parseTokens,
   toDisplayUnits,
   tokensToDecimal,
+  valueOfTokens,
 } from "@/lib/invest/rules";
 import type { Purchase, SellQuote } from "@/lib/invest/types";
 import type { BridgeActions, BuyStep } from "@/components/bridge/types";
@@ -67,6 +75,19 @@ export function SellModal({
   const [state, setState] = useState<State>({ phase: "idle" });
   const decimals = asset ? decimalsOf(asset) : 8;
   const displayHolding = toDisplayUnits(holdingUnits, multiplier);
+  // Dólares que rinden: no se "venden", se sacan. El usuario escribe cuántos
+  // dólares saca (lo que tiene rindiendo), no cuántos USDY; la cantidad de
+  // USDY sale del precio de hoy y "Todo" saca exactamente lo que hay.
+  const dollars = asset !== null && isDollars(asset);
+  const price = asset ? (prices?.prices[asset] ?? fallbackPrices()[asset] ?? 0) : 0;
+  const holdingValue = valueOfTokens(displayHolding, price, decimals);
+  const usdText = (units: bigint) => {
+    const s = (Number(units) / 1_000_000).toFixed(2);
+    return lang === "es" ? s.replace(".", ",") : s;
+  };
+  const allText = dollars
+    ? usdText(holdingValue)
+    : tokensToDecimal(displayHolding, decimals).replace(".", lang === "es" ? "," : ".");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -84,7 +105,13 @@ export function SellModal({
     onClose();
   };
 
-  const amountUnits = useMemo(() => parseTokens(amountText, decimals), [amountText, decimals]);
+  const amountUnits = ((): bigint | null => {
+    if (!dollars) return parseTokens(amountText, decimals);
+    if (amountText === allText) return displayHolding;
+    const usd = parseUsdc(amountText);
+    if (usd === null) return null;
+    return price > 0 ? BigInt(Math.floor(Number(usd) / price)) : 0n;
+  })();
   const amountError =
     amountText.trim() === ""
       ? null
@@ -152,21 +179,23 @@ export function SellModal({
           </span>
           <div>
             <h2 id="sell-title" className="font-display text-xl font-semibold">
-              {t.invest.sellDoneTitle}
+              {dollars ? t.invest.dollarsSellDoneTitle : t.invest.sellDoneTitle}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t.invest.sellDoneBody(
-                formatUsdc(BigInt(state.purchase.usdcUnits), 2, lang),
-                formatTokens(
-                  toDisplayUnits(
-                    BigInt(state.purchase.tokenUnits),
-                    state.purchase.multiplier ?? multiplier
-                  ),
-                  lang,
-                  decimalsOf(state.purchase.asset)
-                ),
-                state.purchase.asset
-              )}
+              {dollars
+                ? t.invest.dollarsSellDoneBody(formatUsdc(BigInt(state.purchase.usdcUnits), 2, lang))
+                : t.invest.sellDoneBody(
+                    formatUsdc(BigInt(state.purchase.usdcUnits), 2, lang),
+                    formatTokens(
+                      toDisplayUnits(
+                        BigInt(state.purchase.tokenUnits),
+                        state.purchase.multiplier ?? multiplier
+                      ),
+                      lang,
+                      decimalsOf(state.purchase.asset)
+                    ),
+                    state.purchase.asset
+                  )}
             </p>
           </div>
           {demo ? (
@@ -211,7 +240,11 @@ export function SellModal({
                     )}
                   </span>
                   <p className={`text-sm font-medium ${s === "pending" ? "text-muted-foreground/60" : ""}`}>
-                    {step === "signing" ? t.invest.stepSigning : t.invest.stepSellSending}
+                    {step === "signing"
+                      ? t.invest.stepSigning
+                      : dollars
+                        ? t.invest.dollarsStepTakingOut
+                        : t.invest.stepSellSending}
                   </p>
                 </li>
               );
@@ -230,9 +263,11 @@ export function SellModal({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 id="sell-title" className="font-display text-xl font-semibold">
-                {t.invest.sellTitle(asset ? assetName(asset, lang) : "")}
+                {dollars ? t.invest.dollarsSellTitle : t.invest.sellTitle(asset ? assetName(asset, lang) : "")}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{t.invest.sellSub}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {dollars ? t.invest.dollarsSellSub : t.invest.sellSub}
+              </p>
             </div>
             <button
               type="button"
@@ -252,7 +287,7 @@ export function SellModal({
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="sell-amount" className="text-sm font-medium">
-              {t.invest.sellAmountLabel}
+              {dollars ? t.invest.dollarsSellAmountLabel : t.invest.sellAmountLabel}
             </label>
             <div className="relative">
               <input
@@ -261,7 +296,7 @@ export function SellModal({
                 inputMode="decimal"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder={lang === "es" ? "0,01" : "0.01"}
+                placeholder={dollars ? "10" : lang === "es" ? "0,01" : "0.01"}
                 value={amountText}
                 disabled={state.phase !== "idle"}
                 onChange={(e) => setAmountText(e.target.value)}
@@ -274,12 +309,12 @@ export function SellModal({
                   type="button"
                   disabled={state.phase !== "idle"}
                   data-testid="sell-all"
-                  onClick={() => setAmountText(tokensToDecimal(displayHolding, decimals).replace(".", lang === "es" ? "," : "."))}
+                  onClick={() => setAmountText(allText)}
                   className="rounded-lg px-2.5 py-2 text-xs font-semibold text-primary transition-colors duration-100 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer"
                 >
                   {t.invest.sellAll}
                 </button>
-                <span className="text-sm font-medium text-muted-foreground">{asset}</span>
+                <span className="text-sm font-medium text-muted-foreground">{dollars ? "USD" : asset}</span>
               </div>
             </div>
             {amountError ? (
@@ -288,7 +323,9 @@ export function SellModal({
               </p>
             ) : (
               <p id="sell-amount-hint" className="text-xs text-muted-foreground">
-                {t.invest.sellHave(formatTokens(displayHolding, lang, decimals), asset ?? "")}
+                {dollars
+                  ? t.invest.dollarsSellHave(formatUsdc(holdingValue, 2, lang))
+                  : t.invest.sellHave(formatTokens(displayHolding, lang, decimals), asset ?? "")}
               </p>
             )}
           </div>
@@ -304,10 +341,29 @@ export function SellModal({
           {state.phase === "quoted" && (
             <dl className="flex flex-col gap-2 rounded-xl bg-muted p-4 text-sm" data-testid="sell-ticket">
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="min-w-0 text-muted-foreground">{t.invest.sellRowSell}</dt>
-                <dd className="shrink-0 whitespace-nowrap font-mono tabular-nums">
-                  {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang, decimals)}{" "}
-                  {state.quote.asset}
+                <dt className="min-w-0 text-muted-foreground">
+                  {dollars ? t.invest.dollarsSellRowSell : t.invest.sellRowSell}
+                </dt>
+                <dd className="shrink-0 whitespace-nowrap text-right font-mono tabular-nums">
+                  {dollars ? (
+                    <>
+                      {formatUsdc(
+                        valueOfTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), price, decimals),
+                        2,
+                        lang
+                      )}{" "}
+                      USD
+                      <span className="block font-sans text-xs text-muted-foreground">
+                        {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang, decimals)}{" "}
+                        USDY
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {formatTokens(toDisplayUnits(state.quote.tokenUnits, state.quote.multiplier), lang, decimals)}{" "}
+                      {state.quote.asset}
+                    </>
+                  )}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
@@ -334,7 +390,7 @@ export function SellModal({
           {state.phase === "quoted" ? (
             <div className="flex flex-col gap-2">
               <Button type="submit" className="w-full" data-testid="sell-confirm">
-                {t.invest.sellConfirm}
+                {dollars ? t.invest.dollarsTakeOut : t.invest.sellConfirm}
               </Button>
               <button
                 type="button"

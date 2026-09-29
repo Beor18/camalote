@@ -100,8 +100,15 @@ export function StocksSection({
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold">{assetName(row.asset, lang)}</p>
                         <p className="truncate text-xs text-muted-foreground">
-                          <span className="font-mono">{row.asset}</span> · {formatUsd(row.priceEachUsd, lang)}{" "}
-                          {t.invest.priceEach}
+                          {stock?.kind === "dollars" ? (
+                            // El precio por USDY no le dice nada a nadie: lo que importa es cuánto rinde.
+                            t.invest.dollarsRowSub
+                          ) : (
+                            <>
+                              <span className="font-mono">{row.asset}</span> · {formatUsd(row.priceEachUsd, lang)}{" "}
+                              {t.invest.priceEach}
+                            </>
+                          )}
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
@@ -120,7 +127,7 @@ export function StocksSection({
                           onClick={() => onSell(row.asset)}
                           data-testid={`sell-${row.asset}`}
                         >
-                          {t.invest.sell}
+                          {stock?.kind === "dollars" ? t.invest.dollarsTakeOut : t.invest.sell}
                         </Button>
                       </div>
                     </div>
