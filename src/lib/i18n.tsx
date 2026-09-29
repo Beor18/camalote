@@ -534,6 +534,12 @@ const es = {
       `De cada cobro, el ${pct} % va a ${asset}.`,
     ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
       `De cada cobro, el ${pct} % es para ${goal}, en ${asset}.`,
+    // Con dólares que rinden, el verbo no es "comprar": es "poner a rendir".
+    ruleSummaryDollars: (pct: string) => `De cada cobro, el ${pct} % se pone a rendir en dólares.`,
+    ruleGoesToDollars: "se pone a rendir en dólares",
+    pendingLabelDollars: (pending: string, min: string) =>
+      `Apartado: ${pending} USDC. Al juntar ${min}, se pone a rendir.`,
+    crossingDollars: "Poniendo a rendir…",
     goalLabel: "¿Para qué?",
     goalPresets: {
       computer: "La compu nueva",
@@ -1187,6 +1193,11 @@ const en: Dictionary = {
       `${pct}% of every payment goes to ${asset}.`,
     ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
       `${pct}% of every payment goes to ${goal}, in ${asset}.`,
+    ruleSummaryDollars: (pct: string) => `${pct}% of every payment goes into dollars that earn.`,
+    ruleGoesToDollars: "goes into dollars that earn",
+    pendingLabelDollars: (pending: string, min: string) =>
+      `Set aside: ${pending} USDC. Once it reaches ${min}, it goes to earn.`,
+    crossingDollars: "Putting to earn…",
     goalLabel: "What for?",
     goalPresets: {
       computer: "The new laptop",

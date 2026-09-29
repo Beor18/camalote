@@ -9,7 +9,7 @@ import { River } from "@/components/river";
 import { INVEST_MIN_UNITS } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { assetName } from "@/lib/invest/catalog";
+import { assetName, isDollars } from "@/lib/invest/catalog";
 import {
   etaFromPace,
   formatMonth,
@@ -111,6 +111,8 @@ export function RuleHero({
   if (progress !== lastProgress) setLastProgress(progress);
 
   const stockName = assetName(rule.asset, lang);
+  // Con dólares que rinden no se "compra": se pone a rendir. Cambia el verbo.
+  const dollars = isDollars(rule.asset);
   const failed = rule.lastError !== undefined;
   const goesTo = rule.goal
     ? `${rule.goal.emoji ? `${rule.goal.emoji} ` : ""}${rule.goal.name}`
@@ -121,12 +123,16 @@ export function RuleHero({
   const statusText = !rule.enabled
     ? t.invest.rulePausedNote
     : inFlight
-      ? t.invest.crossing
+      ? dollars
+        ? t.invest.crossingDollars
+        : t.invest.crossing
       : rule.waiting?.reason === "market"
         ? t.invest.waitingMarket(formatNextOpen(rule.waiting.nextOpen, lang) ?? t.invest.soon)
         : rule.waiting?.reason === "premium"
           ? t.invest.waitingPremium(stockName, formatPremium(rule.waiting.premiumBps, lang))
-          : t.invest.pendingLabel(formatUsdc(pending, 2, lang), formatUsdc(min, 0, lang));
+          : dollars
+            ? t.invest.pendingLabelDollars(formatUsdc(pending, 2, lang), formatUsdc(min, 0, lang))
+            : t.invest.pendingLabel(formatUsdc(pending, 2, lang), formatUsdc(min, 0, lang));
 
   return (
     <Card className="overflow-hidden" data-testid="invest-rule">
@@ -176,8 +182,16 @@ export function RuleHero({
         >
           {t.invest.ruleHeadline(rule.percent)}
           <span className="block text-primary">
-            {t.invest.ruleGoesTo("")}
-            <span data-testid="goal-name">{goesTo}</span>
+            {rule.goal ? (
+              <>
+                {t.invest.ruleGoesTo("")}
+                <span data-testid="goal-name">{goesTo}</span>
+              </>
+            ) : dollars ? (
+              t.invest.ruleGoesToDollars
+            ) : (
+              t.invest.ruleGoesTo(stockName)
+            )}
           </span>
         </h2>
         {rule.goal && (

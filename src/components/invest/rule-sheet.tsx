@@ -7,7 +7,7 @@ import { AssetPicker } from "@/components/invest/asset-picker";
 import { GoalEditor } from "@/components/invest/goal-editor";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { assetName, findXStock } from "@/lib/invest/catalog";
+import { assetName, findXStock, isDollars } from "@/lib/invest/catalog";
 import { PERCENT_OPTIONS } from "@/lib/invest/rules";
 import type { InvestGoal, InvestRule } from "@/lib/invest/types";
 
@@ -113,7 +113,9 @@ function Wizard({
   const stockName = assetName(draft.asset, lang);
   const summary = draft.goal
     ? t.invest.ruleSummaryGoal(String(draft.percent), draft.goal.name, stockName)
-    : t.invest.ruleSummary(String(draft.percent), stockName);
+    : isDollars(draft.asset)
+      ? t.invest.ruleSummaryDollars(String(draft.percent))
+      : t.invest.ruleSummary(String(draft.percent), stockName);
   const stepIndex = view === "review" ? -1 : STEPS.indexOf(view);
   const last = stepIndex === STEPS.length - 1;
 
