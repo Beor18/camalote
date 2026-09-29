@@ -1,19 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  ArrowUpRight,
   Check,
   ChevronDown,
-  CircleDollarSign,
   HeartHandshake,
   Landmark,
   Lock,
-  Mail,
   Minus,
-  Percent,
+  Rocket,
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
@@ -21,16 +17,17 @@ import { CamaloteLogo, CamaloteMark } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Napkin } from "@/components/landing/napkin";
+import { PhoneMock } from "@/components/landing/phone-mock";
 import { InstallCta } from "@/components/install-cta";
 import { DEMO_MODE } from "@/lib/config";
 import { LangToggle, useLang } from "@/lib/i18n";
 
 /**
- * La landing sigue el pitch, golpe por golpe: la servilleta (cobrás en
- * dólares, ¿cuánto sigue siendo tuyo?), la cuenta hecha en un toque,
- * "después" no llega nunca, decidilo una sola vez (con una meta), sin letra
- * chica, y el próximo cobro ya está en camino. "¿Por qué Solana?" va al
- * final, para el que ya está convencido.
+ * La landing vende como una startup: la promesa en una línea con el
+ * producto al lado, sobre qué corre, el problema en un golpe (te pagan 40,
+ * se van 40), cómo se arma en un minuto, los tres destinos, la cuenta hecha
+ * en un toque, sin letra chica, preguntas (ahí va "¿por qué Solana?") y el
+ * cierre.
  */
 export default function LandingPage() {
   return (
@@ -38,11 +35,12 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <Napkin />
-        <Showdown />
+        <BuiltOn />
+        <Problem />
         <HowItWorks />
+        <Destinations />
+        <Napkin />
         <NoFinePrint />
-        <WhySolana />
         <Faq />
         <FinalCta />
       </main>
@@ -54,8 +52,13 @@ export default function LandingPage() {
 const ctaClasses =
   "inline-flex h-13 items-center justify-center gap-2 rounded-xl bg-primary px-7 text-base font-medium text-primary-foreground transition-[background-color,transform] duration-100 ease-out hover:bg-primary-hover active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+const secondaryClasses =
+  "inline-flex h-13 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-6 text-base font-medium transition-colors duration-100 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
 const navLinkClasses =
   "hidden rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:inline-flex";
+
+const sectionTitle = "text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl";
 
 function Header() {
   const { t } = useLang();
@@ -64,7 +67,7 @@ function Header() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <CamaloteLogo />
         <nav className="flex items-center gap-1 sm:gap-2" aria-label="Principal">
-          <a href="#convenceme" className={navLinkClasses}>
+          <a href="#como-funciona" className={navLinkClasses}>
             {t.landing.navWhy}
           </a>
           <a href="#precio" className={navLinkClasses}>
@@ -83,176 +86,80 @@ function Header() {
   );
 }
 
+/** La promesa en una línea, con el producto al lado. */
 function Hero() {
   const { t } = useLang();
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pb-20 sm:pt-20 lg:px-8">
-      <div className="mx-auto max-w-3xl text-center">
-        {DEMO_MODE && (
-          <div className="mb-5 animate-fade-up">
-            <Badge tone="warning">{t.landing.badgeDemo}</Badge>
+    <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-12">
+        <div className="text-center lg:text-left">
+          <div className="animate-fade-up flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+            <Badge>{t.landing.heroEyebrow}</Badge>
+            {DEMO_MODE && <Badge tone="warning">{t.landing.badgeDemo}</Badge>}
           </div>
-        )}
-        <h1 className="animate-fade-up font-display text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
-          {t.landing.heroLine1}
-          <br />
-          {t.landing.heroLine2Pre}
-          <span className="text-gradient">{t.landing.heroLine2Highlight}</span>
-          {t.landing.heroLine2Post}
-        </h1>
-        <p className="animate-fade-up-delay mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          {t.landing.heroSub}
-        </p>
-        <div className="animate-fade-up-delay mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/app" className={ctaClasses}>
-            {t.landing.heroCta}
-            <ArrowRight className="size-5" aria-hidden="true" />
-          </Link>
-          <a
-            href="#convenceme"
-            className="inline-flex h-13 items-center rounded-xl px-5 text-base text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {t.landing.heroSecondary}
-          </a>
+          <h1 className="animate-fade-up mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl xl:text-[3.5rem]">
+            {t.landing.heroLine1}
+            <br />
+            <span className="text-gradient">{t.landing.heroHighlight}</span>
+          </h1>
+          <p className="animate-fade-up-delay mx-auto mt-5 max-w-xl text-lg text-muted-foreground lg:mx-0">
+            {t.landing.heroSub}
+          </p>
+          <div className="animate-fade-up-delay mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+            <Link href="/app" className={ctaClasses}>
+              {t.landing.heroCta}
+              <ArrowRight className="size-5" aria-hidden="true" />
+            </Link>
+            <a href="#como-funciona" className={secondaryClasses}>
+              {t.landing.heroSecondary}
+            </a>
+          </div>
+          <ul className="animate-fade-up-delay mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
+            {t.landing.heroProof.map((item) => (
+              <li key={item} className="inline-flex items-center gap-1.5">
+                <Check className="size-4 text-success" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <InstallCta className="mt-5 lg:items-start" />
         </div>
-        <InstallCta className="mt-4" />
-      </div>
 
-      <RiverVisual />
+        <div className="animate-fade-up-delay">
+          <PhoneMock />
+        </div>
+      </div>
     </section>
   );
 }
 
-/** Banda de agua ondulada, 1120 de ancho (2 períodos de 560) para loopear. */
-function wavePath(y: number, amp: number): string {
-  const half = 70;
-  let d = `M 0 ${y} Q ${half / 2} ${y - amp} ${half} ${y}`;
-  for (let x = half * 2; x <= 1120; x += half) d += ` T ${x} ${y}`;
-  return `${d} V 220 H 0 Z`;
-}
-
-function surfacePath(y: number, amp: number): string {
-  const half = 70;
-  let d = `M 0 ${y} Q ${half / 2} ${y - amp} ${half} ${y}`;
-  for (let x = half * 2; x <= 560; x += half) d += ` T ${x} ${y}`;
-  return d;
-}
-
-/** El camalote lleva una parte de tus USDC a la otra orilla: acciones. */
-function RiverVisual() {
+/** Sobre qué corre: nombres, no promesas. */
+function BuiltOn() {
   const { t } = useLang();
   return (
-    <figure className="mx-auto mt-10 w-full max-w-3xl sm:mt-16">
-      <div className="flex w-full justify-center overflow-hidden" aria-hidden="true">
-        {/* bloque de 560px fijos: en pantallas angostas se escala completo
-            para que el offset-path no se desalinee; flex lo centra aunque
-            desborde, cosa que mx-auto no hace */}
-        <div
-          className="relative h-[220px] w-[560px] shrink-0 origin-top max-[639px]:scale-[0.8] max-[639px]:-mb-11 max-[430px]:scale-[0.62] max-[430px]:-mb-[84px]"
-          style={{
-            maskImage:
-              "linear-gradient(90deg, transparent 0, black 7%, black 93%, transparent 100%)",
-          }}
-        >
-          <svg viewBox="0 0 560 220" fill="none" className="absolute inset-0 h-full w-full">
-            <defs>
-              <linearGradient
-                id="rio-g"
-                gradientUnits="userSpaceOnUse"
-                x1="0"
-                y1="150"
-                x2="560"
-                y2="150"
-              >
-                <stop offset="0%" stopColor="var(--base-blue)" />
-                <stop offset="55%" stopColor="var(--solana-purple)" />
-                <stop offset="100%" stopColor="var(--solana-green)" />
-              </linearGradient>
-            </defs>
-            <g className="wave wave-slow" opacity="0.09" fill="var(--base-blue)">
-              <path d={wavePath(154, 6)} />
-            </g>
-            <g className="wave wave-mid" opacity="0.08" fill="var(--solana-purple)">
-              <path d={wavePath(164, 7)} />
-            </g>
-          </svg>
-
-          {/* el camalote navega con su tripulación a bordo */}
-          <span className="camalote-sail absolute">
-            <span className="camalote-bob relative block w-[170px]">
-              <Image
-                src="/img/camalote-tripulacion-480.png"
-                alt=""
-                width={480}
-                height={336}
-                priority
-                className="h-auto w-full"
-              />
-            </span>
-          </span>
-
-          {/* agua de adelante: tapa las raíces para que el camalote quede
-              metido en el río en vez de flotando encima */}
-          <svg
-            viewBox="0 0 560 220"
-            fill="none"
-            className="pointer-events-none absolute inset-0 h-full w-full"
-          >
-            <path
-              d={surfacePath(150, 5)}
-              stroke="url(#rio-g)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.6"
-            />
-            <g className="wave wave-mid" opacity="0.92" fill="var(--background)">
-              <path d={wavePath(158, 6)} />
-            </g>
-            <g className="wave wave-mid" opacity="0.12" fill="var(--solana-purple)">
-              <path d={wavePath(158, 6)} />
-            </g>
-            <g className="wave wave-fast" opacity="0.16" fill="var(--solana-green)">
-              <path d={wavePath(172, 8)} />
-            </g>
-          </svg>
-
-          {/* las orillas: de un lado los USDC que te llegan, del otro las acciones */}
-          <div className="absolute bottom-2 left-3 flex flex-col items-center gap-1.5">
-            <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-surface shadow-sm">
-              <CircleDollarSign className="size-6 text-base-blue" />
-            </span>
-            <span className="rounded bg-surface/80 px-1.5 text-xs font-medium text-muted-foreground">
-              {t.landing.heroShoreLeft}
-            </span>
-          </div>
-          <div className="absolute bottom-2 right-3 flex flex-col items-center gap-1.5">
-            <span className="flex size-12 items-center justify-center rounded-2xl border border-border bg-surface shadow-sm">
-              <TrendingUp className="size-6 text-solana-green" />
-            </span>
-            <span className="rounded bg-surface/80 px-1.5 text-xs font-medium text-muted-foreground">
-              {t.landing.heroShoreRight}
-            </span>
-          </div>
-        </div>
-      </div>
-      <figcaption className="mx-auto mt-4 max-w-xl px-4 text-center text-sm text-muted-foreground sm:px-6">
-        {t.landing.heroStory}
-      </figcaption>
-    </figure>
+    <section className="border-y border-border bg-muted/40 py-5 sm:py-6">
+      <ul className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-2 px-4 sm:px-6 lg:px-8">
+        <li className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t.landing.builtOn}
+        </li>
+        {t.landing.builtOnNames.map((name) => (
+          <li key={name} className="font-display text-base font-semibold text-muted-foreground/70 sm:text-lg">
+            {name}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
-function Showdown() {
+/** El problema en un golpe, y el antes y después. */
+function Problem() {
   const { t } = useLang();
   return (
-    <section id="convenceme" className="border-t border-border bg-muted/40 py-10 sm:py-20">
+    <section id="convenceme" className="py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.showdownTitle}
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
-          {t.landing.showdownSub}
-        </p>
+        <h2 className={sectionTitle}>{t.landing.problemTitle}</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.landing.problemSub}</p>
 
         <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6">
           <Card className="p-5 opacity-80 sm:p-6">
@@ -287,93 +194,77 @@ function Showdown() {
             </div>
           </div>
         </div>
-
-        <figure className="mx-auto mt-10 max-w-md -rotate-1 sm:mt-14">
-          <blockquote className="rounded-2xl border border-border bg-surface p-6 font-hand text-xl leading-snug shadow-sm sm:p-8 sm:text-3xl">
-            {t.landing.letter.map((line, i) => (
-              <span key={i}>
-                {line}
-                {i < t.landing.letter.length - 1 && <br />}
-              </span>
-            ))}
-          </blockquote>
-        </figure>
       </div>
     </section>
   );
 }
 
-function WhySolana() {
+/** Las fichas de cada paso, como se ven en la app. */
+function StepVisual({ index }: { index: number }) {
   const { t } = useLang();
-  return (
-    <section id="por-que-solana" className="border-t border-border py-10 sm:py-20">
-      <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.whyTitle}
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">
-          {t.landing.whySub}
-        </p>
-        <div className="mt-6 flex flex-col sm:mt-12">
-          {t.landing.whyItems.map((reason, i) => (
-            <div
-              key={reason.claim}
-              className="grid gap-3 border-t border-border py-5 first:border-t-0 sm:grid-cols-[80px_1fr] sm:gap-6 sm:py-8"
-            >
-              <span className="hidden font-mono text-sm text-muted-foreground sm:block" aria-hidden="true">
-                0{i + 1}
-              </span>
-              <div>
-                <h3 className="font-display text-xl font-semibold sm:text-2xl">{reason.claim}</h3>
-                <p className="mt-2 leading-relaxed text-muted-foreground">{reason.body}</p>
-                {i === t.landing.whyItems.length - 1 && (
-                  <a
-                    href="https://superteam.ar"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex items-center gap-1 rounded-md text-sm font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {t.landing.whyLink}
-                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+  const v = t.landing.stepsVisual;
+  const chip = (active: boolean) =>
+    `inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold ${
+      active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-surface text-muted-foreground"
+    }`;
+  if (index === 0) {
+    return (
+      <div className="flex gap-2" aria-hidden="true">
+        {v.percents.map((p, k) => (
+          <span key={p} className={`${chip(k === 2)} font-mono tabular-nums`}>
+            {p}
+          </span>
+        ))}
       </div>
-    </section>
+    );
+  }
+  if (index === 1) {
+    return (
+      <div className="flex flex-wrap gap-2" aria-hidden="true">
+        {v.goals.map((g, k) => (
+          <span key={g} className={chip(k === 0)}>
+            {g}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="flex gap-1 rounded-lg bg-muted p-1" aria-hidden="true">
+      {v.tabs.map((tab, k) => (
+        <span
+          key={tab}
+          className={`flex h-8 flex-1 items-center justify-center rounded-md text-xs font-medium ${
+            k === 0 ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          {tab}
+        </span>
+      ))}
+    </div>
   );
 }
-
-const STEP_ICONS = [Mail, Percent, CircleDollarSign];
 
 function HowItWorks() {
   const { t } = useLang();
   return (
     <section id="como-funciona" className="border-t border-border bg-muted/40 py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.stepsTitle}
-        </h2>
+        <h2 className={sectionTitle}>{t.landing.stepsTitle}</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.landing.stepsSub}</p>
         <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
-          {t.landing.steps.map((step, i) => {
-            const Icon = STEP_ICONS[i];
-            return (
-              <Card key={step.title} className="p-5 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="font-display text-sm font-semibold text-muted-foreground">
-                    0{i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 font-medium">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-              </Card>
-            );
-          })}
+          {t.landing.steps.map((step, i) => (
+            <Card key={step.title} className="flex flex-col gap-4 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex size-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                  {i + 1}
+                </span>
+                <h3 className="font-medium">{step.title}</h3>
+              </div>
+              <StepVisual index={i} />
+              <p className="text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+            </Card>
+          ))}
         </div>
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {t.landing.stepsNote}{" "}
@@ -390,17 +281,47 @@ function HowItWorks() {
   );
 }
 
+const PICK_ICONS = [TrendingUp, Rocket, Landmark];
+
+/** Los tres destinos, con su comisión a la vista. */
+function Destinations() {
+  const { t } = useLang();
+  return (
+    <section id="en-que" className="border-t border-border py-10 sm:py-20">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h2 className={sectionTitle}>{t.landing.pickTitle}</h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.landing.pickSub}</p>
+        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
+          {t.landing.picks.map((pick, i) => {
+            const Icon = PICK_ICONS[i];
+            return (
+              <Card key={pick.title} className="flex flex-col p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <Badge>{pick.tag}</Badge>
+                </div>
+                <h3 className="mt-4 font-display text-lg font-semibold">{pick.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{pick.body}</p>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const TRUST_ICONS = [ShieldCheck, Lock, HeartHandshake];
 
 /** Sin letra chica: los números ciertos y las tres promesas que sí hacemos. */
 function NoFinePrint() {
   const { t } = useLang();
   return (
-    <section id="precio" className="border-t border-border py-10 sm:py-20">
+    <section id="precio" className="border-t border-border bg-muted/40 py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.factsTitle}
-        </h2>
+        <h2 className={sectionTitle}>{t.landing.factsTitle}</h2>
         <dl className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-8 text-center sm:mt-12 sm:grid-cols-4">
           {t.landing.facts.map((cell) => (
             <div key={cell.label} className="flex flex-col-reverse gap-1">
@@ -438,9 +359,7 @@ function Faq() {
   return (
     <section className="py-10 sm:py-20">
       <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.landing.faqTitle}
-        </h2>
+        <h2 className={sectionTitle}>{t.landing.faqTitle}</h2>
         <div className="mt-10 flex flex-col gap-3">
           {t.landing.faqs.map((faq) => (
             <details key={faq.q} className="group rounded-2xl border border-border bg-surface">

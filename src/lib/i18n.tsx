@@ -30,22 +30,37 @@ const es = {
     demoNote: "Simulación: no se movieron fondos reales.",
   },
   landing: {
-    navWhy: "Convenceme",
+    navWhy: "Cómo funciona",
     navPrice: "Precio",
     navOpenApp: "Abrir la app",
     badgeDemo: "Probalo hoy, sin poner un peso",
-    heroLine1: "Cobrás en dólares.",
-    heroLine2Pre: "¿Cuánto de lo del año pasado ",
-    heroLine2Highlight: "sigue siendo tuyo",
-    heroLine2Post: "?",
+    heroEyebrow: "Para los que cobran en USDC",
+    heroLine1: "Una parte de cada cobro",
+    heroHighlight: "se invierte sola.",
     heroSub:
-      "Trabajaste todo el año para el alquiler, las cuentas, la tarjeta. Para vos quedó lo que sobró. Y nunca sobra.",
-    heroCta: "Quiero que se aparte solo",
-    heroSecondary: "¿Cómo?",
-    heroShoreLeft: "USDC",
-    heroShoreRight: "Tu meta",
-    heroStory:
-      "Te pagan 40. Ya no son 40: son 28 para el mes y 12 que ya están en tu meta, antes de que los veas.",
+      "Antes de que la gastes. Elegís qué parte, para qué y en qué, una sola vez. Cada vez que te pagan, Camalote la aparta y la invierte por vos.",
+    heroCta: "Armar mi regla",
+    heroSecondary: "Ver cómo funciona",
+    heroProof: ["Desde 2 dólares", "Sin broker ni papeles", "Lo apagás cuando quieras"],
+    // El producto tal cual se ve, con números de ejemplo (no es una promesa).
+    mock: {
+      on: "Prendida",
+      edit: "Editar",
+      headline: "El 30 % de cada cobro",
+      goesTo: "va a ✈️ El viaje",
+      inAsset: "en acciones",
+      progress: "1.240",
+      target: "de 2.000 USDC · 62 %",
+      pace: "A este ritmo llegás en marzo.",
+      chip: "✈️ El viaje",
+      status: "Apartado: 4,00 USDC. Compra al juntar 10.",
+      moment: "Te llegaron 40 USDC. 12 ya son de El viaje: vas por el 62 %.",
+    },
+    builtOn: "Corre sobre",
+    builtOnNames: ["Solana", "Jupiter", "xStocks · Backed", "Ondo", "Pyth", "Privy"],
+    problemTitle: "Te pagan 40. Se van 40.",
+    problemSub:
+      "Alquiler, cuentas, tarjeta. Para vos queda lo que sobra, y nunca sobra. Camalote da vuelta el orden: primero vos, después el resto.",
     napkinTitle: "Hacé la cuenta.",
     napkinSub: "En serio. Escribí lo que cobraste el año pasado, más o menos.",
     napkinInputLabel: "Cobraste",
@@ -55,9 +70,6 @@ const es = {
     napkinFootnote:
       "Es lo que habrías puesto. Lo que vale después sube y baja con el mercado, como todo.",
     napkinEmpty: "Escribí un número y mirá.",
-    showdownTitle: "«Después» no llega nunca.",
-    showdownSub:
-      "La plata entra y ya tiene dueño. El que se salva es el que cobra primero. Y ese tenés que ser vos.",
     oldWayTitle: "Como hasta ahora",
     oldWay: [
       "Acordarte de invertir cada mes",
@@ -72,46 +84,48 @@ const es = {
       "Se aparta cuando te pagan, antes de que lo veas",
       "En acciones, o en dólares que rinden si no querés el sube y baja",
     ],
-    letter: [
-      "Nota de tus dólares:",
-      "llegamos 40, doce nos fuimos",
-      "al viaje antes de que nos",
-      "gastes. Vos lo elegiste. 💜",
-    ],
-    whyTitle: "¿Y por qué en Solana?",
-    whySub: "Para el que ya está convencido y quiere saber dónde está parado.",
-    whyItems: [
-      {
-        claim: "Acá viven las acciones tokenizadas",
-        body: "Más de 60 acciones de Estados Unidos, y empresas que todavía no salieron a bolsa, ya son tokens en Solana. Comprás una fracción desde 2 dólares.",
-      },
-      {
-        claim: "Mover plata cuesta una fracción de centavo",
-        body: "Por eso una compra de 10 dólares tiene sentido y vender no cuesta nada.",
-      },
-      {
-        claim: "Hay laburo que paga en dólares acá",
-        body: "Bounties y changas pagadas en USDC: te pagan acá y la parte que elegiste se invierte acá mismo. Y Argentina juega de local: una de las comunidades más activas del mundo está acá.",
-      },
-    ],
-    whyLink: "Golpeá: Superteam Argentina",
-    stepsTitle: "Decidilo una sola vez",
+    stepsTitle: "Lo armás en un minuto",
+    stepsSub: "Entrás con tu email, contestás tres preguntas y listo. Después, cobrá como siempre: lo demás pasa solo.",
     steps: [
       {
-        title: "Entrá con tu email",
-        body: "Tu cuenta se crea sola. Sin instalar nada.",
+        title: "Elegí qué parte",
+        body: "El 10, el 20, el 30 % de cada cobro. Se aparta antes de que lo veas.",
       },
       {
-        title: "Elegí cuánto, para qué y en qué",
-        body: "Un porcentaje. Una meta con nombre. Acciones de empresas que conocés, de las que todavía no salieron a bolsa, o dólares que rinden sin el sube y baja.",
+        title: "Ponele nombre",
+        body: "La compu, el viaje, un colchón. La app te dice cuántos cobros faltan y cuánto vale hoy.",
       },
       {
-        title: "Cobrá como siempre",
-        body: "Cada cobro llena la meta solo. La app te dice cuántos cobros faltan y cuánto vale hoy.",
+        title: "Elegí en qué",
+        body: "Acciones, empresas privadas o dólares que rinden. Lo cambiás cuando quieras.",
       },
     ],
+    stepsVisual: {
+      percents: ["10 %", "20 %", "30 %"],
+      goals: ["✈️ El viaje", "🖥️ La compu", "🛟 Colchón"],
+      tabs: ["Acciones", "Privadas", "Dólares"],
+    },
     stepsNote: "¿Todavía no te pagan en Solana?",
     stepsLink: "Mandá USDC a tu cuenta y empezá a mano",
+    pickTitle: "¿En qué?",
+    pickSub: "Tres destinos. Elegís uno para tu regla y lo cambiás cuando quieras.",
+    picks: [
+      {
+        title: "Acciones de Estados Unidos",
+        body: "Más de 60 empresas, tokenizadas en Solana. Desde 2 dólares. Los dividendos se reinvierten solos.",
+        tag: "Comisión 0,45 %",
+      },
+      {
+        title: "Empresas privadas",
+        body: "Las que todavía no salieron a bolsa. Más riesgo, para el que lo busca.",
+        tag: "Comisión 0,45 %",
+      },
+      {
+        title: "Dólares que rinden",
+        body: "Cerca del 4 % anual, respaldados por letras del Tesoro de Estados Unidos. Sin el sube y baja. Los sacás cuando quieras.",
+        tag: "Comisión 0,10 %",
+      },
+    ],
     installCta: "Instalala en tu teléfono",
     installIosHint:
       "En iPhone: tocá el botón Compartir y elegí «Agregar a inicio».",
@@ -185,6 +199,10 @@ const es = {
       {
         q: "¿Es legal desde Argentina?",
         a: "xStocks no está disponible en Estados Unidos, Reino Unido, Canadá y Australia. En Argentina, Backed no lo restringe. Camalote no custodia: vos firmás cada compra. Para impuestos, tu contador.",
+      },
+      {
+        q: "¿Por qué en Solana?",
+        a: "Porque ahí ya viven las acciones tokenizadas: más de 60 de Estados Unidos y empresas privadas. Mover plata cuesta una fracción de centavo, por eso una compra de 10 dólares tiene sentido y vender es gratis. Y hay laburo que paga en USDC: bounties y changas. Argentina juega de local: una de las comunidades más activas del mundo está acá.",
       },
     ],
     finalTitle1: "El próximo cobro ya está en camino.",
@@ -694,22 +712,36 @@ const en: Dictionary = {
     demoNote: "Simulation: no real funds were moved.",
   },
   landing: {
-    navWhy: "Convince me",
+    navWhy: "How it works",
     navPrice: "Pricing",
     navOpenApp: "Open the app",
     badgeDemo: "Try it today, no money needed",
-    heroLine1: "You get paid in dollars.",
-    heroLine2Pre: "How much of last year's is ",
-    heroLine2Highlight: "still yours",
-    heroLine2Post: "?",
+    heroEyebrow: "For people who get paid in USDC",
+    heroLine1: "Part of every payment",
+    heroHighlight: "invests itself.",
     heroSub:
-      "You worked all year for the rent, the bills, the card. You got what was left. And nothing is ever left.",
-    heroCta: "I want it set aside for me",
-    heroSecondary: "How?",
-    heroShoreLeft: "USDC",
-    heroShoreRight: "Your goal",
-    heroStory:
-      "You get paid 40. It's not 40 anymore: it's 28 for the month and 12 already in your goal, before you even see them.",
+      "Before you can spend it. Pick how much, what for and where, just once. Every time you get paid, Camalote sets it aside and invests it for you.",
+    heroCta: "Set up my rule",
+    heroSecondary: "See how it works",
+    heroProof: ["From 2 dollars", "No broker, no paperwork", "Switch it off anytime"],
+    mock: {
+      on: "On",
+      edit: "Edit",
+      headline: "30% of every payment",
+      goesTo: "goes to ✈️ The trip",
+      inAsset: "in stocks",
+      progress: "1,240",
+      target: "of 2,000 USDC · 62%",
+      pace: "At this pace you get there in March.",
+      chip: "✈️ The trip",
+      status: "Set aside: 4.00 USDC. Buys once it reaches 10.",
+      moment: "40 USDC landed. 12 already belong to The trip: you're at 62%.",
+    },
+    builtOn: "Runs on",
+    builtOnNames: ["Solana", "Jupiter", "xStocks · Backed", "Ondo", "Pyth", "Privy"],
+    problemTitle: "You get paid 40. 40 leave.",
+    problemSub:
+      "Rent, bills, the card. You get what's left, and nothing is ever left. Camalote flips the order: you first, the rest after.",
     napkinTitle: "Do the math.",
     napkinSub: "Seriously. Type what you earned last year, more or less.",
     napkinInputLabel: "You earned",
@@ -719,9 +751,6 @@ const en: Dictionary = {
     napkinFootnote:
       "That's what you'd have put in. What it's worth later goes up and down with the market, like everything.",
     napkinEmpty: "Type a number and see.",
-    showdownTitle: "«Later» never comes.",
-    showdownSub:
-      "The money lands and it already has an owner. The one who gets out is the one who gets paid first. And that has to be you.",
     oldWayTitle: "The usual way",
     oldWay: [
       "Remembering to invest every month",
@@ -736,46 +765,48 @@ const en: Dictionary = {
       "Set aside when you get paid, before you see it",
       "In stocks, or in dollars that earn if you don't want the ups and downs",
     ],
-    letter: [
-      "A note from your dollars:",
-      "40 of us arrived, twelve went",
-      "to the trip before you",
-      "spent us. You chose it. 💜",
-    ],
-    whyTitle: "And why on Solana?",
-    whySub: "For those already convinced who want to know where they stand.",
-    whyItems: [
-      {
-        claim: "This is where tokenized stocks live",
-        body: "More than 60 US stocks, plus companies that haven't gone public yet, already exist on Solana as tokens. You buy a fraction from 2 dollars.",
-      },
-      {
-        claim: "Moving money costs a fraction of a cent",
-        body: "That's why a 10-dollar purchase makes sense and selling costs nothing.",
-      },
-      {
-        claim: "There's work that pays in dollars here",
-        body: "Bounties and gigs paid in USDC: you get paid here and the share you chose is invested right here. And Argentina plays at home: one of the most active communities in the world is here.",
-      },
-    ],
-    whyLink: "Knock: Superteam Argentina",
-    stepsTitle: "Decide once",
+    stepsTitle: "Set it up in a minute",
+    stepsSub: "Sign in with your email, answer three questions, done. Then get paid as usual: the rest happens on its own.",
     steps: [
       {
-        title: "Sign in with your email",
-        body: "Your account creates itself. Nothing to install.",
+        title: "Pick how much",
+        body: "10, 20, 30% of every payment. Set aside before you see it.",
       },
       {
-        title: "Pick how much, what for and into what",
-        body: "A percentage. A goal with a name. Stocks of companies you know, of ones that haven't gone public yet, or dollars that earn without the ups and downs.",
+        title: "Give it a name",
+        body: "The laptop, the trip, a cushion. The app tells you how many payments to go and what it's worth today.",
       },
       {
-        title: "Get paid as usual",
-        body: "Every payment fills the goal on its own. The app tells you how many payments to go and what it's worth today.",
+        title: "Pick where",
+        body: "Stocks, private companies or dollars that earn. Change it whenever you like.",
       },
     ],
+    stepsVisual: {
+      percents: ["10%", "20%", "30%"],
+      goals: ["✈️ The trip", "🖥️ The laptop", "🛟 Cushion"],
+      tabs: ["Stocks", "Private", "Dollars"],
+    },
     stepsNote: "Not getting paid on Solana yet?",
     stepsLink: "Send USDC to your account and start by hand",
+    pickTitle: "Where does it go?",
+    pickSub: "Three destinations. Pick one for your rule and change it whenever you like.",
+    picks: [
+      {
+        title: "US stocks",
+        body: "More than 60 companies, tokenized on Solana. From 2 dollars. Dividends reinvest on their own.",
+        tag: "Fee 0.45%",
+      },
+      {
+        title: "Private companies",
+        body: "The ones that haven't gone public yet. More risk, for those who want it.",
+        tag: "Fee 0.45%",
+      },
+      {
+        title: "Dollars that earn",
+        body: "About 4% a year, backed by short-term US Treasuries. No ups and downs. Take them out whenever you like.",
+        tag: "Fee 0.10%",
+      },
+    ],
     installCta: "Install it on your phone",
     installIosHint:
       "On iPhone: tap the Share button and choose «Add to Home Screen».",
@@ -849,6 +880,10 @@ const en: Dictionary = {
       {
         q: "Is it legal from Argentina?",
         a: "xStocks aren't available in the United States, United Kingdom, Canada and Australia. In Argentina, Backed doesn't restrict them. Camalote doesn't hold your funds: you sign every purchase. For taxes, ask your accountant.",
+      },
+      {
+        q: "Why on Solana?",
+        a: "Because that's where tokenized stocks already live: more than 60 US stocks plus private companies. Moving money costs a fraction of a cent, which is why a 10-dollar purchase makes sense and selling is free. And there's work that pays in USDC: bounties and gigs. Argentina plays at home: one of the most active communities in the world is here.",
       },
     ],
     finalTitle1: "The next payment is already on its way.",

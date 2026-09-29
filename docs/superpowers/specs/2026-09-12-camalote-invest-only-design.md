@@ -166,6 +166,33 @@ pague a través de Jupiter". Sin relayer, cada cuenta paga su propia red:
 - **Lo que no prometemos**: rendimiento. Es el mercado, para arriba y para
   abajo, y la app lo dice.
 
+## La landing vende como una startup (2026-09-29)
+
+Fernando: "la narrativa de la landing no me convence, no vende, somos una
+startup". La versión anterior seguía el pitch golpe por golpe (pregunta,
+servilleta, «después» no llega nunca, carta de tus dólares) y se leía como
+un manifiesto. La nueva vende como producto:
+
+- **Hero**: eyebrow "Para los que cobran en USDC", la promesa en una línea
+  ("Una parte de cada cobro **se invierte sola.**"), el cómo en dos frases,
+  "Armar mi regla" (mismo verbo que la app) + "Ver cómo funciona", y tres
+  pruebas cortas (desde 2 dólares, sin broker ni papeles, lo apagás cuando
+  quieras). Al lado, **el producto** (`landing/phone-mock.tsx`): la tarjeta
+  de la regla tal cual se ve en la app, con números de ejemplo, el río y
+  "te llegaron 40". En desktop, dos columnas; en teléfono, debajo.
+- **Corre sobre**: Solana, Jupiter, xStocks · Backed, Ondo, Pyth, Privy.
+  Nombres, no promesas.
+- **El problema en un golpe**: "Te pagan 40. Se van 40." con el antes y
+  después (las dos columnas quedaron; la carta manuscrita se fue).
+- **Lo armás en un minuto**: tres pasos con las fichas de la app (10/20/30 %,
+  ✈️ El viaje, Acciones/Privadas/Dólares).
+- **¿En qué?**: tres destinos con su comisión a la vista (0,45 / 0,45 /
+  0,10 %).
+- "Hacé la cuenta", "Sin letra chica" y las preguntas quedan. "¿Por qué en
+  Solana?" pasó a ser la última pregunta (sin el link a Superteam).
+- Sin nombres de activos en la venta (regla de Fernando). Teléfono: 8,4
+  pantallas a 375 px (7,7 a 420); desktop: 6,1.
+
 ## Narrativa de la landing ("vendeme una pluma")
 
 Reescrita el 2026-09-28 para que siga el pitch de los videos golpe por
