@@ -66,7 +66,7 @@ const es = {
     napkinInputLabel: "Cobraste",
     napkinPercentLabel: "Si una parte se hubiera apartado sola",
     napkinResultPre: "Hoy tendrías",
-    napkinResultPost: "puestos en acciones, a tu nombre. Sin acordarte ni una vez.",
+    napkinResultPost: "invertidos a tu nombre. Sin haber movido un dedo.",
     napkinFootnote:
       "Es lo que habrías puesto. Lo que vale después sube y baja con el mercado, como todo.",
     napkinEmpty: "Escribí un número y mirá.",
@@ -747,7 +747,7 @@ const en: Dictionary = {
     napkinInputLabel: "You earned",
     napkinPercentLabel: "If a share had set itself aside",
     napkinResultPre: "Today you'd have",
-    napkinResultPost: "put into stocks, in your name. Without remembering once.",
+    napkinResultPost: "invested in your name. Without lifting a finger.",
     napkinFootnote:
       "That's what you'd have put in. What it's worth later goes up and down with the market, like everything.",
     napkinEmpty: "Type a number and see.",

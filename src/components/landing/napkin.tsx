@@ -80,12 +80,16 @@ export function Napkin() {
 
             <div className="border-t border-border pt-5 text-center" role="status" aria-live="polite">
               {setAside !== null ? (
-                <p className="font-hand text-2xl leading-snug sm:text-3xl" data-testid="napkin-result">
-                  {t.landing.napkinResultPre}{" "}
-                  <span className="text-gradient font-display text-3xl font-semibold sm:text-4xl">
+                <p data-testid="napkin-result">
+                  <span className="block text-sm font-medium text-muted-foreground">
+                    {t.landing.napkinResultPre}
+                  </span>
+                  <span className="text-gradient mt-1 block font-display text-4xl font-semibold tabular-nums sm:text-5xl">
                     {formatUsdc(setAside, 0, lang)} USD
-                  </span>{" "}
-                  {t.landing.napkinResultPost}
+                  </span>
+                  <span className="mt-2 block text-base text-muted-foreground">
+                    {t.landing.napkinResultPost}
+                  </span>
                 </p>
               ) : (
                 <p className="text-sm text-muted-foreground">{t.landing.napkinEmpty}</p>
