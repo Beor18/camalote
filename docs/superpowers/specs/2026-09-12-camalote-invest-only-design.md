@@ -253,6 +253,12 @@ cambiaba; y en desktop la columna de teléfono quedaba estirada.
   dólares": se escribe en USD, "Todo" saca exactamente lo que hay, y la
   fila de la cartera dice "Cerca del 4 % anual" con el botón "Sacar". En
   movimientos, "Sacaste Dólares que rinden".
+- **La landing con el mismo verbo** (pedido de Fernando el mismo día): "Sin
+  letra chica" suma la nota "En dólares que rinden, la comisión es 0,10 %.
+  Sacarlos, gratis" y "Vender o sacar · Gratis"; la confianza habla de
+  acciones y dólares; las preguntas "¿Y si no quiero acciones?", "¿Puede
+  bajar?", "¿Cuánto cuesta?" y "¿Cuándo se mueve la plata?" cubren los dos
+  destinos; "comprá a mano" pasa a "empezá a mano"; el pie nombra a Ondo.
 - E2E y video: `rule-setup` → `rule-next` → `rule-done`; editar es
   `rule-edit` → `rule-review-goal` → `rule-step-done` → `rule-done`; pausa y
   reanudación (`rule-toggle`, `rule-resume`) cubiertas.

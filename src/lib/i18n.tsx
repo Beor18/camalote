@@ -111,7 +111,7 @@ const es = {
       },
     ],
     stepsNote: "¿Todavía no te pagan en Solana?",
-    stepsLink: "Mandá USDC a tu cuenta y comprá a mano",
+    stepsLink: "Mandá USDC a tu cuenta y empezá a mano",
     installCta: "Instalala en tu teléfono",
     installIosHint:
       "En iPhone: tocá el botón Compartir y elegí «Agregar a inicio».",
@@ -120,8 +120,9 @@ const es = {
       { label: "Compra mínima", value: "$2" },
       { label: "Comisión por compra", value: "0,45 %" },
       { label: "Tope de comisión", value: "$0,50" },
-      { label: "Vender", value: "Gratis" },
+      { label: "Vender o sacar", value: "Gratis" },
     ],
+    factsNote: "En dólares que rinden, la comisión es 0,10 %. Sacarlos, gratis.",
     pricingTitle: "La comisión, con tu número",
     pricingSub: "La misma cuenta que hace la app.",
     calcIfYouInvest: "Si invertís",
@@ -136,22 +137,22 @@ const es = {
     trust: [
       {
         title: "Tu cuenta es tuya",
-        body: "Las acciones quedan en tu cuenta. Nosotros no podemos moverlas.",
+        body: "Las acciones y los dólares quedan en tu cuenta. Nosotros no podemos moverlos.",
       },
       {
         title: "Sin promesas",
-        body: "La comisión la ves antes de cada compra. Nadie te promete rendimiento: sube y baja.",
+        body: "La comisión la ves antes de confirmar. Nadie te promete rendimiento: las acciones suben y bajan, y la tasa de los dólares cambia.",
       },
       {
         title: "Lo apagás cuando quieras",
-        body: "Un toque y la regla se apaga. Vendés y retirás gratis.",
+        body: "Un toque y la regla se apaga. Vendés, sacás y retirás gratis.",
       },
     ],
     faqTitle: "Preguntas frecuentes",
     faqs: [
       {
         q: "¿Qué compro exactamente?",
-        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real y los dividendos se reinvierten solos. No son la acción: no votás, y Backed puede congelarlas si la ley lo exige.",
+        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real y los dividendos se reinvierten solos. No son la acción: no votás, y Backed puede congelarlas si la ley lo exige. Si elegís dólares que rinden, no comprás nada: tus USDC se ponen a rendir.",
       },
       {
         q: "¿Qué es la meta?",
@@ -159,23 +160,23 @@ const es = {
       },
       {
         q: "¿Y si no quiero acciones?",
-        a: "Elegís «dólares que rinden»: dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo), que rinden 3,6 % anual hoy y suben de a poco todos los días, sin el sube y baja de las acciones. No es un banco ni un plazo fijo: el riesgo es del emisor. La comisión ahí es 0,10 % por compra. El colchón de tres meses va ahí por defecto.",
+        a: "Elegís «dólares que rinden»: tus USDC se ponen a rendir en dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo). Rinden 3,6 % anual hoy y suben de a poco todos los días, sin el sube y baja de las acciones. Los sacás cuando quieras, gratis. No es un banco ni un plazo fijo: el riesgo es del emisor. Ahí la comisión es 0,10 %. El colchón de tres meses va ahí por defecto.",
       },
       {
         q: "¿Puede bajar?",
-        a: "Sí. Sube y baja como en cualquier lado. Camalote no promete rendimiento ni recomienda activos.",
+        a: "Las acciones, sí: suben y bajan como en cualquier lado. Los dólares que rinden no siguen al mercado, pero tampoco son un banco: el riesgo es del emisor. Camalote no promete rendimiento ni recomienda activos.",
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. Vender es gratis. Aparte, Jupiter cobra 0,10 % y la red la pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que se carga sola y queda en tu cuenta. La primera compra de cada acción abre su cuenta: unos 25 centavos, de esa reserva.",
+        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. En dólares que rinden, 0,10 %. Vender o sacar es gratis. Aparte, Jupiter cobra 0,10 % y la red la pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que se carga sola y queda en tu cuenta. La primera compra de cada acción abre su cuenta: unos 25 centavos, de esa reserva.",
       },
       {
         q: "¿Y si no me pagan en Solana?",
-        a: "Mandá USDC a tu cuenta desde cualquier billetera o exchange y comprá a mano. Para que la regla trabaje, pasale esta cuenta a quien te paga.",
+        a: "Mandá USDC a tu cuenta desde cualquier billetera o exchange y empezá a mano: comprás o ponés a rendir cuando quieras. Para que la regla trabaje, pasale esta cuenta a quien te paga.",
       },
       {
-        q: "¿Cuándo se compra?",
-        a: "En segundos, mientras la app está abierta. Si te llegan USDC con la app cerrada, se compra cuando la abrís. Los cobros chicos se juntan hasta 10 dólares.",
+        q: "¿Cuándo se mueve la plata?",
+        a: "En segundos, mientras la app está abierta. Si te llegan USDC con la app cerrada, se mueve cuando la abrís. Los cobros chicos se juntan hasta 10 dólares.",
       },
       {
         q: "¿Qué son las empresas antes de salir a bolsa?",
@@ -192,7 +193,7 @@ const es = {
     finalCta: "Armar mi regla",
     footerMadeIn: "Hecho en Argentina 🇦🇷",
     footerNote:
-      "xStocks las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Camalote no da consejos de inversión.",
+      "xStocks las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Los dólares que rinden (USDY) los emite Ondo, para personas fuera de Estados Unidos. Camalote no da consejos de inversión.",
   },
   app: {
     loginTitle: "Entrá con tu email",
@@ -774,7 +775,7 @@ const en: Dictionary = {
       },
     ],
     stepsNote: "Not getting paid on Solana yet?",
-    stepsLink: "Send USDC to your account and buy by hand",
+    stepsLink: "Send USDC to your account and start by hand",
     installCta: "Install it on your phone",
     installIosHint:
       "On iPhone: tap the Share button and choose «Add to Home Screen».",
@@ -783,8 +784,9 @@ const en: Dictionary = {
       { label: "Minimum purchase", value: "$2" },
       { label: "Fee per purchase", value: "0.45%" },
       { label: "Fee cap", value: "$0.50" },
-      { label: "Selling", value: "Free" },
+      { label: "Selling or taking out", value: "Free" },
     ],
+    factsNote: "In dollars that earn, the fee is 0.10%. Taking them out is free.",
     pricingTitle: "The fee, with your number",
     pricingSub: "The same math the app runs.",
     calcIfYouInvest: "If you invest",
@@ -799,22 +801,22 @@ const en: Dictionary = {
     trust: [
       {
         title: "Your account is yours",
-        body: "The stocks stay in your account. We can't move them.",
+        body: "The stocks and the dollars stay in your account. We can't move them.",
       },
       {
         title: "No promises",
-        body: "You see the fee before every purchase. Nobody promises a return: it goes up and down.",
+        body: "You see the fee before you confirm. Nobody promises a return: stocks go up and down, and the dollars' rate changes.",
       },
       {
         title: "Switch it off whenever you like",
-        body: "One tap and the rule is off. Sell and withdraw for free.",
+        body: "One tap and the rule is off. Sell, take out and withdraw for free.",
       },
     ],
     faqTitle: "Frequently asked questions",
     faqs: [
       {
         q: "What exactly am I buying?",
-        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price and dividends reinvest on their own. They aren't the stock: you don't vote, and Backed can freeze them if the law requires it.",
+        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price and dividends reinvest on their own. They aren't the stock: you don't vote, and Backed can freeze them if the law requires it. If you pick dollars that earn, you don't buy anything: your USDC are put to earn.",
       },
       {
         q: "What's the goal?",
@@ -822,23 +824,23 @@ const en: Dictionary = {
       },
       {
         q: "What if I don't want stocks?",
-        a: "Pick «dollars that earn»: dollars backed by short-term US Treasuries (USDY, by Ondo) that yield 3.6% a year today and creep up a little every day, without the ups and downs of stocks. Not a bank and not a term deposit: the risk is the issuer's. The fee there is 0.10% per purchase. The three-month cushion goes there by default.",
+        a: "Pick «dollars that earn»: your USDC are put to earn in dollars backed by short-term US Treasuries (USDY, by Ondo). They yield 3.6% a year today and creep up a little every day, without the ups and downs of stocks. Take them out whenever you like, for free. Not a bank and not a term deposit: the risk is the issuer's. The fee there is 0.10%. The three-month cushion goes there by default.",
       },
       {
         q: "Can it go down?",
-        a: "Yes. It goes up and down like anywhere else. Camalote doesn't promise returns or recommend assets.",
+        a: "Stocks, yes: they go up and down like anywhere else. Dollars that earn don't follow the market, but they aren't a bank either: the risk is the issuer's. Camalote doesn't promise returns or recommend assets.",
       },
       {
         q: "How much does it cost?",
-        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. Selling is free. On top, Jupiter charges 0.10% and you pay the network: under a cent per operation, from a 1-dollar reserve that loads on its own and stays in your account. The first purchase of each stock opens its account: about 25 cents, from that reserve.",
+        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. In dollars that earn, 0.10%. Selling or taking out is free. On top, Jupiter charges 0.10% and you pay the network: under a cent per operation, from a 1-dollar reserve that loads on its own and stays in your account. The first purchase of each stock opens its account: about 25 cents, from that reserve.",
       },
       {
         q: "What if I don't get paid on Solana?",
-        a: "Send USDC to your account from any wallet or exchange and buy by hand. For the rule to work, give this account to whoever pays you.",
+        a: "Send USDC to your account from any wallet or exchange and start by hand: buy or put to earn whenever you like. For the rule to work, give this account to whoever pays you.",
       },
       {
-        q: "When does it buy?",
-        a: "In seconds, while the app is open. If USDC land while it's closed, it buys when you open it. Small payments add up to 10 dollars.",
+        q: "When does the money move?",
+        a: "In seconds, while the app is open. If USDC land while it's closed, it moves when you open it. Small payments add up to 10 dollars.",
       },
       {
         q: "What are pre-IPO companies?",
@@ -855,7 +857,7 @@ const en: Dictionary = {
     finalCta: "Set my rule",
     footerMadeIn: "Made in Argentina 🇦🇷",
     footerNote:
-      "xStocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Camalote doesn't give investment advice.",
+      "xStocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Dollars that earn (USDY) are issued by Ondo, for people outside the United States. Camalote doesn't give investment advice.",
   },
   app: {
     loginTitle: "Sign in with your email",

@@ -409,6 +409,9 @@ function NoFinePrint() {
             </div>
           ))}
         </dl>
+        <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-muted-foreground">
+          {t.landing.factsNote}
+        </p>
         <div className="mx-auto mt-10 grid max-w-4xl gap-5 border-t border-border pt-10 sm:mt-14 sm:grid-cols-3 sm:gap-6 sm:pt-14">
           {t.landing.trust.map((point, i) => {
             const Icon = TRUST_ICONS[i];
