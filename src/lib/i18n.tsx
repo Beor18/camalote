@@ -102,7 +102,7 @@ const es = {
     ],
     stepsVisual: {
       percents: ["10 %", "20 %", "30 %"],
-      goals: ["✈️ El viaje", "🖥️ La compu", "🛟 Colchón"],
+      goals: ["✈️ Viaje", "🖥️ Compu", "🛟 Colchón"],
       tabs: ["Acciones", "Privadas", "Dólares"],
     },
     stepsNote: "¿Todavía no te pagan en Solana?",
@@ -783,7 +783,7 @@ const en: Dictionary = {
     ],
     stepsVisual: {
       percents: ["10%", "20%", "30%"],
-      goals: ["✈️ The trip", "🖥️ The laptop", "🛟 Cushion"],
+      goals: ["✈️ Trip", "🖥️ Laptop", "🛟 Cushion"],
       tabs: ["Stocks", "Private", "Dollars"],
     },
     stepsNote: "Not getting paid on Solana yet?",

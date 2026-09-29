@@ -204,12 +204,12 @@ function StepVisual({ index }: { index: number }) {
   const { t } = useLang();
   const v = t.landing.stepsVisual;
   const chip = (active: boolean) =>
-    `inline-flex h-8 items-center rounded-lg border px-2.5 text-xs font-semibold ${
+    `inline-flex h-8 items-center whitespace-nowrap rounded-lg border px-2 text-xs font-semibold ${
       active ? "border-primary bg-primary/10 text-foreground" : "border-border bg-surface text-muted-foreground"
     }`;
   if (index === 0) {
     return (
-      <div className="flex gap-2" aria-hidden="true">
+      <div className="flex gap-1.5" aria-hidden="true">
         {v.percents.map((p, k) => (
           <span key={p} className={`${chip(k === 2)} font-mono tabular-nums`}>
             {p}
@@ -220,7 +220,7 @@ function StepVisual({ index }: { index: number }) {
   }
   if (index === 1) {
     return (
-      <div className="flex flex-wrap gap-2" aria-hidden="true">
+      <div className="flex gap-1.5" aria-hidden="true">
         {v.goals.map((g, k) => (
           <span key={g} className={chip(k === 0)}>
             {g}
@@ -252,7 +252,7 @@ function HowItWorks() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className={sectionTitle}>{t.landing.stepsTitle}</h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.landing.stepsSub}</p>
-        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-3 sm:gap-6">
+        <div className="mx-auto mt-8 grid max-w-4xl gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-3 lg:gap-6">
           {t.landing.steps.map((step, i) => (
             <Card key={step.title} className="flex flex-col gap-4 p-5 sm:p-6">
               <div className="flex items-center gap-3">
