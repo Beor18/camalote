@@ -267,10 +267,10 @@ function HowItWorks() {
           ))}
         </div>
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t.landing.stepsNote}{" "}
+          <span className="block">{t.landing.stepsNote}</span>
           <Link
             href="/app"
-            className="inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-1 inline-flex items-center gap-1 rounded-md font-medium text-primary underline-offset-4 transition-colors duration-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {t.landing.stepsLink}
             <ArrowRight className="size-3.5" aria-hidden="true" />
