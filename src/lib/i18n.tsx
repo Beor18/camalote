@@ -38,7 +38,7 @@ const es = {
     heroLine1: "Una parte de cada cobro",
     heroHighlight: "se invierte sola.",
     heroSub:
-      "Antes de que la gastes. Elegís qué parte, para qué y en qué, una sola vez. Cada vez que te pagan, tu regla la aparta y la invierte sola, desde tu propia cuenta.",
+      "Antes de que la gastes. Elegís qué parte, para qué y en qué. Una sola vez. Después, cobrá como siempre.",
     heroCta: "Armar mi regla",
     heroSecondary: "Ver cómo funciona",
     heroProof: ["Desde 2 dólares", "Sin broker ni papeles", "Lo apagás cuando quieras"],
@@ -720,7 +720,7 @@ const en: Dictionary = {
     heroLine1: "Part of every payment",
     heroHighlight: "invests itself.",
     heroSub:
-      "Before you can spend it. Pick how much, what for and where, just once. Every time you get paid, your rule sets it aside and invests it on its own, from your own account.",
+      "Before you can spend it. Pick how much, what for and where. Just once. Then get paid as usual.",
     heroCta: "Set up my rule",
     heroSecondary: "See how it works",
     heroProof: ["From 2 dollars", "No broker, no paperwork", "Switch it off anytime"],
