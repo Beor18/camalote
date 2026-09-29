@@ -112,6 +112,27 @@ await page.click("[data-testid=buy-open]");
 await page.waitForSelector("[data-testid=buy-sheet][open]", { timeout: 10000 });
 console.log("BUY HINT:", await text("#buy-amount-hint"));
 console.log("BUY DEFAULT:", await page.inputValue("#buy-amount"));
+// 5a. Primero 10 USDC de dólares que rinden: la nota honesta y el ticket con 0,10 %.
+await page.click("[data-testid=buy-group-dollars]");
+await page.click("[data-testid=buy-asset-USDY]");
+console.log("DOLLARS:", await text("[data-testid=buy-dollars-note]"));
+await page.fill("#buy-amount", "10");
+await page.click("[data-testid=buy-quote]");
+await page.waitForSelector("[data-testid=buy-ticket]", { timeout: 15000 });
+await page.waitForTimeout(400);
+await shot("05a-dolares-ticket");
+console.log("DOLLARS TICKET:", (await text("[data-testid=buy-ticket]"))?.replace(/\s+/g, " "));
+await page.click("[data-testid=buy-confirm]");
+await page.waitForSelector("text=Bought!", { timeout: 30000 });
+console.log("DOLLARS BUY:", await text("[data-testid=invest-buy] p"));
+await page.click("[data-testid=buy-close]");
+await page.waitForTimeout(600);
+console.log("DOLLARS ROW:", await text("[data-testid=invest-portfolio] li:has-text('USDY')"));
+
+// 5b. Después 10 USDC de NVIDIA, como siempre.
+await page.click("[data-testid=buy-open]");
+await page.waitForSelector("[data-testid=buy-sheet][open]", { timeout: 10000 });
+await page.click("[data-testid=buy-group-stock]");
 await page.click("[data-testid=buy-asset-NVDAx]");
 await page.fill("#buy-amount", "10");
 await page.click("[data-testid=buy-quote]");

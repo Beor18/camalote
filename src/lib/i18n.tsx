@@ -70,7 +70,7 @@ const es = {
       "Decidís una sola vez: «el 30 % es mío»",
       "Para algo concreto: la compu, el viaje, el colchón",
       "Se aparta cuando te pagan, antes de que lo veas",
-      "En acciones de las empresas más grandes del mundo",
+      "En acciones, o en dólares que rinden si no querés el sube y baja",
     ],
     letter: [
       "Nota de tus dólares:",
@@ -103,7 +103,7 @@ const es = {
       },
       {
         title: "Elegí cuánto, para qué y en qué",
-        body: "Un porcentaje. Una meta con nombre. Acciones de empresas que conocés, o de las que todavía no salieron a bolsa.",
+        body: "Un porcentaje. Una meta con nombre. Acciones de empresas que conocés, de las que todavía no salieron a bolsa, o dólares que rinden sin el sube y baja.",
       },
       {
         title: "Cobrá como siempre",
@@ -156,6 +156,10 @@ const es = {
       {
         q: "¿Qué es la meta?",
         a: "Para qué juntás: la compu, el viaje, tres meses de colchón. La regla la va llenando sola con cada cobro y la app te dice cuánto falta. Cuando llegás, decidís vos: seguir, otra meta, o vender y retirar.",
+      },
+      {
+        q: "¿Y si no quiero acciones?",
+        a: "Elegís «dólares que rinden»: dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo), que rinden 3,6 % anual hoy y suben de a poco todos los días, sin el sube y baja de las acciones. No es un banco ni un plazo fijo: el riesgo es del emisor. La comisión ahí es 0,10 % por compra. El colchón de tres meses va ahí por defecto.",
       },
       {
         q: "¿Puede bajar?",
@@ -454,6 +458,14 @@ const es = {
     assetLabel: "¿En qué?",
     assetGroupStocks: "Acciones",
     assetGroupPreIpo: "Antes de salir a bolsa",
+    assetGroupDollars: "Dólares",
+    dollarsChipSub: "Cerca del 4 % anual, sin el sube y baja de las acciones",
+    dollarsPickerNote:
+      "Dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo). Rinden 3,6 % anual hoy; el porcentaje cambia con la tasa de Estados Unidos. No es un banco ni un plazo fijo: el riesgo es del emisor, no del mercado. Comisión de Camalote: 0,10 %.",
+    dollarsRuleNote:
+      "Sin horario ni referencia: la regla compra apenas junta el mínimo. El rendimiento se ve como un precio que sube de a poco todos los días.",
+    dollarsNote:
+      "El rendimiento se ve como un precio que sube de a poco cada día. Lo emite Ondo: no es un banco.",
     preIpoPickerNote:
       "Tokens de PreStocks que siguen el valor de empresas privadas. Más riesgo: sin derechos, 1 % por transferencia y un precio que puede alejarse de su referencia.",
     waitMarketLabel: "Comprar solo con Wall Street abierto",
@@ -609,6 +621,7 @@ const es = {
       "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
       "Las empresas antes de salir a bolsa son tokens de PreStocks: exposición al valor de empresas privadas, sin derechos ni dividendos, con 1 % por transferencia y un precio que a veces se aleja mucho de su referencia. Más riesgo que una acción que cotiza. Tampoco para residentes de Estados Unidos.",
       "El horario de Wall Street sale de los datos públicos de Pyth. Fuera de horario, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
+      "Los dólares que rinden son USDY, emitidos por Ondo y respaldados por letras del Tesoro de Estados Unidos, para personas fuera de Estados Unidos. El rendimiento (3,6 % anual hoy) cambia con la tasa de Estados Unidos y se ve como un precio que sube. No es un depósito bancario: si el emisor falla, el riesgo es tuyo.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
     ],
   },
@@ -666,7 +679,7 @@ const en: Dictionary = {
       "You decide once: «30% is mine»",
       "For something real: the laptop, the trip, the cushion",
       "Set aside when you get paid, before you see it",
-      "In stocks of the biggest companies in the world",
+      "In stocks, or in dollars that earn if you don't want the ups and downs",
     ],
     letter: [
       "A note from your dollars:",
@@ -699,7 +712,7 @@ const en: Dictionary = {
       },
       {
         title: "Pick how much, what for and into what",
-        body: "A percentage. A goal with a name. Stocks of companies you know, or of ones that haven't gone public yet.",
+        body: "A percentage. A goal with a name. Stocks of companies you know, of ones that haven't gone public yet, or dollars that earn without the ups and downs.",
       },
       {
         title: "Get paid as usual",
@@ -752,6 +765,10 @@ const en: Dictionary = {
       {
         q: "What's the goal?",
         a: "What you're saving for: the laptop, the trip, a three-month cushion. The rule fills it on its own with every payment and the app tells you how much is left. When you get there, it's your call: keep going, another goal, or sell and withdraw.",
+      },
+      {
+        q: "What if I don't want stocks?",
+        a: "Pick «dollars that earn»: dollars backed by short-term US Treasuries (USDY, by Ondo) that yield 3.6% a year today and creep up a little every day, without the ups and downs of stocks. Not a bank and not a term deposit: the risk is the issuer's. The fee there is 0.10% per purchase. The three-month cushion goes there by default.",
       },
       {
         q: "Can it go down?",
@@ -1047,6 +1064,14 @@ const en: Dictionary = {
     assetLabel: "Into what?",
     assetGroupStocks: "Stocks",
     assetGroupPreIpo: "Pre-IPO",
+    assetGroupDollars: "Dollars",
+    dollarsChipSub: "About 4% a year, without the ups and downs of stocks",
+    dollarsPickerNote:
+      "Dollars backed by short-term US Treasuries (USDY, by Ondo). They yield 3.6% a year today; the rate moves with US rates. Not a bank and not a term deposit: the risk is the issuer's, not the market's. Camalote fee: 0.10%.",
+    dollarsRuleNote:
+      "No market hours and no reference: the rule buys as soon as it adds up to the minimum. The yield shows up as a price that creeps up a little every day.",
+    dollarsNote:
+      "The yield shows up as a price that creeps up a little every day. Issued by Ondo: not a bank.",
     preIpoPickerNote:
       "PreStocks tokens that track the value of private companies. Riskier: no rights, a 1% transfer fee and a price that can drift from its reference.",
     waitMarketLabel: "Buy only while Wall Street is open",
@@ -1202,6 +1227,7 @@ const en: Dictionary = {
       "Not available to residents of the United States, United Kingdom, Canada and Australia.",
       "Pre-IPO companies are PreStocks tokens: exposure to the value of private companies, with no rights or dividends, a 1% transfer fee and a price that sometimes drifts far from its reference. Riskier than a listed stock. Also not for US residents.",
       "Wall Street hours come from Pyth's public data. Outside market hours a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
+      "Dollars that earn are USDY, issued by Ondo and backed by short-term US Treasuries, for people outside the United States. The yield (3.6% a year today) moves with US rates and shows up as a rising price. Not a bank deposit: if the issuer fails, the risk is yours.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",
     ],
   },

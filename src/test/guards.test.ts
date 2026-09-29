@@ -6,16 +6,51 @@ import {
   parsePythMarketHours,
   premiumBps,
 } from "@/lib/invest/guards";
-import { PREIPO, STOCKS, XSTOCKS, decimalsOf, findXStock, isPreIpo } from "@/lib/invest/catalog";
-import { dividendsSummary, portfolioSummary } from "@/lib/invest/rules";
+import {
+  DOLLARS,
+  PREIPO,
+  STOCKS,
+  XSTOCKS,
+  assetName,
+  decimalsOf,
+  findXStock,
+  isDollars,
+  isPreIpo,
+  kindOf,
+} from "@/lib/invest/catalog";
+import { dividendsSummary, feeBpsFor, investFee, portfolioSummary } from "@/lib/invest/rules";
 import type { Purchase } from "@/lib/invest/types";
 
 describe("catálogo", () => {
-  it("tiene cinco acciones y ocho empresas antes de salir a bolsa, sin repetir", () => {
+  it("tiene cinco acciones, ocho pre-IPO y los dólares que rinden, sin repetir", () => {
     expect(STOCKS).toHaveLength(5);
     expect(PREIPO).toHaveLength(8);
-    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(13);
-    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(13);
+    expect(DOLLARS).toHaveLength(1);
+    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(14);
+    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(14);
+  });
+
+  it("los dólares que rinden son un token clásico de 6 decimales, con nombre en cada idioma", () => {
+    const usdy = findXStock("USDY");
+    expect(usdy?.kind).toBe("dollars");
+    expect(usdy?.issuer).toBe("Ondo");
+    expect(decimalsOf("USDY")).toBe(6);
+    expect(isDollars("USDY")).toBe(true);
+    expect(isDollars("SPYx")).toBe(false);
+    expect(kindOf("USDY")).toBe("dollars");
+    expect(assetName("USDY", "es")).toBe("Dólares que rinden");
+    expect(assetName("USDY", "en")).toBe("Dollars that earn");
+    expect(assetName("SPYx", "es")).toBe("S&P 500");
+    expect(assetName("nada", "es")).toBe("nada");
+  });
+
+  it("los dólares que rinden pagan 0,10 % y las acciones 0,45 %", () => {
+    expect(feeBpsFor("USDY")).toBe(10);
+    expect(feeBpsFor("SPYx")).toBe(45);
+    expect(feeBpsFor("SPACEX")).toBe(45);
+    // 100 USDC: 0,10 en dólares, 0,45 en acciones
+    expect(investFee(100_000_000n, { feeBps: feeBpsFor("USDY") })).toBe(100_000n);
+    expect(investFee(100_000_000n, { feeBps: feeBpsFor("SPYx") })).toBe(450_000n);
   });
 
   it("las pre-IPO tienen 9 decimales, 1 % de transferencia y sin horario", () => {
@@ -51,12 +86,13 @@ describe("pre-IPO con multiplicador", () => {
     multiplier,
   });
 
-  it("no cuenta dividendos para las pre-IPO aunque el multiplicador cambie", () => {
+  it("no cuenta dividendos para las pre-IPO ni los dólares aunque el multiplicador cambie", () => {
     const out = dividendsSummary(
-      [buy("SPACEX", "100000000", 1), buy("SPYx", "100000000", 1)],
-      { SPACEX: 5, SPYx: 1.01 }
+      [buy("SPACEX", "100000000", 1), buy("SPYx", "100000000", 1), buy("USDY", "100000000", 1)],
+      { SPACEX: 5, SPYx: 1.01, USDY: 1.02 }
     );
     expect(out.SPACEX).toBeUndefined();
+    expect(out.USDY).toBeUndefined();
     expect(out.SPYx).toBe(1_000_000n);
   });
 
@@ -139,5 +175,11 @@ describe("qué frena una compra de la regla", () => {
     expect(buyBlockedBy({ kind: "preipo", waitForMarketOpen: true, reference: edge })).toBeNull();
     // el horario no aplica a las pre-IPO
     expect(buyBlockedBy({ kind: "preipo", waitForMarketOpen: true, market: closed })).toBeNull();
+  });
+
+  it("los dólares que rinden nunca esperan: ni horario ni referencia", () => {
+    const expensive = { markPrice: 1, tokenPrice: 1.2, premiumBps: 2000 };
+    expect(buyBlockedBy({ kind: "dollars", waitForMarketOpen: true, market: closed })).toBeNull();
+    expect(buyBlockedBy({ kind: "dollars", waitForMarketOpen: true, reference: expensive })).toBeNull();
   });
 });

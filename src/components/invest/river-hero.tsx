@@ -10,7 +10,7 @@ import { AccountActions } from "@/components/invest/account-actions";
 import { INVEST_MIN_UNITS } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { findXStock } from "@/lib/invest/catalog";
+import { assetName } from "@/lib/invest/catalog";
 import {
   etaFromPace,
   formatMonth,
@@ -114,7 +114,7 @@ export function RiverHero({
   const jump = progress < lastProgress;
   if (progress !== lastProgress) setLastProgress(progress);
 
-  const stockName = findXStock(rule.asset)?.name ?? rule.asset;
+  const stockName = assetName(rule.asset, lang);
   const paused = rule.lastError !== undefined;
   const pnlPositive = summary.pnlUnits >= 0n;
   const returnText =

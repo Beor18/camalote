@@ -12,6 +12,7 @@ import { createPublicClient, erc20Abi, http } from "viem";
 import { Connection, PublicKey, type ParsedAccountData } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import {
@@ -27,7 +28,7 @@ import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
 import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
-import { investFee } from "@/lib/invest/rules";
+import { feeBpsFor, investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
 import type {
@@ -243,7 +244,7 @@ export function useRealEngine(): Engine {
       },
       quoteStock: async (asset, usdcUnits) => {
         const taker = requireAccount(solanaAddress);
-        const camaloteFeeUnits = investFee(usdcUnits);
+        const camaloteFeeUnits = investFee(usdcUnits, { feeBps: feeBpsFor(asset) });
         const swapUnits = usdcUnits - camaloteFeeUnits;
         const [order, { multipliers }, lamports] = await Promise.all([
           fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker }),
@@ -553,17 +554,20 @@ async function collectFee(owner: string, feeUnits: bigint, sign: Signer): Promis
 }
 
 /**
- * Acciones tokenizadas (Token-2022) en la cuenta del usuario: una sola
- * lectura de todas sus cuentas de ese programa, filtrada por nuestro catálogo.
- * Las unidades son las "crudas" del token (8 decimales).
+ * Lo del catálogo que hay en la cuenta del usuario: las acciones y pre-IPO
+ * son Token-2022, los dólares que rinden (USDY) son del programa clásico.
+ * Dos lecturas, filtradas por nuestro catálogo. Las unidades son las
+ * "crudas" de cada token.
  */
 async function fetchXStockHoldings(owner: string): Promise<Holding[]> {
   const connection = new Connection(SOLANA_RPC_URL, "confirmed");
-  const res = await connection.getParsedTokenAccountsByOwner(new PublicKey(owner), {
-    programId: TOKEN_2022_PROGRAM_ID,
-  });
+  const ownerKey = new PublicKey(owner);
+  const [token2022, tokenClassic] = await Promise.all([
+    connection.getParsedTokenAccountsByOwner(ownerKey, { programId: TOKEN_2022_PROGRAM_ID }),
+    connection.getParsedTokenAccountsByOwner(ownerKey, { programId: TOKEN_PROGRAM_ID }),
+  ]);
   const out: Holding[] = [];
-  for (const { account } of res.value) {
+  for (const { account } of [...token2022.value, ...tokenClassic.value]) {
     const info = (account.data as ParsedAccountData).parsed?.info as
       | { mint?: string; tokenAmount?: { amount?: string } }
       | undefined;

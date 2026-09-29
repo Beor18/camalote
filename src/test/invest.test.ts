@@ -38,12 +38,13 @@ function rule(partial: Partial<InvestRule> = {}): InvestRule {
 }
 
 describe("catálogo de acciones tokenizadas", () => {
-  it("trece activos con mints válidos y únicos: xStocks de 8 decimales, PreStocks de 9", () => {
-    expect(XSTOCKS).toHaveLength(13);
-    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(13);
+  it("catorce activos con mints válidos y únicos: xStocks de 8 decimales, PreStocks de 9, dólares de 6", () => {
+    expect(XSTOCKS).toHaveLength(14);
+    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(14);
+    const decimalsByKind = { stock: 8, preipo: 9, dollars: 6 } as const;
     for (const stock of XSTOCKS) {
       expect(() => new PublicKey(stock.mint)).not.toThrow();
-      expect(stock.decimals).toBe(stock.kind === "stock" ? 8 : 9);
+      expect(stock.decimals).toBe(decimalsByKind[stock.kind]);
       expect(stock.fallbackPriceUsd).toBeGreaterThan(0);
     }
   });

@@ -61,6 +61,35 @@ y los que piden lanzar un token (Clawpump, Meteora DBC).
   `MarketNote` (horario, o referencia + 1 % de transferencia); la cartera
   muestra la referencia por fila. Dividendos solo para acciones.
 
+## Dólares que rinden (2026-09-29)
+
+Fernando: "¿cómo aplicamos el mecanismo para los que no quieren riesgo de
+acciones pero puedan generar rendimiento con sus USDC?". Cerrar el círculo
+también contesta la duda de fondo: si eligen dólares, el problema era
+apartar; si eligen acciones, la apuesta original.
+
+- Destino nuevo en el catálogo: USDY de Ondo (`kind: "dollars"`, token
+  clásico SPL, 6 decimales, mint `A1KL…Eto6`, verificado en Jupiter:
+  8.272 tenedores, 2 M de liquidez). Dólares respaldados por letras del
+  Tesoro de Estados Unidos, 3,6 % anual el 2026-09-29 (varía con la tasa),
+  el precio sube a diario; solo personas fuera de Estados Unidos (Reg S).
+  Compra de 10 USDC por Ultra: 0,14 % total, sin gas; venta 0,09 %.
+- Comisión: `FEE_BPS_DOLLARS` = 10 (Fernando eligió 0,10 % sobre 0,45 y
+  0,25: "diez días de rendimiento por compra, no un mes y medio").
+  `feeBpsFor(asset)` en `rules.ts`; la cotización real y la demo la usan; el
+  ticket muestra el porcentaje del activo.
+- `buyBlockedBy` nunca frena dólares; `dividendsSummary` solo cuenta
+  acciones; `assetName(symbol, lang)` da "Dólares que rinden" / "Dollars
+  that earn" (sin el ticker en la ficha).
+- Tenencias reales: `fetchXStockHoldings` lee Token-2022 y el programa
+  clásico. El multiplicador de un mint clásico queda en 1.
+- UI: tercera pestaña "Dólares" en el selector con una sola ficha y su nota
+  honesta; nota en la hoja de la regla y en comprar/vender (`MarketNote`);
+  el colchón de tres meses pone el destino en USDY al elegirlo; FAQ "¿Y si
+  no quiero acciones?"; línea en "Lo que tenés que saber"; landing lo
+  nombra en las columnas y en los pasos.
+- E2E: compra de 10 USDC de USDY en demo con el ticket a 0,10 %.
+
 ## Metas con nombre (2026-09-26)
 
 Fernando: "nadie se emociona con el S&P 500; se emociona con la compu

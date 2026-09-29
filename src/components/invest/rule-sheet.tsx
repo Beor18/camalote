@@ -92,7 +92,19 @@ export function RuleSheet({
         <div>
           <p className="mb-2 text-sm font-medium">{t.invest.goalLabel}</p>
           {/* se monta de nuevo en cada apertura: los campos arrancan con lo guardado */}
-          {open && <GoalEditor goal={rule.goal} onChange={(goal) => onChange({ goal })} />}
+          {open && (
+            <GoalEditor
+              goal={rule.goal}
+              onChange={(goal) =>
+                // Un colchón de emergencia no puede subir y bajar: recién elegido, va a dólares.
+                onChange(
+                  goal?.preset === "cushion" && rule.goal?.preset !== "cushion"
+                    ? { goal, asset: "USDY" }
+                    : { goal }
+                )
+              }
+            />
+          )}
         </div>
 
         <div>
@@ -103,6 +115,10 @@ export function RuleSheet({
         {findXStock(rule.asset)?.kind === "preipo" ? (
           <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground" data-testid="rule-preipo-note">
             {t.invest.preIpoRuleNote}
+          </p>
+        ) : findXStock(rule.asset)?.kind === "dollars" ? (
+          <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground" data-testid="rule-dollars-note">
+            {t.invest.dollarsRuleNote}
           </p>
         ) : (
           <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-muted p-3">

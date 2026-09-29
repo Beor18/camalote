@@ -4,7 +4,7 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import { assetName, decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import { formatPremium, type ReferenceMap } from "@/lib/invest/guards";
 import {
   formatTokens,
@@ -70,7 +70,7 @@ export function StocksSection({
                     <div className="min-w-0">
                       <p className="font-mono text-sm font-semibold">{row.asset}</p>
                       <p className="text-xs text-muted-foreground">
-                        {stock?.name} · {formatUsd(row.priceEachUsd, lang)} {t.invest.priceEach}
+                        {assetName(row.asset, lang)} · {formatUsd(row.priceEachUsd, lang)} {t.invest.priceEach}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3">

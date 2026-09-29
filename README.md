@@ -7,9 +7,12 @@ a la vista.
 
 - **Una regla, una sola vez**: «el 20 % de lo que me llega, al S&P 500».
   Cinco acciones para empezar: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks,
-  de las 60+ que existen en Solana). Y ocho empresas antes de salir a bolsa
+  de las 60+ que existen en Solana). Ocho empresas antes de salir a bolsa
   (PreStocks): SpaceX, OpenAI, Anthropic, Kalshi, Neuralink, Anduril,
-  Figure AI y Polymarket, con su riesgo dicho en la app.
+  Figure AI y Polymarket, con su riesgo dicho en la app. Y para el que no
+  quiere el sube y baja, **dólares que rinden**: USDY de Ondo, respaldados
+  por letras del Tesoro de Estados Unidos (3,6 % anual al 2026-09-29, varía),
+  con comisión de 0,10 %. El colchón de tres meses va ahí por defecto.
 - **Se compra sola cuando te pagan**: la app mira tu cuenta y, cuando lo
   apartado junta 10 USDC, compra por **Jupiter Ultra**. La red la pagás vos
   desde una reserva de SOL que la app carga sola con 1 USDC la primera vez.
@@ -97,7 +100,14 @@ tarifa de referido de Jupiter) no están construidas.
   cuenta, a precio de hoy, más lo apartado. El ritmo sale de lo que la
   regla apartó desde entonces; los cobros que faltan, del último cobro.
 - **La comisión** (`investFee`): FEE_BPS con piso y tope, descontada antes
-  de ir al mercado.
+  de ir al mercado. En dólares que rinden es `FEE_BPS_DOLLARS` (10, o sea
+  0,10 %): sobre un 3,6 % anual, el 0,45 % se comía un mes y medio de
+  rendimiento por compra.
+- **Dólares que rinden** (USDY): token clásico (SPL) de 6 decimales, se
+  compra y se vende por Jupiter como las acciones (0,14 % de costo total
+  en una compra de 10, probado el 2026-09-29). Sin horario ni referencia:
+  la regla nunca espera. Las tenencias se leen de los dos programas de
+  tokens (Token-2022 para acciones y pre-IPO, clásico para USDY).
 - **Compra**: `quoteStock` pide la orden a Ultra por `usdc − comisión`;
   el usuario ve el ticket; `buyStock` firma, ejecuta y después cobra la
   comisión. **Venta**: lado `sell`, sin comisión.

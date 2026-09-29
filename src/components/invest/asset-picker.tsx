@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { PREIPO, STOCKS, findXStock, type AssetKind, type XStockSymbol } from "@/lib/invest/catalog";
+import {
+  DOLLARS,
+  PREIPO,
+  STOCKS,
+  assetName,
+  findXStock,
+  type AssetKind,
+  type XStockSymbol,
+} from "@/lib/invest/catalog";
 import { useLang } from "@/lib/i18n";
 
 /**
- * El catálogo como fichas, en dos grupos: acciones que cotizan en bolsa y
- * empresas antes de salir a bolsa. `idPrefix` distingue instancias.
+ * El catálogo como fichas, en tres grupos: acciones que cotizan en bolsa,
+ * empresas antes de salir a bolsa, y dólares que rinden (para el que no
+ * quiere el sube y baja). `idPrefix` distingue instancias.
  */
 export function AssetPicker({
   value,
@@ -19,13 +28,14 @@ export function AssetPicker({
   idPrefix: string;
   disabled?: boolean;
 }) {
-  const { t } = useLang();
+  const { lang, t } = useLang();
   const [group, setGroup] = useState<AssetKind>(findXStock(value)?.kind ?? "stock");
   const groups: { kind: AssetKind; label: string }[] = [
     { kind: "stock", label: t.invest.assetGroupStocks },
     { kind: "preipo", label: t.invest.assetGroupPreIpo },
+    { kind: "dollars", label: t.invest.assetGroupDollars },
   ];
-  const list = group === "stock" ? STOCKS : PREIPO;
+  const list = group === "stock" ? STOCKS : group === "preipo" ? PREIPO : DOLLARS;
 
   return (
     <div className="flex flex-col gap-3">
@@ -41,7 +51,7 @@ export function AssetPicker({
               disabled={disabled}
               data-testid={`${idPrefix}-group-${g.kind}`}
               onClick={() => setGroup(g.kind)}
-              className={`h-9 flex-1 rounded-lg px-3 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
+              className={`h-9 flex-1 rounded-lg px-2 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
                 active ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -54,10 +64,11 @@ export function AssetPicker({
       <div
         role="radiogroup"
         aria-label={t.invest.assetLabel}
-        className="grid grid-cols-3 gap-2 sm:grid-cols-4"
+        className={group === "dollars" ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2 sm:grid-cols-4"}
       >
         {list.map((stock) => {
           const active = stock.symbol === value;
+          const dollars = stock.kind === "dollars";
           return (
             <button
               key={stock.symbol}
@@ -73,14 +84,28 @@ export function AssetPicker({
                   : "border-border bg-surface hover:bg-muted"
               }`}
             >
-              <span className="truncate font-mono text-sm font-semibold">{stock.symbol}</span>
-              <span className="truncate text-xs text-muted-foreground">{stock.name}</span>
+              {dollars ? (
+                <>
+                  <span className="truncate text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
+                  <span className="truncate text-xs text-muted-foreground">{t.invest.dollarsChipSub}</span>
+                </>
+              ) : (
+                <>
+                  <span className="truncate font-mono text-sm font-semibold">{stock.symbol}</span>
+                  <span className="truncate text-xs text-muted-foreground">{assetName(stock.symbol, lang)}</span>
+                </>
+              )}
             </button>
           );
         })}
       </div>
       {group === "preipo" && (
         <p className="text-xs text-muted-foreground">{t.invest.preIpoPickerNote}</p>
+      )}
+      {group === "dollars" && (
+        <p className="text-xs text-muted-foreground" data-testid={`${idPrefix}-dollars-note`}>
+          {t.invest.dollarsPickerNote}
+        </p>
       )}
     </div>
   );

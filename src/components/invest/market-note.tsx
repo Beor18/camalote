@@ -30,6 +30,15 @@ export function MarketNote({
   const { lang, t } = useLang();
   if (!stock) return null;
 
+  if (stock.kind === "dollars") {
+    return (
+      <p className="flex items-start gap-2 text-xs text-muted-foreground" data-testid="market-note">
+        <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+        <span>{t.invest.dollarsNote}</span>
+      </p>
+    );
+  }
+
   if (stock.kind === "stock") {
     if (!market) return null;
     const when = market.open

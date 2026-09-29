@@ -1,12 +1,13 @@
 import {
   BUY_MIN_UNITS,
   FEE_BPS,
+  FEE_BPS_DOLLARS,
   FEE_MAX_UNITS,
   FEE_MIN_UNITS,
   INVEST_MIN_UNITS,
 } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/cctp/constants";
-import { XSTOCK_DECIMALS, decimalsOf, isPreIpo, type XStockSymbol } from "@/lib/invest/catalog";
+import { XSTOCK_DECIMALS, decimalsOf, isDollars, kindOf, type XStockSymbol } from "@/lib/invest/catalog";
 import type {
   Holding,
   InvestRule,
@@ -41,6 +42,11 @@ export function investFee(usdcUnits: bigint, opts?: { feeBps?: number }): bigint
   if (fee < FEE_MIN_UNITS) fee = FEE_MIN_UNITS;
   if (FEE_MAX_UNITS > 0n && fee > FEE_MAX_UNITS) fee = FEE_MAX_UNITS;
   return fee;
+}
+
+/** Puntos básicos de comisión según el activo: dólares que rinden pagan menos. */
+export function feeBpsFor(asset: string): number {
+  return isDollars(asset) ? FEE_BPS_DOLLARS : FEE_BPS;
 }
 
 /**
@@ -184,8 +190,9 @@ export function fromDisplayUnits(displayUnits: bigint, multiplier = 1): bigint {
  * Dividendos reinvertidos desde Camalote, en unidades visibles por acción:
  * lo que creció el multiplicador desde cada compra, menos lo que dejó de
  * crecer desde cada venta. Solo cuentan operaciones con multiplicador guardado.
- * Las pre-IPO no pagan dividendos: su multiplicador cambia por otros
- * motivos (SpaceX ×5), así que quedan afuera.
+ * Solo las acciones: las pre-IPO no pagan dividendos (su multiplicador
+ * cambia por otros motivos, SpaceX ×5) y los dólares que rinden lo hacen
+ * por precio, no por multiplicador.
  */
 export function dividendsSummary(
   purchases: Purchase[],
@@ -193,7 +200,7 @@ export function dividendsSummary(
 ): Partial<Record<XStockSymbol, bigint>> {
   const acc: Partial<Record<XStockSymbol, number>> = {};
   for (const p of purchases) {
-    if (p.status !== "done" || p.multiplier === undefined || isPreIpo(p.asset)) continue;
+    if (p.status !== "done" || p.multiplier === undefined || kindOf(p.asset) !== "stock") continue;
     const now = multipliers[p.asset];
     if (!now || !Number.isFinite(p.multiplier) || p.multiplier <= 0) continue;
     const growth = Number(p.tokenUnits) * (now - p.multiplier);

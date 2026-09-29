@@ -7,12 +7,12 @@ import { Card } from "@/components/ui/card";
 import { ExplorerLink } from "@/components/bridge/panel";
 import { AssetPicker } from "@/components/invest/asset-picker";
 import { MarketNote } from "@/components/invest/market-note";
-import { BUY_MIN_UNITS, FEE_BPS, solanaExplorerTx } from "@/lib/config";
+import { BUY_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang, type Lang } from "@/lib/i18n";
 import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import type { PricesResult } from "@/lib/invest/prices";
-import { formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
+import { feeBpsFor, formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
@@ -304,7 +304,7 @@ export function BuyCard({
                 + {formatUsdc(quoted.fuelUnits, 2, lang)} {t.common.usdc}
               </Row>
             )}
-            <Row label={t.invest.rowCamaloteFee(pct(FEE_BPS))}>
+            <Row label={t.invest.rowCamaloteFee(pct(feeBpsFor(quoted.asset)))}>
               − {fee(quoted.camaloteFeeUnits)} {t.common.usdc}
             </Row>
             <Row label={t.invest.rowJupiter(pct(quoted.jupiterFeeBps))}>{t.invest.rowIncluded}</Row>

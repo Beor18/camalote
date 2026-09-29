@@ -8,6 +8,11 @@
  *   de empresas privadas (SPV 1:1). Token-2022 con 9 decimales y 1 % de
  *   comisión de transferencia del emisor. Mints de prestocks.com/api y
  *   verificados en Jupiter el 2026-09-21 (tags: verified, prestocks, rwa).
+ * - Dólares que rinden: USDY de Ondo, dólares respaldados por letras del
+ *   Tesoro de Estados Unidos; el precio del token sube a diario con el
+ *   rendimiento (3,6 % anual el 2026-09-29, varía). Token clásico (SPL) con
+ *   6 decimales. Solo para personas fuera de Estados Unidos. Mint verificado
+ *   en Jupiter el 2026-09-29 (8.272 tenedores, 2 M de liquidez).
  *
  * Nada de esto existe en devnet.
  */
@@ -25,21 +30,24 @@ export type XStockSymbol =
   | "NEURALINK"
   | "ANDURIL"
   | "FIGUREAI"
-  | "POLYMARKET";
+  | "POLYMARKET"
+  | "USDY";
 
-export type AssetKind = "stock" | "preipo";
+/** Acción que cotiza, empresa antes de salir a bolsa, o dólares que rinden. */
+export type AssetKind = "stock" | "preipo" | "dollars";
 
 export interface XStock {
   symbol: XStockSymbol;
-  /** Nombre corto para la UI. */
+  /** Nombre corto para la UI (en inglés si hay traducción). */
   name: string;
+  /** Nombre en castellano, si difiere. */
+  nameEs?: string;
   mint: string;
   decimals: number;
   /** Precio de referencia (USD, sep-2026) por si el mercado no responde. */
   fallbackPriceUsd: number;
-  /** Acción que cotiza en bolsa, o empresa antes de salir a bolsa. */
   kind: AssetKind;
-  issuer: "xStocks" | "PreStocks";
+  issuer: "xStocks" | "PreStocks" | "Ondo";
   /** Símbolo del feed de Pyth para el horario de Wall Street (solo acciones). */
   pyth?: string;
   /** Comisión de transferencia del emisor (Token-2022), en puntos básicos. */
@@ -49,6 +57,7 @@ export interface XStock {
 export const USDC_MAINNET_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 export const XSTOCK_DECIMALS = 8;
 export const PRESTOCK_DECIMALS = 9;
+export const DOLLAR_DECIMALS = 6;
 
 const STOCK_ENTRIES: readonly XStock[] = [
   {
@@ -122,10 +131,24 @@ const PREIPO_ENTRIES: readonly XStock[] = PREIPO_BASE.map((s) => ({
   transferFeeBps: 100,
 }));
 
+const DOLLAR_ENTRIES: readonly XStock[] = [
+  {
+    symbol: "USDY",
+    name: "Dollars that earn",
+    nameEs: "Dólares que rinden",
+    mint: "A1KLoBrKBde8Ty9qtNQUtq3C2ortoC3u7twggz7sEto6",
+    decimals: DOLLAR_DECIMALS,
+    fallbackPriceUsd: 1.144,
+    kind: "dollars",
+    issuer: "Ondo",
+  },
+];
+
 /** Todo el catálogo, en el orden en que se muestra. */
-export const XSTOCKS: readonly XStock[] = [...STOCK_ENTRIES, ...PREIPO_ENTRIES];
+export const XSTOCKS: readonly XStock[] = [...STOCK_ENTRIES, ...PREIPO_ENTRIES, ...DOLLAR_ENTRIES];
 export const STOCKS: readonly XStock[] = STOCK_ENTRIES;
 export const PREIPO: readonly XStock[] = PREIPO_ENTRIES;
+export const DOLLARS: readonly XStock[] = DOLLAR_ENTRIES;
 
 export function isXStockSymbol(value: unknown): value is XStockSymbol {
   return typeof value === "string" && XSTOCKS.some((s) => s.symbol === value);
@@ -145,8 +168,24 @@ export function decimalsOf(symbol: string): number {
   return findXStock(symbol)?.decimals ?? XSTOCK_DECIMALS;
 }
 
+/** Tipo de activo ("stock" si no se conoce). */
+export function kindOf(symbol: string): AssetKind {
+  return findXStock(symbol)?.kind ?? "stock";
+}
+
 export function isPreIpo(symbol: string): boolean {
-  return findXStock(symbol)?.kind === "preipo";
+  return kindOf(symbol) === "preipo";
+}
+
+export function isDollars(symbol: string): boolean {
+  return kindOf(symbol) === "dollars";
+}
+
+/** Nombre para mostrar en el idioma de la app. */
+export function assetName(symbol: string, lang: "es" | "en" = "es"): string {
+  const stock = findXStock(symbol);
+  if (!stock) return symbol;
+  return lang === "es" ? (stock.nameEs ?? stock.name) : stock.name;
 }
 
 /** Precios de referencia, por símbolo. */

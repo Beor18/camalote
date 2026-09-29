@@ -4,7 +4,7 @@ import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
 import { decimalsOf, type XStockSymbol } from "@/lib/invest/catalog";
 import { DEMO_FUEL_LAMPORTS, fuelUnitsFor } from "@/lib/invest/fuel";
-import { investFee, tokensForUsdc, valueOfTokens } from "@/lib/invest/rules";
+import { feeBpsFor, investFee, tokensForUsdc, valueOfTokens } from "@/lib/invest/rules";
 import type {
   BuyResult,
   Holding,
@@ -316,7 +316,7 @@ export function demoQuoteStock(
   multiplier = 1,
   fuelUnits = 0n
 ): StockQuote {
-  const camaloteFeeUnits = investFee(usdcUnits, { feeBps: FEE_BPS });
+  const camaloteFeeUnits = investFee(usdcUnits, { feeBps: feeBpsFor(asset) });
   const swapUnits = usdcUnits - camaloteFeeUnits;
   const expectedTokenUnits = tokensForUsdc(swapUnits, priceUsd, DEMO_SWAP_FEE_BPS, decimalsOf(asset));
   if (expectedTokenUnits <= 0n) throw new Error("No pudimos cotizar la compra.");

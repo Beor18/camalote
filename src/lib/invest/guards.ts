@@ -69,6 +69,8 @@ export function buyBlockedBy(opts: {
   maxPremiumBps?: number;
 }): BuyBlock {
   const max = opts.maxPremiumBps ?? MAX_PREMIUM_BPS;
+  // Los dólares que rinden no tienen horario ni referencia: nunca esperan.
+  if (opts.kind === "dollars") return null;
   if (opts.kind === "stock") {
     if (opts.waitForMarketOpen && opts.market && !opts.market.open) {
       return { reason: "market", nextOpen: opts.market.nextOpen };

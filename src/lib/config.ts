@@ -25,6 +25,12 @@ export const SHOW_HIDDEN_VIEWS = process.env.NEXT_PUBLIC_SHOW_HIDDEN_VIEWS === "
 
 /** Comisión de Camalote en puntos básicos (10 = 0,10 %). */
 export const FEE_BPS = Number(process.env.NEXT_PUBLIC_FEE_BPS ?? "45");
+/**
+ * Comisión en "dólares que rinden" (USDY): 0,10 % por compra, mismo piso y
+ * tope. Sobre un 3,6 % anual, el 0,45 % de las acciones se comía un mes y
+ * medio de rendimiento en cada compra; así son diez días.
+ */
+export const FEE_BPS_DOLLARS = Number(process.env.NEXT_PUBLIC_FEE_BPS_DOLLARS ?? "10");
 /** Piso y techo de la comisión, en unidades de USDC (6 decimales). */
 export const FEE_MIN_UNITS = BigInt(
   process.env.NEXT_PUBLIC_FEE_MIN_UNITS ?? "10000" // 0,01 USDC
