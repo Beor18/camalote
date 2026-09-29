@@ -152,23 +152,25 @@ await page.click("#email");
 await type("#email", "fer@camalote.xyz");
 await hold(400);
 await page.click("button[type=submit]");
-await page.waitForSelector("[data-testid=rule-toggle]", { timeout: 15000 });
+await page.waitForSelector("[data-testid=rule-setup]", { timeout: 15000 });
 await endScene(2300);
 
-// Escena 3: arma su regla: el 30 %, para el viaje (300), al S&P 500 (y mira las pre-IPO)
+// Escena 3: arma su regla en tres pasos: el 30 %, para el viaje (300), al S&P 500 (y mira las pre-IPO)
 scene("rule");
-await page.click("[data-testid=rule-toggle]");
+await page.click("[data-testid=rule-setup]");
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await hold(900);
 await page.click("[data-testid=rule-percent-30]");
 await hold(900);
+await page.click("[data-testid=rule-next]");
+await hold(500);
 await page.click("[data-testid=rule-goal-trip]");
 await hold(700);
 await page.fill("#rule-goal-target", "");
 await type("#rule-goal-target", "300");
 await hold(900);
-await page.locator("[data-testid=rule-asset-SPYx]").scrollIntoViewIfNeeded();
-await hold(400);
+await page.click("[data-testid=rule-next]");
+await hold(500);
 await page.click("[data-testid=rule-group-preipo]");
 await hold(2000);
 await page.click("[data-testid=rule-group-stock]");

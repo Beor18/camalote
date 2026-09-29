@@ -10,7 +10,7 @@ import { MarketNote } from "@/components/invest/market-note";
 import { BUY_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang, type Lang } from "@/lib/i18n";
-import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import { assetName, decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import type { PricesResult } from "@/lib/invest/prices";
 import { feeBpsFor, formatTokens, suggestedBuyUnits, toDisplayUnits } from "@/lib/invest/rules";
 import type { Purchase, StockQuote } from "@/lib/invest/types";
@@ -354,7 +354,7 @@ export function BuyCard({
             className="w-full"
             data-testid="buy-quote"
           >
-            {state.phase === "quoting" ? t.invest.quoteLoading : t.invest.buyQuote(asset)}
+            {state.phase === "quoting" ? t.invest.quoteLoading : t.invest.buyQuote(assetName(asset, lang))}
           </Button>
         )}
       </form>

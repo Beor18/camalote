@@ -7,7 +7,7 @@ import { ExplorerLink } from "@/components/bridge/panel";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
+import { assetName, decimalsOf, findXStock, type XStockSymbol } from "@/lib/invest/catalog";
 import { executeSale } from "@/lib/invest/execute";
 import { MarketNote } from "@/components/invest/market-note";
 import type { PricesResult } from "@/lib/invest/prices";
@@ -230,7 +230,7 @@ export function SellModal({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 id="sell-title" className="font-display text-xl font-semibold">
-                {t.invest.sellTitle(asset ?? "")}
+                {t.invest.sellTitle(asset ? assetName(asset, lang) : "")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">{t.invest.sellSub}</p>
             </div>

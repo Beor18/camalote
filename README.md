@@ -26,8 +26,14 @@ a la vista.
   rendimiento sobre lo que pusiste, los dividendos que xStocks reinvirtió
   por vos (leídos del multiplicador del token en la cadena), cada operación
   con su link a Solscan.
-- **Comprar y vender a mano**: precio, comisión y costo de red a la vista
-  antes de confirmar. Vender no tiene comisión de Camalote.
+- **Una sola cosa que hacer al entrar**: «Armar mi regla», tres preguntas
+  (qué parte, para qué, en qué) de a una por pantalla, y la regla queda
+  prendida. Después, la regla es el titular de la app: «El 30 % de cada
+  cobro va a El viaje», con su interruptor («Prendida» / «En pausa») y
+  «Editar». Dos columnas en pantallas anchas, una en el teléfono.
+- **Comprar una vez y vender a mano**: fuera de la regla, con precio,
+  comisión y costo de red a la vista antes de confirmar. Vender no tiene
+  comisión de Camalote.
 - **Tu cuenta es tuya**: entrás con tu email (Privy) y tenés una billetera
   embebida de Solana. Nosotros no podemos mover ni tus USDC ni tus acciones.
 - **Sin humo**: son tokens de Backed que siguen el precio de la acción y

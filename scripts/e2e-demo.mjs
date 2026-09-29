@@ -49,27 +49,34 @@ console.log("LANDING:", h, "px,", (h / 860).toFixed(2), "pantallas");
 await page.goto(`${BASE}/app`, { waitUntil: "networkidle" });
 await page.fill("#email", "fer@camalote.xyz");
 await page.click("button[type=submit]");
-await page.waitForSelector("[data-testid=invest-account]", { timeout: 15000 });
+await page.waitForSelector("[data-testid=invest-welcome]", { timeout: 15000 });
 await page.waitForTimeout(900);
 await shot("02-app");
 console.log("BALANCE:", await text("[data-testid=usdc-balance]"));
 console.log("LANG:", await page.evaluate(() => document.documentElement.lang));
 console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Sections]").count());
+console.log("WELCOME CTA:", await text("[data-testid=rule-setup]"), "· primary buttons:", await page.locator("button.bg-primary").count());
 
-// 3. Arma su regla: el 30 % de lo que le llega, para el viaje (300), al S&P 500
-await page.click("[data-testid=rule-toggle]");
-// Recién prendida, se abre la hoja para elegir qué parte, para qué y en qué.
+// 3. Arma su regla en tres pasos: el 30 % de lo que le llega, para el viaje (300), al S&P 500
+await page.click("[data-testid=rule-setup]");
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await page.click("[data-testid=rule-percent-30]");
+console.log("STEP 1:", await text("[data-testid=rule-percent-example]"));
+await shot("03a-regla-paso1");
+await page.click("[data-testid=rule-next]");
 await page.click("[data-testid=rule-goal-trip]");
 await page.fill("#rule-goal-target", "300");
+await shot("03b-regla-paso2");
+await page.click("[data-testid=rule-next]");
 await page.click("[data-testid=rule-asset-SPYx]");
-await shot("03-regla-hoja");
+console.log("SUMMARY:", await text("[data-testid=rule-summary]"));
+await shot("03c-regla-paso3");
 await page.click("[data-testid=rule-done]");
 await page.waitForTimeout(800);
 await shot("03-regla");
-console.log("RULE:", await text("[data-testid=invest-rule] p"));
+console.log("RULE:", (await text("[data-testid=rule-headline]"))?.replace(/\s+/g, " "), "·", await text("[data-testid=rule-state]"));
 console.log("GOAL:", await text("[data-testid=goal-name]"), "·", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
+console.log("PENDING 0:", await text("[data-testid=rule-pending]"));
 
 // 4. Le llegan 40 USDC (demo): el 30 % se compra solo y la meta avanza
 await page.click("[data-testid=simulate-incoming]");
@@ -81,10 +88,15 @@ console.log("GOAL 2:", await text("[data-testid=goal-progress]"), "·", await te
 console.log("MOMENT:", await text("[data-testid=rule-moment]"));
 console.log("PACE:", await text("[data-testid=goal-pace]"));
 
-// 4b. Baja la meta a 10: ya llegó. Festejo y elige la próxima (el curso).
+// 4b. Edita: abre en el resumen, toca "Para qué" y baja la meta a 10: ya llegó.
+// Festejo y elige la próxima (el curso), que abre directo en ese paso.
 await page.click("[data-testid=rule-edit]");
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
+await shot("04a-regla-resumen");
+console.log("REVIEW:", (await text("[data-testid=rule-review-goal]"))?.replace(/\s+/g, " "));
+await page.click("[data-testid=rule-review-goal]");
 await page.fill("#rule-goal-target", "10");
+await page.click("[data-testid=rule-step-done]");
 await page.click("[data-testid=rule-done]");
 await page.waitForSelector("[data-testid=goal-reached][open]", { timeout: 10000 });
 await page.waitForTimeout(500);
@@ -93,6 +105,7 @@ console.log("REACHED:", (await text("[data-testid=goal-reached] h2")), "·", awa
 await page.click("[data-testid=goal-next]");
 await page.waitForSelector("[data-testid=rule-sheet][open]", { timeout: 10000 });
 await page.click("[data-testid=rule-goal-course]");
+await page.click("[data-testid=rule-step-done]");
 await page.click("[data-testid=rule-done]");
 await page.waitForTimeout(500);
 console.log("GOAL 3:", await text("[data-testid=goal-name]"), "·", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
@@ -167,6 +180,15 @@ await page.waitForTimeout(1000);
 console.log("GOAL 4:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("BALANCE 3:", await text("[data-testid=usdc-balance]"));
 console.log("OPERATIONS:", await page.locator("[data-testid=invest-purchases] > div > div").count());
+
+// 6b. Pausa la regla desde el interruptor y la reanuda
+await page.click("[data-testid=rule-toggle]");
+await page.waitForTimeout(300);
+console.log("PAUSED:", await text("[data-testid=rule-state]"), "·", await text("[data-testid=rule-pending]"));
+await shot("08b-en-pausa");
+await page.click("[data-testid=rule-resume]");
+await page.waitForTimeout(300);
+console.log("RESUMED:", await text("[data-testid=rule-state]"));
 
 // 7. Depositar: la cuenta de Solana con QR
 await page.locator("[data-testid=invest-account]").scrollIntoViewIfNeeded();

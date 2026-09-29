@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AccountCard } from "@/components/invest/account-card";
 import { BuySheet } from "@/components/invest/buy-sheet";
 import { GoalReachedSheet } from "@/components/invest/goal-reached-sheet";
 import { StocksSection } from "@/components/invest/portfolio-card";
 import { PurchasesList } from "@/components/invest/purchases-list";
-import { RiverHero } from "@/components/invest/river-hero";
-import { RuleSheet } from "@/components/invest/rule-sheet";
+import { RuleHero } from "@/components/invest/rule-hero";
+import { RuleSheet, type RuleDraft, type RuleSheetMode, type RuleStep } from "@/components/invest/rule-sheet";
 import { SellModal } from "@/components/invest/sell-modal";
+import { WelcomeCard } from "@/components/invest/welcome-card";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
@@ -31,11 +33,11 @@ import type { BuyStep, Engine } from "@/components/bridge/types";
 const PRICES_MS = 60_000;
 
 /**
- * Camalote es tu río: arriba las dos orillas (USDC en tu cuenta, ya en
- * acciones) con el camalote llevando lo apartado, y la regla en una frase.
- * Debajo, tus acciones y tus operaciones. El editor de la regla, comprar y
- * vender viven en hojas que se abren cuando hacen falta. La regla la
- * ejecuta `useAutoInvest` desde el shell.
+ * Camalote: una sola cosa que hacer al entrar (armar la regla) y, con la
+ * regla armada, una sola frase arriba de todo que dice qué pasa con cada
+ * cobro. Al lado, tu cuenta. Debajo, lo que ya es tuyo y los movimientos.
+ * En pantallas anchas, dos columnas. La regla la ejecuta `useAutoInvest`
+ * desde el shell.
  */
 export function InvestPanel({ session, balances, actions }: Engine) {
   const { lang, t } = useLang();
@@ -45,7 +47,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [prices, setPrices] = useState<PricesResult | null>(null);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<{ mode: RuleSheetMode; step?: RuleStep } | null>(null);
   const [buying, setBuying] = useState(false);
   const [selling, setSelling] = useState<XStockSymbol | null>(null);
 
@@ -125,8 +127,10 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   // Se festeja una vez, con las tenencias ya leídas (si no, sería un falso
   // "llegaste") y con la hoja de la regla cerrada.
   const celebrating = Boolean(
-    rule?.goal && goal?.reached && !rule.goal.celebratedAt && holdings !== null && !editing
+    rule?.goal && goal?.reached && !rule.goal.celebratedAt && holdings !== null && editing === null
   );
+  // Sin regla armada todavía: la bienvenida, con un solo botón.
+  const welcome = rule !== null && !rule.enabled && !rule.configuredAt;
 
   const updateRule = useCallback(
     (patch: Partial<InvestRule>) => {
@@ -146,12 +150,28 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     [address, rule]
   );
 
+  // Pausar y reanudar desde el interruptor de la regla.
   const toggleRule = useCallback(() => {
-    const enabled = !(rule?.enabled ?? false);
-    updateRule({ enabled });
-    // Recién prendida, elegís qué parte y en qué.
-    if (enabled) setEditing(true);
+    updateRule({ enabled: !(rule?.enabled ?? false) });
   }, [rule, updateRule]);
+
+  // El asistente terminó: se guarda lo elegido y, la primera vez, se prende.
+  const saveDraft = useCallback(
+    (draft: RuleDraft, turnOn: boolean) => {
+      updateRule({
+        ...draft,
+        configuredAt: rule?.configuredAt ?? Date.now(),
+        ...(turnOn ? { enabled: true } : {}),
+      });
+      setEditing(null);
+    },
+    [rule, updateRule]
+  );
+
+  const turnOff = useCallback(() => {
+    updateRule({ enabled: false });
+    setEditing(null);
+  }, [updateRule]);
 
   // Llegaste a la meta: nada pasa solo. Seguir, elegir la próxima o vender.
   const closeCelebration = useCallback(
@@ -159,7 +179,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
       if (!rule?.goal || rule.goal.celebratedAt) return;
       if (then === "next") {
         updateRule({ goal: undefined });
-        setEditing(true);
+        setEditing({ mode: "edit", step: "goal" });
         return;
       }
       updateRule({ goal: { ...rule.goal, celebratedAt: Date.now() } });
@@ -192,26 +212,76 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     selling !== null ? (holdings?.find((h) => h.asset === selling)?.tokenUnits ?? 0n) : 0n;
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <h1 className="px-1 font-display text-xl font-semibold tracking-tight sm:text-2xl">
-        {t.invest.title}
-      </h1>
+    <div
+      className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-x-8"
+      data-testid="invest-panel"
+    >
+      <h1 className="sr-only">{t.invest.title}</h1>
 
-      {rule ? (
-        <RiverHero
-          session={session}
-          balances={balances}
-          actions={actions}
-          rule={rule}
+      <div className="order-1 min-w-0">
+        {rule === null ? (
+          <Skeleton className="h-80" />
+        ) : welcome ? (
+          <WelcomeCard onSetup={() => setEditing({ mode: "setup" })} />
+        ) : (
+          <RuleHero
+            session={session}
+            balances={balances}
+            actions={actions}
+            rule={rule}
+            goal={goal}
+            holdingsLoading={holdings === null}
+            purchases={purchases}
+            onToggle={toggleRule}
+            onEdit={() => setEditing({ mode: "edit" })}
+          />
+        )}
+      </div>
+
+      {/* En el teléfono, la cuenta va después de la regla y el aviso al final
+          (`contents` + `order`); en pantallas anchas, los dos forman la
+          columna derecha, que acompaña al hacer scroll. */}
+      <aside className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+        <div className="order-2 min-w-0">
+          <AccountCard session={session} balances={balances} actions={actions} />
+        </div>
+
+        <details className="group order-5 min-w-0 rounded-2xl border border-border bg-surface">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 text-sm font-medium marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              <ShieldAlert className="size-4 text-muted-foreground" aria-hidden="true" />
+              {t.invest.disclosureTitle}
+            </span>
+            <ChevronDown
+              className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 ease-out group-open:rotate-180"
+              aria-hidden="true"
+            />
+          </summary>
+          <ul className="flex flex-col gap-1.5 px-5 pb-5 text-xs leading-relaxed text-muted-foreground">
+            {t.invest.disclosure.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </details>
+      </aside>
+
+      <div className="order-3 min-w-0">
+        <StocksSection
           summary={summary}
-          goal={goal}
-          holdingsLoading={holdings === null}
-          purchases={purchases}
-          onToggleRule={toggleRule}
-          onEditRule={() => setEditing(true)}
+          loading={holdings === null}
+          pricesLive={prices ? prices.live : null}
+          reference={prices?.reference}
+          demo={session.demo}
+          hasRule={Boolean(rule?.enabled)}
+          onBuy={() => setBuying(true)}
+          onSell={(asset) => setSelling(asset)}
         />
-      ) : (
-        <Skeleton className="h-80" />
+      </div>
+
+      {purchases.length > 0 && (
+        <div className="order-4 min-w-0">
+          <PurchasesList purchases={purchases} multipliers={multipliers} />
+        </div>
       )}
 
       {rule?.goal && goal && (
@@ -226,42 +296,15 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         />
       )}
 
-      <StocksSection
-        summary={summary}
-        loading={holdings === null}
-        pricesLive={prices ? prices.live : null}
-        reference={prices?.reference}
-        demo={session.demo}
-        onBuy={() => setBuying(true)}
-        onSell={(asset) => setSelling(asset)}
-      />
-
-      <PurchasesList purchases={purchases} multipliers={multipliers} />
-
-      <details className="group rounded-2xl border border-border bg-surface">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 text-sm font-medium marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-          <span className="flex items-center gap-2">
-            <ShieldAlert className="size-4 text-muted-foreground" aria-hidden="true" />
-            {t.invest.disclosureTitle}
-          </span>
-          <ChevronDown
-            className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 ease-out group-open:rotate-180"
-            aria-hidden="true"
-          />
-        </summary>
-        <ul className="flex flex-col gap-1.5 px-5 pb-5 text-xs leading-relaxed text-muted-foreground">
-          {t.invest.disclosure.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      </details>
-
       {rule && (
         <RuleSheet
-          open={editing}
+          open={editing !== null}
+          mode={editing?.mode ?? "edit"}
+          step={editing?.step}
           rule={rule}
-          onChange={updateRule}
-          onClose={() => setEditing(false)}
+          onSave={saveDraft}
+          onTurnOff={turnOff}
+          onClose={() => setEditing(null)}
         />
       )}
 

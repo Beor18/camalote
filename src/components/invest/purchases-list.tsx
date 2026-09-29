@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { decimalsOf } from "@/lib/invest/catalog";
+import { assetName, decimalsOf } from "@/lib/invest/catalog";
 import { formatTokens, toDisplayUnits } from "@/lib/invest/rules";
 import type { MultiplierMap, Purchase } from "@/lib/invest/types";
 
@@ -64,21 +64,9 @@ export function PurchasesList({
                   )}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-mono text-sm font-medium tabular-nums">
-                    {sell ? (
-                      <>
-                        {usdc}
-                        <span className="font-sans font-normal text-muted-foreground">
-                          {" "}
-                          · {t.invest.kindSell} {tokens} {p.asset}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        {p.status === "done" ? `${tokens} ${p.asset}` : p.asset}
-                        <span className="font-sans font-normal text-muted-foreground"> · {usdc}</span>
-                      </>
-                    )}
+                  <p className="truncate text-sm font-medium">
+                    {sell ? `${t.invest.kindSell} ${assetName(p.asset, lang)}` : assetName(p.asset, lang)}
+                    <span className="font-mono font-normal tabular-nums text-muted-foreground"> · {usdc}</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(p.createdAt).toLocaleString(lang === "es" ? "es" : "en", {
@@ -88,6 +76,7 @@ export function PurchasesList({
                       minute: "2-digit",
                     })}
                     {sell ? "" : ` · ${p.source === "rule" ? t.invest.sourceRule : t.invest.sourceManual}`}
+                    {p.status === "done" ? ` · ${tokens} ${p.asset}` : ""}
                     {feeText}
                     {p.demo ? t.invest.sim : ""}
                     {p.status === "error" && p.errorMessage ? ` · ${p.errorMessage}` : ""}

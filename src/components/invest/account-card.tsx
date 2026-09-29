@@ -3,21 +3,26 @@
 import { useState } from "react";
 import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CopyButton } from "@/components/copy-button";
 import { WithdrawModal } from "@/components/bridge/withdraw-modal";
 import { SolanaDepositModal } from "@/components/invest/deposit-solana-modal";
 import { saveTransfer } from "@/lib/history";
+import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
 import type { Engine } from "@/components/bridge/types";
 
 /**
- * Depositar y retirar USDC de la cuenta de Solana, con sus modales. Viven
- * debajo del saldo, en la orilla izquierda del río.
+ * Tu cuenta: el saldo en USDC, la dirección donde te pagan, depositar y
+ * retirar. Lo que llega acá cuenta para la regla.
  */
-export function AccountActions({ session, balances, actions }: Engine) {
-  const { t } = useLang();
+export function AccountCard({ session, balances, actions }: Engine) {
+  const { lang, t } = useLang();
   const [modal, setModal] = useState<"deposit" | "withdraw" | null>(null);
   const address = session.solanaAddress;
+  const shortAddress = address ? `${address.slice(0, 4)}…${address.slice(-4)}` : null;
 
   const close = () => {
     setModal(null);
@@ -25,12 +30,21 @@ export function AccountActions({ session, balances, actions }: Engine) {
   };
 
   return (
-    <>
-      <div className="-ml-2 flex flex-wrap items-center">
+    <Card className="p-5 sm:p-6" data-testid="invest-account">
+      <p className="text-xs font-medium text-muted-foreground">{t.invest.accountTitle}</p>
+      {balances.solanaUnits === null ? (
+        <Skeleton className="mt-1 h-9 w-32" />
+      ) : (
+        <p className="mt-0.5 font-display text-3xl font-semibold leading-tight tabular-nums">
+          <span data-testid="usdc-balance">{formatUsdc(balances.solanaUnits, 2, lang)}</span>{" "}
+          <span className="text-sm font-normal text-muted-foreground">{t.common.usdc}</span>
+        </p>
+      )}
+      <p className="mt-1 text-xs text-muted-foreground">{t.invest.accountSub}</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
         <Button
-          variant="ghost"
-          size="sm"
-          className="px-2 text-primary"
+          variant="secondary"
           onClick={() => setModal("deposit")}
           disabled={!address}
           data-testid="deposit-open"
@@ -40,8 +54,6 @@ export function AccountActions({ session, balances, actions }: Engine) {
         </Button>
         <Button
           variant="ghost"
-          size="sm"
-          className="px-2 text-primary"
           onClick={() => setModal("withdraw")}
           disabled={!address || !balances.solanaUnits}
           data-testid="withdraw-open"
@@ -50,6 +62,18 @@ export function AccountActions({ session, balances, actions }: Engine) {
           {t.invest.withdraw}
         </Button>
       </div>
+
+      {address && shortAddress && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-muted py-1 pl-3 pr-1">
+          <p className="min-w-0 text-xs text-muted-foreground">
+            {t.invest.accountAddress}{" "}
+            <span className="font-mono text-foreground" title={address}>
+              {shortAddress}
+            </span>
+          </p>
+          <CopyButton value={address} label={t.invest.copyAddress} />
+        </div>
+      )}
 
       <SolanaDepositModal
         open={modal === "deposit"}
@@ -81,6 +105,6 @@ export function AccountActions({ session, balances, actions }: Engine) {
           return sig;
         }}
       />
-    </>
+    </Card>
   );
 }

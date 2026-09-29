@@ -42,6 +42,11 @@ export interface LastIncoming {
  */
 export interface InvestRule {
   enabled: boolean;
+  /**
+   * Cuándo se armó por primera vez (terminó el asistente). Sin valor, la app
+   * muestra la bienvenida; con valor y apagada, la regla está en pausa.
+   */
+  configuredAt?: number;
   /** 1 a 100. */
   percent: number;
   asset: XStockSymbol;

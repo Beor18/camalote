@@ -200,6 +200,54 @@ queda en la app.
 
 En teléfono: 7,2 pantallas (6,9 antes de la servilleta).
 
+## Una sola cosa que hacer (rediseño del 2026-09-29)
+
+Fernando: "el de 'cambiar' y el de 'comprar' está muy confuso, el primer
+usuario que entra no entiende qué hacer; 100 % responsive; decidí todo vos".
+El diagnóstico sobre capturas en 375, 768 y 1280: el único botón violeta de
+la pantalla era "Comprar" (la acción secundaria); la acción principal era
+un interruptor chico al final de una tarjeta; "Cambiar" no decía qué
+cambiaba; y en desktop la columna de teléfono quedaba estirada.
+
+- **Bienvenida** (`welcome-card.tsx`): sin regla armada, la app muestra una
+  sola idea ("Cada vez que cobrás, una parte va para vos primero") y un solo
+  botón, "Armar mi regla". Debajo, las tres preguntas que vienen, para que
+  nadie tenga que adivinar. Se sabe que la regla nunca se armó porque
+  `InvestRule.configuredAt` está vacío.
+- **La regla en tres pasos** (`rule-sheet.tsx`): una pregunta por pantalla,
+  con la frase que se va armando en el encabezado ("El 30 % de cada cobro va
+  a El viaje, en S&P 500"), barra de progreso y "Prender la regla" al final.
+  Nada se guarda hasta ese botón: el asistente trabaja sobre un borrador
+  (`RuleDraft`) y `onSave` solo escribe lo editable (parte, meta, destino,
+  horario), nunca lo apartado ni las firmas contadas. Para cambiarla se abre
+  en un **resumen** de tres filas (Qué parte / Para qué / En qué): tocás la
+  fila, cambiás, "Listo", "Guardar". Abajo, "Apagar la regla". "Elegir la
+  próxima meta" desde el festejo abre directo en el paso de la meta.
+- **La regla como titular** (`rule-hero.tsx`, reemplaza a `river-hero.tsx`):
+  "El 30 % de cada cobro / va a ✈️ El viaje / en S&P 500" en tipografía
+  grande; la meta con su barra y el ritmo; el río con el camalote llevando
+  la meta; y una línea de estado ("Apartado: 0,66 USDC. Compra al juntar
+  10."). El interruptor dice su estado ("Prendida" / "En pausa") y "Editar"
+  dice qué edita. En pausa aparece "Reanudar".
+- **Tu cuenta** (`account-card.tsx`): saldo, "Acá te pagan. Lo que llega
+  cuenta para tu regla", Depositar (secundario), Retirar (fantasma) y la
+  dirección corta con copiar. Ya no hay dos números enfrentados arriba.
+- **Lo que ya es tuyo** (`portfolio-card.tsx`): nombre primero, sigla como
+  detalle; total "Vale hoy" con lo puesto y el rendimiento; Vender como
+  botón discreto; **"Comprar una vez"** (antes "Comprar") como acción
+  secundaria y explícitamente fuera de la regla. "Movimientos" con nombres.
+- **Dos columnas desde 1024 px**: regla, cartera y movimientos a la
+  izquierda; cuenta y "Lo que tenés que saber" a la derecha, pegajosos. En
+  teléfono, el mismo DOM con `contents` + `order`: regla, cuenta, cartera,
+  movimientos, aviso. Sin scroll horizontal en 375, 768 ni 1280.
+- Textos nuevos en ES/EN (`welcome*`, `setupCta`, `ruleHeadline`,
+  `ruleGoesTo`, `stepOf`, `next`, `back`, `turnOn`, `save`, `review*`,
+  `percentExample`, `buyOnce`, `emptyPortfolioNoRule`); se fueron
+  `heroLeft/Right`, `ruleChange`, `ruleOff`, `buyOpen`.
+- E2E y video: `rule-setup` → `rule-next` → `rule-done`; editar es
+  `rule-edit` → `rule-review-goal` → `rule-step-done` → `rule-done`; pausa y
+  reanudación (`rule-toggle`, `rule-resume`) cubiertas.
+
 ## La app es tu río (rediseño del 2026-09-13)
 
 Fernando: "la UI/UX no me está cerrando del todo en la page app, necesito
@@ -221,8 +269,11 @@ panel de configuración y el camalote de la landing desaparecía en la app.
 
 ## Componentes nuevos o cambiados
 
-- `src/components/invest/account-card.tsx`: cuenta de Solana, saldo,
-  depositar (modal con QR), retirar, y en demo "simular que te llegan 40".
+- `src/components/invest/account-card.tsx`: tu cuenta, saldo, dirección
+  corta con copiar, depositar (modal con QR) y retirar. En demo, "simular
+  que te llegan 40" vive en la tarjeta de la regla (`rule-hero.tsx`).
+- `welcome-card.tsx` y `rule-hero.tsx` (2026-09-29): la bienvenida con un
+  solo botón, y la regla como titular; ver "Una sola cosa que hacer".
 - `buy-card.tsx`: compra en dos pasos, con ticket (invertís, comisión de
   Camalote, Jupiter y red, recibís) y confirmación.
 - `sell-modal.tsx`: vender cantidad o todo, precio a la vista, sin comisión.
