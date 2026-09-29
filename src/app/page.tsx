@@ -386,8 +386,9 @@ function FinalCta() {
       <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-brand-gradient p-[1px]">
         <div className="rounded-[calc(1.5rem-1px)] bg-surface px-6 py-10 text-center sm:py-14">
           <CamaloteMark className="mx-auto mb-5 size-16" />
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t.landing.finalTitle1} {t.landing.finalTitle2}
+          <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            <span className="block">{t.landing.finalTitle1}</span>
+            <span className="text-gradient block">{t.landing.finalTitle2}</span>
           </h2>
           <p className="mx-auto mt-3 max-w-md text-muted-foreground">{t.landing.finalSub}</p>
           <Link href="/app" className={`${ctaClasses} mt-8`}>
