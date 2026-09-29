@@ -1,21 +1,29 @@
 "use client";
 
-import { useState } from "react";
 import {
   DOLLARS,
   PREIPO,
   STOCKS,
   assetName,
-  findXStock,
+  kindOf,
   type AssetKind,
   type XStockSymbol,
 } from "@/lib/invest/catalog";
 import { useLang } from "@/lib/i18n";
 
+const LISTS: Record<AssetKind, readonly { symbol: XStockSymbol; kind: AssetKind }[]> = {
+  stock: STOCKS,
+  preipo: PREIPO,
+  dollars: DOLLARS,
+};
+
 /**
  * El catálogo como fichas, en tres grupos: acciones que cotizan en bolsa,
- * empresas antes de salir a bolsa, y dólares que rinden (para el que no
- * quiere el sube y baja). `idPrefix` distingue instancias.
+ * empresas privadas, y dólares que rinden (para el que no quiere el sube y
+ * baja). La pestaña sigue al activo elegido y, al cambiar de pestaña, se
+ * elige el primero de ese grupo: así lo que se ve y lo que dice la hoja
+ * (comprar / poner a rendir) son siempre lo mismo. `idPrefix` distingue
+ * instancias.
  */
 export function AssetPicker({
   value,
@@ -29,13 +37,13 @@ export function AssetPicker({
   disabled?: boolean;
 }) {
   const { lang, t } = useLang();
-  const [group, setGroup] = useState<AssetKind>(findXStock(value)?.kind ?? "stock");
+  const group = kindOf(value);
   const groups: { kind: AssetKind; label: string }[] = [
     { kind: "stock", label: t.invest.assetGroupStocks },
     { kind: "preipo", label: t.invest.assetGroupPreIpo },
     { kind: "dollars", label: t.invest.assetGroupDollars },
   ];
-  const list = group === "stock" ? STOCKS : group === "preipo" ? PREIPO : DOLLARS;
+  const list = LISTS[group];
 
   return (
     <div className="flex flex-col gap-3">
@@ -50,7 +58,9 @@ export function AssetPicker({
               aria-selected={active}
               disabled={disabled}
               data-testid={`${idPrefix}-group-${g.kind}`}
-              onClick={() => setGroup(g.kind)}
+              onClick={() => {
+                if (g.kind !== group) onChange(LISTS[g.kind][0].symbol);
+              }}
               className={`h-9 flex-1 whitespace-nowrap rounded-lg px-1 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
                 active ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
