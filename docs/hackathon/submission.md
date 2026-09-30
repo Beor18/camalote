@@ -18,6 +18,32 @@ Actualizado el 2026-09-21: Camalote es Invertir. Dos eventos, en este orden:
    septiembre al 12 de octubre de 2026. Tracks y premios se publican el 14.
    Camalote va a la pista de Solana.
 
+## Las seis líneas (2026-09-30)
+
+Lo que hay que poder decir en la entrevista de 15 minutos de Colosseum sin
+mirar nada. Las tres primeras las responde el producto; las tres últimas
+son trabajo de estas dos semanas, no de la app.
+
+1. **El usuario es** un desarrollador o diseñador freelance en Argentina,
+   que cobra de clientes de afuera o bounties en USDC directo a su
+   billetera, sin fecha fija, y no tiene broker.
+2. **Hoy resuelve el problema con** "invierto lo que sobra": deja los USDC
+   en la billetera o piensa en abrir un broker. **Y eso falla porque**
+   nunca sobra, porque invertir con calendario supone un sueldo que no
+   tiene, y porque el broker pide papeles, mínimos y una transferencia que
+   desde acá no sale.
+3. **Para** el freelancer que cobra en USDC, **Camalote** invierte una parte
+   de cada cobro antes de que la gaste, **sin** broker, sin papeles y sin
+   tener que acordarse.
+4. **Los primeros veinte están en** Superteam Argentina: los que cobran
+   bounties en USDC a la billetera. Un canal, veinte nombres, esta semana.
+5. **Esta semana les propongo:** "Dame diez minutos y te resuelvo que tu
+   próximo cobro invierta solo, sin abrir un broker."
+6. **El 12 de octubre voy a poder mostrar** cuántas personas armaron su
+   regla, cuántos cobros reales pasaron por ella y cuántos USDC se
+   invirtieron, con el comprobante en Solscan. Hoy es 0, 0 y 0. Piso al
+   que me comprometo: 10 reglas, 3 cobros reales, 50 USDC.
+
 ## Formulario de Stocklana
 
 El paso 1 (Project Name, Short Description, Full Description en Markdown)
