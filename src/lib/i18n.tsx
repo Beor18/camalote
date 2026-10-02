@@ -36,7 +36,7 @@ const es = {
     badgeDemo: "Probalo hoy, sin poner un peso",
     heroEyebrow: "Para los que cobran en USDC",
     heroLine1: "Una parte de cada cobro",
-    heroHighlight: "se invierte sola.",
+    heroHighlight: "se invierte.",
     heroSub:
       "Antes de que la gastes. Elegís qué parte, para qué y en qué. Una sola vez. Después, cobrá como siempre.",
     heroCta: "Armar mi regla",
@@ -718,7 +718,7 @@ const en: Dictionary = {
     badgeDemo: "Try it today, no money needed",
     heroEyebrow: "For people who get paid in USDC",
     heroLine1: "Part of every payment",
-    heroHighlight: "invests itself.",
+    heroHighlight: "gets invested.",
     heroSub:
       "Before you can spend it. Pick how much, what for and where. Just once. Then get paid as usual.",
     heroCta: "Set up my rule",
