@@ -56,8 +56,6 @@ const es = {
       status: "Apartado: 4,00 USDC. Compra al juntar 10.",
       moment: "Te llegaron 40 USDC. 12 ya son de El viaje: vas por el 62 %.",
     },
-    builtOn: "Corre sobre",
-    builtOnNames: ["Solana", "Jupiter", "xStocks · Backed", "Ondo", "Pyth", "Privy"],
     problemTitle: "Te pagan 40. Se van 40.",
     problemSub:
       "Alquiler, cuentas, tarjeta. Para vos queda lo que sobra, y nunca sobra. Camalote da vuelta el orden: primero vos, después el resto.",
@@ -737,8 +735,6 @@ const en: Dictionary = {
       status: "Set aside: 4.00 USDC. Buys once it reaches 10.",
       moment: "40 USDC landed. 12 already belong to The trip: you're at 62%.",
     },
-    builtOn: "Runs on",
-    builtOnNames: ["Solana", "Jupiter", "xStocks · Backed", "Ondo", "Pyth", "Privy"],
     problemTitle: "You get paid 40. 40 leave.",
     problemSub:
       "Rent, bills, the card. You get what's left, and nothing is ever left. Camalote flips the order: you first, the rest after.",

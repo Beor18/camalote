@@ -24,7 +24,7 @@ import { LangToggle, useLang } from "@/lib/i18n";
 
 /**
  * La landing vende como una startup: la promesa en una línea con el
- * producto al lado, sobre qué corre, el problema en un golpe (te pagan 40,
+ * producto al lado, el problema en un golpe (te pagan 40,
  * se van 40), cómo se arma en un minuto, los tres destinos, la cuenta hecha
  * en un toque, sin letra chica, preguntas (ahí va "¿por qué Solana?") y el
  * cierre.
@@ -35,7 +35,6 @@ export default function LandingPage() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <BuiltOn />
         <Problem />
         <HowItWorks />
         <Destinations />
@@ -133,30 +132,11 @@ function Hero() {
   );
 }
 
-/** Sobre qué corre: nombres, no promesas. */
-function BuiltOn() {
-  const { t } = useLang();
-  return (
-    <section className="border-y border-border bg-muted/40 py-5 sm:py-6">
-      <ul className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-2 px-4 sm:px-6 lg:px-8">
-        <li className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {t.landing.builtOn}
-        </li>
-        {t.landing.builtOnNames.map((name) => (
-          <li key={name} className="font-display text-base font-semibold text-muted-foreground/70 sm:text-lg">
-            {name}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /** El problema en un golpe, y el antes y después. */
 function Problem() {
   const { t } = useLang();
   return (
-    <section id="convenceme" className="py-10 sm:py-20">
+    <section id="convenceme" className="border-t border-border py-10 sm:py-20">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <h2 className={sectionTitle}>{t.landing.problemTitle}</h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.landing.problemSub}</p>
