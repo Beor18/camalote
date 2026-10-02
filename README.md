@@ -143,9 +143,17 @@ tarifa de referido de Jupiter) no están construidas.
 - **Solo mainnet**: la app corre únicamente en la red principal de Solana,
   sin interruptor de red (xStocks no existen en devnet). En demo todo se
   simula con precios reales.
-- **Regla y operaciones** viven en el dispositivo por cuenta
-  (`camalote.invest.rule.v1:<cuenta>`, `camalote.invest.purchases.v1:<cuenta>`).
-  Una operación interrumpida (pestaña cerrada) se cierra al volver.
+- **Regla y operaciones** se guardan en Supabase por cuenta, con una copia
+  rápida en el navegador (`camalote.invest.rule.v1:<cuenta>`,
+  `camalote.invest.purchases.v1:<cuenta>`). Al entrar se trae lo de la
+  base y se junta con lo local: gana la regla guardada último y los cobros
+  ya contados se suman, para que ninguno se invierta dos veces. El
+  navegador no le habla a Supabase: pasa por `/api/account/state`, que
+  verifica el token de Privy y que la cuenta de Solana sea de ese usuario.
+  Las tablas tienen RLS sin políticas (la clave pública no lee nada). En
+  demo, o sin las variables de Supabase, todo queda en el navegador.
+  Esquema en `supabase/migrations/`. Una operación interrumpida (pestaña
+  cerrada) se cierra al volver.
 
 ## Correr el proyecto
 
@@ -216,7 +224,9 @@ falta 22 USDC al 50 %, o bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`.
   cambio fijo de 1 USDC a SOL de la reserva: no es un proxy genérico. Rate
   limit simple por IP en memoria.
 - La regla corre en el navegador: si la app está cerrada, no compra. Es
-  una limitación real y se dice en la app y en el FAQ.
+  una limitación real y se dice en la app y en el FAQ. Lo apartado ya no
+  se pierde al cambiar de dispositivo (vive en la base), pero la compra
+  todavía necesita la app abierta.
 - xStocks: *permanent delegate* de Backed (puede congelar o retirar),
   restricción por países, liquidez más fina en fin de semana, spread del
   RFQ en montos chicos (2 % en 10 USDC).

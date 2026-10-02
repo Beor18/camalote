@@ -3,9 +3,11 @@
 import type { InvestRule, Purchase } from "@/lib/invest/types";
 
 /**
- * La regla y las compras viven en el dispositivo, por cuenta de Solana
- * (igual que los links de cobro). En red real, las tenencias se leen de la
- * cadena; acá queda lo que la cadena no sabe: la regla y el costo de cada compra.
+ * La regla y las compras se leen y escriben acá, por cuenta de Solana. Este
+ * almacenamiento es la copia rápida del navegador: en red real, cada cambio
+ * se manda a la base (ver cloud-sync.ts) y al entrar se trae de ahí, así la
+ * regla y lo apartado sobreviven a otro dispositivo o a borrar el
+ * navegador. En demo, todo queda acá. Las tenencias se leen de la cadena.
  */
 
 const RULE_PREFIX = "camalote.invest.rule.v1:";
@@ -50,8 +52,26 @@ export function loadRule(solanaAddress: string): InvestRule | null {
   };
 }
 
+/** Quien quiera enterarse de cada cambio guardado (la sincronización con la base). */
+let onLocalChange: ((solanaAddress: string) => void) | null = null;
+
+export function setLocalChangeListener(fn: ((solanaAddress: string) => void) | null): void {
+  onLocalChange = fn;
+}
+
 export function saveRule(solanaAddress: string, rule: InvestRule): void {
-  writeJson(RULE_PREFIX + solanaAddress, rule);
+  writeJson(RULE_PREFIX + solanaAddress, { ...rule, updatedAt: Date.now() });
+  onLocalChange?.(solanaAddress);
+}
+
+/** Reemplaza la copia local con lo que vino de la base, sin volver a mandarlo. */
+export function replaceLocalState(
+  solanaAddress: string,
+  rule: InvestRule | null,
+  purchases: Purchase[]
+): void {
+  if (rule) writeJson(RULE_PREFIX + solanaAddress, rule);
+  writeJson(PURCHASES_PREFIX + solanaAddress, purchases.slice(0, MAX_PURCHASES));
 }
 
 export function loadPurchases(solanaAddress: string): Purchase[] {
@@ -65,6 +85,7 @@ export function savePurchase(solanaAddress: string, purchase: Purchase): Purchas
     ...loadPurchases(solanaAddress).filter((p) => p.id !== purchase.id),
   ].slice(0, MAX_PURCHASES);
   writeJson(PURCHASES_PREFIX + solanaAddress, next);
+  onLocalChange?.(solanaAddress);
   return next;
 }
 

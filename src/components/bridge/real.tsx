@@ -26,6 +26,7 @@ import { bytesToHex } from "@/lib/cctp/message";
 import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
+import { startCloudSync } from "@/lib/invest/cloud-sync";
 import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { feeBpsFor, investFee } from "@/lib/invest/rules";
@@ -58,7 +59,7 @@ async function fetchQuote(query: string): Promise<Quote> {
  * y para pagar links de cobro (mismo camino, otro destinatario).
  */
 export function useRealEngine(): Engine {
-  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
   const { client: smartWalletClient } = useSmartWallets();
   const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets();
   const { createWallet } = useCreateWallet();
@@ -91,6 +92,17 @@ export function useRealEngine(): Engine {
       });
     }
   }, [authenticated, solanaReady, solanaAddress, createWallet]);
+
+  // La regla y las operaciones se guardan también en la base (Supabase), así
+  // sobreviven a otro dispositivo o a borrar el navegador.
+  const getAccessTokenRef = useRef(getAccessToken);
+  useEffect(() => {
+    getAccessTokenRef.current = getAccessToken;
+  });
+  useEffect(() => {
+    if (!authenticated || !solanaAddress) return;
+    return startCloudSync(solanaAddress, () => getAccessTokenRef.current());
+  }, [authenticated, solanaAddress]);
 
   const [baseUnits, setBaseUnits] = useState<bigint | null>(null);
   const [solanaUnits, setSolanaUnits] = useState<bigint | null>(null);

@@ -70,6 +70,11 @@ export interface InvestRule {
   /** Para qué se junta. Sin meta, la regla funciona igual. */
   goal?: InvestGoal;
   lastIncoming?: LastIncoming;
+  /**
+   * Última vez que se guardó (lo pone saveRule). Al juntar la copia del
+   * navegador con la de la base, gana la más nueva.
+   */
+  updatedAt?: number;
 }
 
 export type OperationKind = "buy" | "sell";
