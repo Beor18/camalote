@@ -317,7 +317,12 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
         if (action === "buy") {
           const p = await doBuy();
           return p.status === "done"
-            ? { resultado: "comprado", usdc: Number(p.usdcUnits) / 1e6, meta: current.goal?.name ?? null }
+            ? {
+                resultado: stock?.kind === "dollars" ? "puesto a rendir" : "comprado",
+                usdc: Number(p.usdcUnits) / 1e6,
+                destino: facts.regla.destino,
+                meta: current.goal?.name ?? null,
+              }
             : { resultado: "fallo", detalle: "la compra no se completó; lo apartado sigue guardado" };
         }
         agentWaitReason = reason;

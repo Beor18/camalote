@@ -164,7 +164,7 @@ ahí la regla se cumple en el servidor:
 ```
 Te pagan → Helius avisa → /api/agent/webhook → runAgent()
   cobros nuevos → aparta el % → al juntar 10 USDC:
-  la cabeza (Groq, Kimi K2) decide con una sola herramienta, "comprar según la regla"
+  la cabeza (Groq, gpt-oss 120B) decide con una sola herramienta, "comprar según la regla"
   (no elige monto ni destino) → si no responde, decide la regla sola (plan B)
   → reserva de red si falta → orden de Jupiter → revisión + simulación
   → Privy firma con el permiso del usuario → comisión → bitácora

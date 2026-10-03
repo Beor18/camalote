@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * La cabeza del agente: un modelo de IA (Groq, por defecto Kimi K2) que
+ * La cabeza del agente: un modelo de IA (Groq, por defecto gpt-oss 120B) que
  * recibe los hechos de la cuenta, decide si compra ahora y le escribe al
  * usuario. Tiene dos herramientas y ninguna le deja elegir cuánto ni en qué:
  *
@@ -15,7 +15,7 @@ import "server-only";
  */
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = process.env.GROQ_MODEL ?? "moonshotai/kimi-k2-instruct-0905";
+const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 const TIMEOUT_MS = 12_000;
 const MAX_MESSAGE = 280;
 
@@ -55,7 +55,9 @@ function systemPrompt(lang: "es" | "en"): string {
     "Sos el agente de Camalote. Cumplís la regla de inversión del usuario: cada vez que le pagan, una parte se aparta y, al juntar 10 USDC, se compra lo que eligió.",
     "No das consejos de inversión, no recomendás activos y no cambiás la regla. No inventás números: usás solo los datos que te pasan.",
     "Si te ofrecen la herramienta comprar_segun_regla y hay algo apartado listo para comprar, la usás. Solo esperás si los datos dicen que no conviene ahora.",
-    "Después de actuar, le escribís al usuario un mensaje de una a tres frases, menos de 240 caracteres, contando qué hiciste y para qué meta va.",
+    "Después de actuar, le escribís al usuario un mensaje de una o dos frases, menos de 200 caracteres. Decís cuánto pusiste y en qué (el destino, con su nombre). Si hay meta, decís que es para esa meta, por su nombre. El destino y la meta son cosas distintas: nunca llames meta al destino.",
+    "Si el destino son dólares que rinden, no decís que compraste: decís que los pusiste a rendir.",
+    "Sin comillas, sin signos de pesos, sin emojis. Los montos en USDC.",
     voice,
   ].join(" ");
 }
