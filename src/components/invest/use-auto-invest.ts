@@ -1,10 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useLang } from "@/lib/i18n";
+import {
+  boughtMessage,
+  errorMessage,
+  setAsideMessage,
+  waitingBalanceMessage,
+  waitingMarketMessage,
+  waitingPremiumMessage,
+} from "@/lib/invest/agent-messages";
 import { findXStock } from "@/lib/invest/catalog";
+import { recordDemoAgentEvent } from "@/lib/invest/demo-agent";
+import { formatNextOpen, formatPremium } from "@/lib/invest/guards";
 import { executePurchase, reconcileInterrupted } from "@/lib/invest/execute";
 import { fitBuyToBalance, fuelUnitsFor } from "@/lib/invest/fuel";
 import { buyBlockedBy } from "@/lib/invest/guards";
+import type { InvestRule } from "@/lib/invest/types";
 import { fetchPrices } from "@/lib/invest/prices";
 import { planInvestments } from "@/lib/invest/rules";
 import {
@@ -30,8 +42,13 @@ const PAUSE_AFTER_ERROR_MS = 10 * 60 * 1000;
  * la cuenta y aparta el porcentaje elegido; cuando junta el mínimo, compra.
  * Corre en cualquier pestaña de la app, no solo en Invertir, porque el
  * cobro se ve llegar en Cobrar.
+ *
+ * En red real, con el agente activo, el que compra es el servidor (aunque
+ * la app esté cerrada) y esto no corre, para no comprar dos veces. En demo
+ * sigue corriendo y, si el agente está activo, deja sus mensajes.
  */
-export function useAutoInvest({ session, balances, actions }: Engine): void {
+export function useAutoInvest({ session, balances, actions, agent }: Engine): void {
+  const { lang } = useLang();
   const busy = useRef(false);
   const actionsRef = useRef(actions);
   const balancesRef = useRef(balances);
@@ -40,8 +57,13 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
     balancesRef.current = balances;
   });
 
-  const address = session.authenticated ? session.solanaAddress : null;
   const demo = session.demo;
+  const serverAgent = !demo && agent.enabled;
+  const address = session.authenticated && !serverAgent ? session.solanaAddress : null;
+  const langRef = useRef(lang);
+  useEffect(() => {
+    langRef.current = lang;
+  });
 
   const tick = useCallback(async () => {
     if (!address || busy.current) return;
@@ -80,6 +102,25 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
         saveRule(address, plan.rule);
         notifyInvest();
       }
+      // La bitácora del agente (solo demo: en red real la escribe el servidor).
+      const say = (kind: "set_aside" | "bought" | "waiting" | "error", message: string) => {
+        if (demo) recordDemoAgentEvent(address, { kind, message, decidedBy: "rule" });
+      };
+      const goalName = (r: InvestRule) => r.goal?.name;
+      if (plan.setAsideUnits > 0n && plan.buyUnits === null) {
+        say(
+          "set_aside",
+          setAsideMessage(
+            {
+              receivedUnits: BigInt(plan.rule.lastIncoming?.amountUnits ?? "0"),
+              setAsideUnits: plan.setAsideUnits,
+              pendingUnits: BigInt(plan.rule.pendingUnits),
+              goalName: goalName(plan.rule),
+            },
+            langRef.current
+          )
+        );
+      }
       if (plan.buyUnits !== null) {
         // Datos de mercado antes de comprar: fuera de horario de Wall Street
         // (si el usuario pidió esperar) o con la pre-IPO muy arriba de su
@@ -103,6 +144,18 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             waiting: blocked,
           });
           notifyInvest();
+          say(
+            "waiting",
+            blocked.reason === "market"
+              ? waitingMarketMessage(
+                  { asset: rule.asset, nextOpen: formatNextOpen(blocked.nextOpen, langRef.current) },
+                  langRef.current
+                )
+              : waitingPremiumMessage(
+                  { asset: rule.asset, premium: formatPremium(blocked.premiumBps, langRef.current) },
+                  langRef.current
+                )
+          );
           return;
         }
 
@@ -117,6 +170,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
         if (fit.buyUnits === 0n) {
           saveRule(address, { ...plan.rule, pendingUnits: fit.leftoverUnits.toString(), waiting: undefined });
           notifyInvest();
+          say("waiting", waitingBalanceMessage(langRef.current));
           return;
         }
         const purchase = await executePurchase({
@@ -136,6 +190,7 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             lastError: purchase.errorMessage,
             waiting: undefined,
           });
+          say("error", errorMessage(langRef.current));
         } else {
           saveRule(address, {
             ...plan.rule,
@@ -144,6 +199,10 @@ export function useAutoInvest({ session, balances, actions }: Engine): void {
             lastError: undefined,
             waiting: undefined,
           });
+          say(
+            "bought",
+            boughtMessage({ usdcUnits: fit.buyUnits, asset: rule.asset, goalName: goalName(plan.rule) }, langRef.current)
+          );
         }
         notifyInvest();
         balancesRef.current.refresh();

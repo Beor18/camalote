@@ -109,8 +109,39 @@ export interface BridgeActions {
   sellStock: (quote: SellQuote, onStep?: (step: BuyStep) => void) => Promise<SellResult>;
 }
 
+/** Una línea de la bitácora del agente: lo que hizo y le contó al usuario. */
+export interface AgentEventView {
+  id: string | number;
+  createdAt: number;
+  kind: "set_aside" | "bought" | "waiting" | "error" | "enabled" | "disabled";
+  message: string;
+  /** "agent" = decidió el modelo de IA; "rule" = la regla sola (plan B). */
+  decidedBy?: "agent" | "rule" | null;
+}
+
+/**
+ * El agente: compra según la regla aunque la app esté cerrada. En red real
+ * firma desde el servidor con el permiso limitado de Privy; en demo se
+ * simula en el dispositivo con la misma pantalla.
+ */
+export interface AgentControls {
+  /** Este servidor (o el demo) puede correr el agente. */
+  available: boolean;
+  /** Ya se leyó el estado. */
+  ready: boolean;
+  enabled: boolean;
+  events: AgentEventView[];
+  /** Da el permiso (Privy muestra qué permite) y lo prende. */
+  enable: () => Promise<void>;
+  /** Lo apaga y saca el permiso. */
+  disable: () => Promise<void>;
+  /** "Revisar ahora": el agente corre ya. */
+  runNow: () => Promise<void>;
+}
+
 export interface Engine {
   session: BridgeSession;
   balances: BridgeBalances;
   actions: BridgeActions;
+  agent: AgentControls;
 }

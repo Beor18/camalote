@@ -149,7 +149,7 @@ const es = {
     trust: [
       {
         title: "Tu cuenta es tuya",
-        body: "Las acciones y los dólares quedan en tu cuenta. Nosotros no podemos moverlos.",
+        body: "Las acciones y los dólares quedan en tu cuenta. Nadie puede retirarlos ni mandarlos a otra cuenta.",
       },
       {
         title: "Sin promesas",
@@ -188,7 +188,7 @@ const es = {
       },
       {
         q: "¿Cuándo se mueve la plata?",
-        a: "En segundos, mientras la app está abierta. Si te llegan USDC con la app cerrada, se mueve cuando la abrís. Los cobros chicos se juntan hasta 10 dólares.",
+        a: "En segundos. Con tu agente activo, aunque la app esté cerrada. Sin agente, se mueve cuando abrís la app. Los cobros chicos se juntan hasta 10 dólares.",
       },
       {
         q: "¿Qué son las empresas antes de salir a bolsa?",
@@ -223,10 +223,10 @@ const es = {
     loginButton: "Entrar con email",
     loginHint: "Te llega un código de 6 dígitos. Nada más.",
     custodyNote:
-      "Tu billetera es tuya: nosotros nunca podemos mover tus fondos.",
+      "Tu cuenta es tuya: nosotros nunca podemos retirar tus fondos.",
     logout: "Cerrar sesión",
     footer:
-      "Tus USDC y tus acciones quedan en tu cuenta de Solana. Nosotros no podemos moverlos.",
+      "Tus USDC y tus acciones quedan en tu cuenta de Solana. Nadie más que vos puede retirarlos.",
     baseCard: "En Base",
     baseCardSub: "de acá salen",
     solanaCard: "En Solana",
@@ -598,7 +598,7 @@ const es = {
       `Junté ${goal} sin acordarme: una parte de cada cobro se invirtió sola con Camalote.`,
     ruleMin: (min: string) => `Cuando esa parte junta ${min} USDC, se compra sola.`,
     ruleOpenNote:
-      "La regla corre mientras Camalote está abierta. Si te llegan USDC con la app cerrada, se compra cuando la abrís.",
+      "Sin agente, la regla corre mientras Camalote está abierta. Con tu agente activo, compra aunque la cierres.",
     pendingLabel: (pending: string, min: string) =>
       `Apartado: ${pending} USDC. Compra al juntar ${min}.`,
     paused: (msg: string) =>
@@ -694,7 +694,66 @@ const es = {
       "El horario de Wall Street sale de los datos públicos de Pyth. Fuera de horario, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
       "Los dólares que rinden son USDY, emitidos por Ondo y respaldados por letras del Tesoro de Estados Unidos, para personas fuera de Estados Unidos. El rendimiento (3,6 % anual hoy) cambia con la tasa de Estados Unidos y se ve como un precio que sube. No es un depósito bancario: si el emisor falla, el riesgo es tuyo.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
+      "Tu agente firma por vos con un permiso limitado de Privy: solo compras por Jupiter de lo que dice tu regla y la comisión de Camalote, hasta medio dólar. No puede retirar ni mandar tu plata a otra cuenta. Lo apagás cuando quieras y el permiso se borra.",
     ],
+  },
+  agent: {
+    title: "Tu agente",
+    on: "Activo",
+    off: "Apagado",
+    offSub: "Compra según tu regla aunque cierres la app.",
+    onSub: "Cuando te pagan, aparta tu parte y compra. Aunque la app esté cerrada.",
+    enable: "Activar mi agente",
+    runNow: "Revisar ahora",
+    running: "Revisando…",
+    disable: "Apagar mi agente",
+    history: "Lo que hizo",
+    empty: "Todavía nada. Acá te va a contar cada cosa que haga.",
+    byAi: "Decidió con IA",
+    byRule: "Siguió tu regla",
+    needsRule: "Primero armá tu regla. Después lo activás.",
+    sheetTitle: "Tu agente compra por vos",
+    sheetSub: "Le das un permiso limitado. Hace solo lo que dice tu regla.",
+    canTitle: "Puede",
+    can: [
+      "Comprar lo que elegiste, con la parte que elegiste.",
+      "Cobrar la comisión de cada compra, hasta 0,50.",
+      "Contarte qué hizo.",
+    ],
+    cantTitle: "No puede",
+    cant: [
+      "Retirar tu plata ni mandarla a otra cuenta.",
+      "Comprar otra cosa, ni más de lo que dice tu regla.",
+      "Cambiar tu regla.",
+    ],
+    sheetNote: "Lo apagás cuando quieras. Privy te va a pedir que confirmes el permiso.",
+    sheetNoteDemo: "En el demo, el permiso se simula.",
+    confirm: "Dar permiso y activar",
+    enabling: "Activando…",
+    later: "Ahora no",
+    error: "No se pudo activar. Probá de nuevo.",
+    ago: (text: string) => `hace ${text}`,
+    justNow: "recién",
+  },
+  onboarding: {
+    stepOf: (n: number, total: number) => `Paso ${n} de ${total}`,
+    steps: ["Tu regla", "Tu agente", "Tu primer cobro"],
+    agentTitle: "Ahora, que lo haga solo.",
+    agentSub: "Tu agente cumple tu regla aunque no abras la app. Y te cuenta cada cosa que hace.",
+    agentPoints: [
+      "Te pagan y aparta tu parte al toque.",
+      "Al juntar 10 dólares, compra.",
+      "Nunca retira ni mueve tu plata a otro lado.",
+    ],
+    skip: "Más tarde",
+    fundTitle: "Último paso: que te paguen acá.",
+    fundSub: "Pasale esta dirección a quien te paga, o mandate USDC desde donde los tengas. Cada cobro que llega cuenta para tu regla.",
+    fundAddress: "Tu dirección en Solana",
+    fundQr: "Ver código QR",
+    fundOnlyUsdc: "Solo USDC en la red de Solana.",
+    fundDemo: "En el demo, en tu cuenta vas a poder simular un cobro.",
+    finish: "Listo, ir a mi cuenta",
+    agentOnTag: "Agente activo",
   },
 };
 
@@ -828,7 +887,7 @@ const en: Dictionary = {
     trust: [
       {
         title: "Your account is yours",
-        body: "The stocks and the dollars stay in your account. We can't move them.",
+        body: "The stocks and the dollars stay in your account. No one can withdraw them or send them elsewhere.",
       },
       {
         title: "No promises",
@@ -867,7 +926,7 @@ const en: Dictionary = {
       },
       {
         q: "When does the money move?",
-        a: "In seconds, while the app is open. If USDC land while it's closed, it moves when you open it. Small payments add up to 10 dollars.",
+        a: "In seconds. With your agent on, even with the app closed. Without it, it moves when you open the app. Small payments add up to 10 dollars.",
       },
       {
         q: "What are pre-IPO companies?",
@@ -901,10 +960,10 @@ const en: Dictionary = {
       "You're in demo mode: everything is simulated and no real funds move.",
     loginButton: "Sign in with email",
     loginHint: "You get a 6-digit code. That's it.",
-    custodyNote: "Your wallet is yours: we can never move your funds.",
+    custodyNote: "Your account is yours: we can never withdraw your funds.",
     logout: "Sign out",
     footer:
-      "Your USDC and your stocks stay in your Solana account. We can never move them.",
+      "Your USDC and your stocks stay in your Solana account. Only you can withdraw them.",
     baseCard: "On Base",
     baseCardSub: "they leave from here",
     solanaCard: "On Solana",
@@ -1272,7 +1331,7 @@ const en: Dictionary = {
       `I saved up for ${goal} without remembering once: part of every payment invested itself with Camalote.`,
     ruleMin: (min: string) => `Once that part adds up to ${min} USDC, it buys itself.`,
     ruleOpenNote:
-      "The rule runs while Camalote is open. If USDC land while the app is closed, it buys when you open it.",
+      "Without the agent, the rule runs while Camalote is open. With your agent on, it buys even when it's closed.",
     pendingLabel: (pending: string, min: string) =>
       `Set aside: ${pending} USDC. Buys once it reaches ${min}.`,
     paused: (msg: string) =>
@@ -1368,7 +1427,66 @@ const en: Dictionary = {
       "Wall Street hours come from Pyth's public data. Outside market hours a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
       "Dollars that earn are USDY, issued by Ondo and backed by short-term US Treasuries, for people outside the United States. The yield (3.6% a year today) moves with US rates and shows up as a rising price. Not a bank deposit: if the issuer fails, the risk is yours.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",
+      "Your agent signs for you with a limited Privy permission: only Jupiter buys of what your rule says and Camalote's fee, up to half a dollar. It can't withdraw or send your money to another account. Switch it off anytime and the permission is removed.",
     ],
+  },
+  agent: {
+    title: "Your agent",
+    on: "On",
+    off: "Off",
+    offSub: "Buys by your rule even with the app closed.",
+    onSub: "When you get paid, it sets your share aside and buys. Even with the app closed.",
+    enable: "Turn on my agent",
+    runNow: "Check now",
+    running: "Checking…",
+    disable: "Turn off my agent",
+    history: "What it did",
+    empty: "Nothing yet. It'll tell you here about everything it does.",
+    byAi: "Decided with AI",
+    byRule: "Followed your rule",
+    needsRule: "Set up your rule first. Then turn it on.",
+    sheetTitle: "Your agent buys for you",
+    sheetSub: "You give it a limited permission. It only does what your rule says.",
+    canTitle: "It can",
+    can: [
+      "Buy what you picked, with the share you picked.",
+      "Charge the fee on each buy, up to 0.50.",
+      "Tell you what it did.",
+    ],
+    cantTitle: "It can't",
+    cant: [
+      "Withdraw your money or send it to another account.",
+      "Buy something else, or more than your rule says.",
+      "Change your rule.",
+    ],
+    sheetNote: "Switch it off whenever you like. Privy will ask you to confirm the permission.",
+    sheetNoteDemo: "In the demo, the permission is simulated.",
+    confirm: "Give permission and turn on",
+    enabling: "Turning on…",
+    later: "Not now",
+    error: "Couldn't turn it on. Try again.",
+    ago: (text: string) => `${text} ago`,
+    justNow: "just now",
+  },
+  onboarding: {
+    stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
+    steps: ["Your rule", "Your agent", "Your first payment"],
+    agentTitle: "Now, let it run on its own.",
+    agentSub: "Your agent follows your rule even if you never open the app. And it tells you everything it does.",
+    agentPoints: [
+      "You get paid and it sets your share aside right away.",
+      "Once it saves 10 dollars, it buys.",
+      "It never withdraws or moves your money anywhere else.",
+    ],
+    skip: "Later",
+    fundTitle: "Last step: get paid here.",
+    fundSub: "Give this address to whoever pays you, or send yourself USDC from wherever you have it. Every payment that lands counts for your rule.",
+    fundAddress: "Your Solana address",
+    fundQr: "Show QR code",
+    fundOnlyUsdc: "Only USDC on the Solana network.",
+    fundDemo: "In the demo, you'll be able to simulate a payment from your account.",
+    finish: "Done, go to my account",
+    agentOnTag: "Agent on",
   },
 };
 

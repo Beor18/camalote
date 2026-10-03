@@ -20,7 +20,7 @@ export interface AccountState {
 let supabase: SupabaseClient | null | undefined;
 let privy: PrivyClient | null | undefined;
 
-function db(): SupabaseClient | null {
+export function db(): SupabaseClient | null {
   if (supabase !== undefined) return supabase;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -28,7 +28,7 @@ function db(): SupabaseClient | null {
   return supabase;
 }
 
-function privyClient(): PrivyClient | null {
+export function privyClient(): PrivyClient | null {
   if (privy !== undefined) return privy;
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   const appSecret = process.env.PRIVY_APP_SECRET;

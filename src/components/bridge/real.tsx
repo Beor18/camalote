@@ -27,6 +27,7 @@ import { buildBridgeCalls } from "@/lib/cctp/evmCalls";
 import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
 import { startCloudSync } from "@/lib/invest/cloud-sync";
+import { useRealAgent } from "@/components/bridge/use-agent";
 import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { feeBpsFor, investFee } from "@/lib/invest/rules";
@@ -378,7 +379,9 @@ export function useRealEngine(): Engine {
     [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
   );
 
-  return { session, balances, actions };
+  const agent = useRealAgent(solanaAddress, authenticated, getAccessToken);
+
+  return { session, balances, actions, agent };
 }
 
 async function fetchSolanaUsdcBalance(owner: string): Promise<bigint> {

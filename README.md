@@ -35,7 +35,8 @@ a la vista.
   comisión y costo de red a la vista antes de confirmar. Vender no tiene
   comisión de Camalote.
 - **Tu cuenta es tuya**: entrás con tu email (Privy) y tenés una billetera
-  embebida de Solana. Nosotros no podemos mover ni tus USDC ni tus acciones.
+  embebida de Solana. Nadie más que vos puede retirar tus USDC o tus
+  acciones; el agente, si lo activás, solo compra lo que dice tu regla.
 - **Sin humo**: son tokens de Backed que siguen el precio de la acción y
   tienen *permanent delegate*; no disponibles para residentes de EE. UU.,
   Reino Unido, Canadá y Australia; suben y bajan; la regla corre mientras
@@ -155,6 +156,52 @@ tarifa de referido de Jupiter) no están construidas.
   Esquema en `supabase/migrations/`. Una operación interrumpida (pestaña
   cerrada) se cierra al volver.
 
+## El agente: compra aunque la app esté cerrada
+
+El usuario lo activa una vez (en el onboarding o desde su cuenta) y desde
+ahí la regla se cumple en el servidor:
+
+```
+Te pagan → Helius avisa → /api/agent/webhook → runAgent()
+  cobros nuevos → aparta el % → al juntar 10 USDC:
+  la cabeza (Groq, Kimi K2) decide con una sola herramienta, "comprar según la regla"
+  (no elige monto ni destino) → si no responde, decide la regla sola (plan B)
+  → reserva de red si falta → orden de Jupiter → revisión + simulación
+  → Privy firma con el permiso del usuario → comisión → bitácora
+```
+
+- **El permiso** es un firmante de sesión de Privy con política: solo los
+  programas por los que Jupiter arma nuestras compras (Metis, Jupiter Z,
+  DFlow; vistos en órdenes reales), cerrar cuentas de token, y USDC
+  únicamente a la cuenta de comisiones, hasta 0,50. Privy revisa cada
+  instrucción antes de firmar: aunque el servidor quisiera otra cosa, no
+  la firma. Lo crea `node scripts/agent-setup.mjs` por API (llave P-256,
+  key quorum y política) y deja las variables en `.env.local`.
+- **Antes de firmar**, el servidor revisa los programas de la orden y la
+  **simula**: tiene que sacar como mucho lo apartado y dejar lo comprado en
+  la cuenta del usuario. La política no ve adentro de una ruta de Jupiter;
+  la simulación sí.
+- **La cabeza no toca la plata.** Si elige esperar, a las 6 horas compra
+  igual. El horario de Wall Street, la referencia de PreStocks y el saldo
+  los decide el código antes de preguntarle nada.
+- **Un candado por cuenta** en la base (`agent_try_lock`) evita compras
+  dobles si llegan dos avisos juntos. Con el agente activo, la regla del
+  navegador no corre.
+- **Bitácora** (`agent_events`): lo que hizo y le dijo al usuario, con quién
+  decidió (IA o regla). La app la muestra en "Tu agente".
+- **Avisos**: Helius (`node scripts/helius-setup.mjs https://tu-dominio`)
+  y un reloj de respaldo, `GET /api/agent/tick` con
+  `Authorization: Bearer $CRON_SECRET`, cada 5 minutos desde cualquier cron
+  (Vercel Pro, Supabase pg_cron o cron-job.org). Atrapa lo que el aviso no
+  trajo y las compras que esperaban la apertura.
+- **En demo** todo se simula en el navegador con la misma pantalla.
+
+Variables nuevas (servidor salvo las públicas): `PRIVY_AGENT_AUTH_KEY`,
+`NEXT_PUBLIC_PRIVY_AGENT_SIGNER_ID`, `NEXT_PUBLIC_PRIVY_AGENT_POLICY_ID`,
+`GROQ_API_KEY` (opcional, sin ella decide la regla), `GROQ_MODEL`,
+`HELIUS_API_KEY`, `HELIUS_WEBHOOK_ID`, `HELIUS_WEBHOOK_SECRET`, `CRON_SECRET`.
+Esquema en `supabase/migrations/20261003000000_agent.sql`.
+
 ## Correr el proyecto
 
 ```bash
@@ -223,10 +270,14 @@ falta 22 USDC al 50 %, o bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`.
 - `/api/invest/order` solo arma órdenes entre USDC y el catálogo, más el
   cambio fijo de 1 USDC a SOL de la reserva: no es un proxy genérico. Rate
   limit simple por IP en memoria.
-- La regla corre en el navegador: si la app está cerrada, no compra. Es
-  una limitación real y se dice en la app y en el FAQ. Lo apartado ya no
-  se pierde al cambiar de dispositivo (vive en la base), pero la compra
-  todavía necesita la app abierta.
+- Sin agente, la regla corre en el navegador: si la app está cerrada, no
+  compra. Con el agente activo, el servidor firma con el permiso limitado
+  de Privy (ver "El agente"). Lo apartado vive en la base.
+- El agente firma desde el servidor: si alguien robara la llave del
+  agente, lo máximo que puede firmar es lo que permite la política
+  (compras por Jupiter y la comisión). La política no ve el destino dentro
+  de una ruta de Jupiter: eso lo cubre la simulación en nuestro servidor.
+  Es un límite real y está dicho.
 - xStocks: *permanent delegate* de Backed (puede congelar o retirar),
   restricción por países, liquidez más fina en fin de semana, spread del
   RFQ en montos chicos (2 % en 10 USDC).

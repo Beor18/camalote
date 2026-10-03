@@ -22,6 +22,7 @@ import {
 import { kindOf } from "@/lib/invest/catalog";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
+import { useDemoAgent } from "@/components/bridge/use-agent";
 import type {
   BridgeActions,
   BridgeBalances,
@@ -207,6 +208,8 @@ export function useDemoEngine(): Engine {
     [email, solanaAddress]
   );
 
-  return { session, balances, actions };
+  const agent = useDemoAgent(solanaAddress);
+
+  return { session, balances, actions, agent };
 }
 

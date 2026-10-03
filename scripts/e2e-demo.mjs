@@ -1,6 +1,6 @@
 /**
  * Recorre Camalote en modo demo con Playwright y saca capturas:
- * landing, entrar, armar la regla, llegan USDC y se compra sola, compra a
+ * landing, entrar, armar la regla (onboarding con agente), llegan USDC y se compra sola, compra a
  * mano con ticket, venta, depósito, y las rutas ocultas.
  *
  * Uso: node scripts/e2e-demo.mjs <carpeta-salida>   (dev server demo en :3001)
@@ -52,7 +52,6 @@ await page.click("button[type=submit]");
 await page.waitForSelector("[data-testid=invest-welcome]", { timeout: 15000 });
 await page.waitForTimeout(900);
 await shot("02-app");
-console.log("BALANCE:", await text("[data-testid=usdc-balance]"));
 console.log("LANG:", await page.evaluate(() => document.documentElement.lang));
 console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Sections]").count());
 console.log("WELCOME CTA:", await text("[data-testid=rule-setup]"), "· primary buttons:", await page.locator("button.bg-primary").count());
@@ -72,8 +71,23 @@ await page.click("[data-testid=rule-asset-SPYx]");
 console.log("SUMMARY:", await text("[data-testid=rule-summary]"));
 await shot("03c-regla-paso3");
 await page.click("[data-testid=rule-done]");
+// 3d. Onboarding: activa su agente (el permiso dice qué puede y qué no) y ve dónde le pagan.
+await page.waitForSelector("[data-testid=onboarding][data-step=agent]", { timeout: 10000 });
+await shot("03d-onboarding-agente");
+await page.click("[data-testid=onb-agent-enable]");
+await page.waitForSelector("[data-testid=agent-sheet][open]", { timeout: 10000 });
+await shot("03e-permiso-agente");
+console.log("AGENT CAN:", (await page.locator("[data-testid=agent-sheet] ul").first().innerText()).replace(/\n+/g, " | "));
+await page.click("[data-testid=agent-confirm]");
+await page.waitForSelector("[data-testid=onboarding][data-step=fund]", { timeout: 10000 });
+await shot("03f-onboarding-cobro");
+console.log("FUND ADDRESS:", await text("[data-testid=onb-address]"));
+await page.click("[data-testid=onb-finish]");
+await page.waitForSelector("[data-testid=rule-headline]", { timeout: 10000 });
 await page.waitForTimeout(800);
 await shot("03-regla");
+console.log("AGENT:", await text("[data-testid=agent-state]"));
+console.log("BALANCE:", await text("[data-testid=usdc-balance]"));
 console.log("RULE:", (await text("[data-testid=rule-headline]"))?.replace(/\s+/g, " "), "·", await text("[data-testid=rule-state]"));
 console.log("GOAL:", await text("[data-testid=goal-name]"), "·", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("PENDING 0:", await text("[data-testid=rule-pending]"));
@@ -87,6 +101,8 @@ console.log("PURCHASE:", await text("[data-testid=invest-purchases] p"));
 console.log("GOAL 2:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("MOMENT:", await text("[data-testid=rule-moment]"));
 console.log("PACE:", await text("[data-testid=goal-pace]"));
+await page.waitForFunction(() => document.querySelectorAll("[data-testid=agent-events] li").length >= 2, null, { timeout: 15000 });
+console.log("AGENT SAID:", await text("[data-testid=agent-events] li p"));
 
 // 4b. Edita: abre en el resumen, toca "Para qué" y baja la meta a 10: ya llegó.
 // Festejo y elige la próxima (el curso), que abre directo en ese paso.

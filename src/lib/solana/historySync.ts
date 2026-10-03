@@ -1,5 +1,3 @@
-"use client";
-
 import { Connection, PublicKey, type TokenBalance } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ADDRESSES, SOLANA_RPC_URL } from "@/lib/config";
@@ -9,15 +7,17 @@ import type { TransferRecord } from "@/lib/history";
  * Reconstruye el historial desde la red: el registro local vive en el
  * navegador y se pierde con una limpieza, pero cada llegada de un cruce y
  * cada retiro quedaron escritos en la cuenta USDC del usuario en Solana.
+ * Lo usan el navegador (últimos 10) y el agente en el servidor (más).
  */
 export async function syncSolanaHistory(
-  owner: string
+  owner: string,
+  opts: { limit?: number; rpcUrl?: string } = {}
 ): Promise<TransferRecord[]> {
-  const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+  const connection = new Connection(opts.rpcUrl ?? SOLANA_RPC_URL, "confirmed");
   const usdcMint = new PublicKey(ADDRESSES.solana.usdcMint);
   const ata = getAssociatedTokenAddressSync(usdcMint, new PublicKey(owner), true);
 
-  const sigs = await connection.getSignaturesForAddress(ata, { limit: 10 });
+  const sigs = await connection.getSignaturesForAddress(ata, { limit: opts.limit ?? 10 });
   const records: TransferRecord[] = [];
 
   for (const s of sigs) {

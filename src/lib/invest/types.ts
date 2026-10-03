@@ -67,6 +67,8 @@ export interface InvestRule {
   waitForMarketOpen?: boolean;
   /** Por qué la regla tiene lo apartado listo pero no compra todavía. */
   waiting?: { reason: "market"; nextOpen: number | null } | { reason: "premium"; premiumBps: number };
+  /** Terminó el onboarding (regla, agente y dirección). Sin valor: se muestra. */
+  onboardedAt?: number;
   /** Para qué se junta. Sin meta, la regla funciona igual. */
   goal?: InvestGoal;
   lastIncoming?: LastIncoming;

@@ -34,11 +34,12 @@ export function BridgeShell({
   session,
   balances,
   actions,
+  agent,
   view = "invest",
 }: Engine & { view?: ShellView }) {
   const { t } = useLang();
   // La regla de inversión corre mientras la app está abierta.
-  useAutoInvest({ session, balances, actions });
+  useAutoInvest({ session, balances, actions, agent });
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-border">
@@ -82,9 +83,9 @@ export function BridgeShell({
           <div className="flex flex-col gap-6">
             {SHOW_HIDDEN_VIEWS && <ViewTabs view={view} />}
             {view === "cobros" ? (
-              <CobrosPanel session={session} balances={balances} actions={actions} />
+              <CobrosPanel session={session} balances={balances} actions={actions} agent={agent} />
             ) : view === "invest" ? (
-              <InvestPanel session={session} balances={balances} actions={actions} />
+              <InvestPanel session={session} balances={balances} actions={actions} agent={agent} />
             ) : (
               <BridgePanel session={session} balances={balances} actions={actions} />
             )}

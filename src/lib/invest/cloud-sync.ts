@@ -22,6 +22,16 @@ import type { InvestRule, Purchase } from "@/lib/invest/types";
  */
 
 const PUSH_DELAY_MS = 1_500;
+/** Pide traer ya lo de la base (por ejemplo, el agente compró en el servidor). */
+export const CLOUD_PULL_EVENT = "camalote:cloud-pull";
+
+export function requestCloudPull(): void {
+  try {
+    window.dispatchEvent(new Event(CLOUD_PULL_EVENT));
+  } catch {
+    // fuera del navegador
+  }
+}
 
 interface RemoteState {
   rule: InvestRule | null;
@@ -110,6 +120,17 @@ export function startCloudSync(address: string, getToken: GetToken): () => void 
     if (changed === address) schedule();
   });
 
+  const pull = async () => {
+    try {
+      const remote = await call(getToken, { method: "GET", address });
+      if (remote && !stopped) applyRemote(address, remote);
+    } catch {
+      // la base no respondió: queda lo del navegador
+    }
+  };
+  const onPull = () => void pull();
+  window.addEventListener(CLOUD_PULL_EVENT, onPull);
+
   void (async () => {
     try {
       const remote = await call(getToken, { method: "GET", address });
@@ -129,6 +150,7 @@ export function startCloudSync(address: string, getToken: GetToken): () => void 
   return () => {
     stopped = true;
     if (timer) clearTimeout(timer);
+    window.removeEventListener(CLOUD_PULL_EVENT, onPull);
     setLocalChangeListener(null);
   };
 }

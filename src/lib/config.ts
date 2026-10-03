@@ -92,3 +92,11 @@ export function solanaExplorerTx(signature: string): string {
 export function baseExplorerTx(hash: string): string {
   return `${ADDRESSES.base.explorer}/tx/${hash}`;
 }
+
+/**
+ * El agente (firmante de sesión de Privy y su política). Los crea
+ * scripts/agent-setup.mjs. Sin estos valores, el agente no se ofrece en red
+ * real (en demo siempre).
+ */
+export const AGENT_SIGNER_ID = process.env.NEXT_PUBLIC_PRIVY_AGENT_SIGNER_ID ?? "";
+export const AGENT_POLICY_ID = process.env.NEXT_PUBLIC_PRIVY_AGENT_POLICY_ID ?? "";

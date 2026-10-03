@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountCard } from "@/components/invest/account-card";
+import { AgentCard } from "@/components/invest/agent-card";
+import { AgentSheet } from "@/components/invest/agent-sheet";
+import { Onboarding, type OnboardingStep } from "@/components/invest/onboarding";
 import { BuySheet } from "@/components/invest/buy-sheet";
 import { GoalReachedSheet } from "@/components/invest/goal-reached-sheet";
 import { StocksSection } from "@/components/invest/portfolio-card";
@@ -11,7 +14,6 @@ import { PurchasesList } from "@/components/invest/purchases-list";
 import { RuleHero } from "@/components/invest/rule-hero";
 import { RuleSheet, type RuleDraft, type RuleSheetMode, type RuleStep } from "@/components/invest/rule-sheet";
 import { SellModal } from "@/components/invest/sell-modal";
-import { WelcomeCard } from "@/components/invest/welcome-card";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
@@ -33,13 +35,13 @@ import type { BuyStep, Engine } from "@/components/bridge/types";
 const PRICES_MS = 60_000;
 
 /**
- * Camalote: una sola cosa que hacer al entrar (armar la regla) y, con la
- * regla armada, una sola frase arriba de todo que dice qué pasa con cada
- * cobro. Al lado, tu cuenta. Debajo, lo que ya es tuyo y los movimientos.
- * En pantallas anchas, dos columnas. La regla la ejecuta `useAutoInvest`
- * desde el shell.
+ * Camalote: la primera vez, el onboarding (regla, agente, dirección), con
+ * una sola cosa que hacer por paso. Después, una sola frase arriba de todo
+ * que dice qué pasa con cada cobro. Al lado, tu cuenta y tu agente. Debajo,
+ * lo que ya es tuyo y los movimientos. En pantallas anchas, dos columnas.
+ * La regla la ejecuta el agente (servidor) o `useAutoInvest` (navegador).
  */
-export function InvestPanel({ session, balances, actions }: Engine) {
+export function InvestPanel({ session, balances, actions, agent }: Engine) {
   const { lang, t } = useLang();
   const address = session.solanaAddress;
 
@@ -50,6 +52,8 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const [editing, setEditing] = useState<{ mode: RuleSheetMode; step?: RuleStep } | null>(null);
   const [buying, setBuying] = useState(false);
   const [selling, setSelling] = useState<XStockSymbol | null>(null);
+  const [agentSheet, setAgentSheet] = useState(false);
+  const [agentSkipped, setAgentSkipped] = useState(false);
 
   const actionsRef = useRef(actions);
   useEffect(() => {
@@ -129,8 +133,20 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const celebrating = Boolean(
     rule?.goal && goal?.reached && !rule.goal.celebratedAt && holdings !== null && editing === null
   );
-  // Sin regla armada todavía: la bienvenida, con un solo botón.
-  const welcome = rule !== null && !rule.enabled && !rule.configuredAt;
+  // La primera vez: el onboarding, paso por paso. Mientras se lee el estado
+  // del agente, no se adelanta (así no salta de un paso a otro).
+  const onboardingStep: OnboardingStep | "loading" | null =
+    rule === null
+      ? null
+      : !rule.configuredAt
+        ? "rule"
+        : rule.onboardedAt
+          ? null
+          : !agent.ready
+            ? "loading"
+            : agent.available && !agent.enabled && !agentSkipped
+              ? "agent"
+              : "fund";
 
   const updateRule = useCallback(
     (patch: Partial<InvestRule>) => {
@@ -167,6 +183,11 @@ export function InvestPanel({ session, balances, actions }: Engine) {
     },
     [rule, updateRule]
   );
+
+  const finishOnboarding = useCallback(() => {
+    updateRule({ onboardedAt: Date.now() });
+    window.scrollTo({ top: 0 });
+  }, [updateRule]);
 
   const turnOff = useCallback(() => {
     updateRule({ enabled: false });
@@ -211,6 +232,48 @@ export function InvestPanel({ session, balances, actions }: Engine) {
   const sellingUnits =
     selling !== null ? (holdings?.find((h) => h.asset === selling)?.tokenUnits ?? 0n) : 0n;
 
+  const agentSheetEl = (
+    <AgentSheet
+      open={agentSheet}
+      demo={session.demo}
+      onEnable={agent.enable}
+      onClose={() => setAgentSheet(false)}
+    />
+  );
+
+  if (onboardingStep !== null && rule !== null) {
+    return (
+      <div className="w-full" data-testid="invest-panel">
+        <h1 className="sr-only">{t.invest.title}</h1>
+        {onboardingStep === "loading" ? (
+          <Skeleton className="mx-auto h-96 w-full max-w-2xl" />
+        ) : (
+          <Onboarding
+            step={onboardingStep}
+            withAgent={agent.available}
+            agentEnabled={agent.enabled}
+            address={address}
+            demo={session.demo}
+            onSetup={() => setEditing({ mode: "setup" })}
+            onAgent={() => setAgentSheet(true)}
+            onSkipAgent={() => setAgentSkipped(true)}
+            onFinish={finishOnboarding}
+          />
+        )}
+        <RuleSheet
+          open={editing !== null}
+          mode={editing?.mode ?? "setup"}
+          step={editing?.step}
+          rule={rule}
+          onSave={saveDraft}
+          onTurnOff={turnOff}
+          onClose={() => setEditing(null)}
+        />
+        {agentSheetEl}
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-x-8"
@@ -221,13 +284,12 @@ export function InvestPanel({ session, balances, actions }: Engine) {
       <div className="order-1 min-w-0">
         {rule === null ? (
           <Skeleton className="h-80" />
-        ) : welcome ? (
-          <WelcomeCard onSetup={() => setEditing({ mode: "setup" })} />
         ) : (
           <RuleHero
             session={session}
             balances={balances}
             actions={actions}
+            agent={agent}
             rule={rule}
             goal={goal}
             holdingsLoading={holdings === null}
@@ -241,12 +303,16 @@ export function InvestPanel({ session, balances, actions }: Engine) {
       {/* En el teléfono, la cuenta va después de la regla y el aviso al final
           (`contents` + `order`); en pantallas anchas, los dos forman la
           columna derecha, que acompaña al hacer scroll. */}
-      <aside className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+      <aside className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:row-span-4 lg:flex lg:flex-col lg:gap-6 lg:self-start">
         <div className="order-2 min-w-0">
-          <AccountCard session={session} balances={balances} actions={actions} />
+          <AccountCard session={session} balances={balances} actions={actions} agent={agent} />
         </div>
 
-        <details className="group order-5 min-w-0 rounded-2xl border border-border bg-surface">
+        <div className="order-3 min-w-0 empty:hidden">
+          <AgentCard agent={agent} hasRule={Boolean(rule?.configuredAt)} onEnable={() => setAgentSheet(true)} />
+        </div>
+
+        <details className="group order-6 min-w-0 rounded-2xl border border-border bg-surface">
           <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 text-sm font-medium marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
               <ShieldAlert className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -265,7 +331,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
         </details>
       </aside>
 
-      <div className="order-3 min-w-0">
+      <div className="order-4 min-w-0">
         <StocksSection
           summary={summary}
           loading={holdings === null}
@@ -279,7 +345,7 @@ export function InvestPanel({ session, balances, actions }: Engine) {
       </div>
 
       {purchases.length > 0 && (
-        <div className="order-4 min-w-0">
+        <div className="order-5 min-w-0">
           <PurchasesList purchases={purchases} multipliers={multipliers} />
         </div>
       )}
@@ -307,6 +373,8 @@ export function InvestPanel({ session, balances, actions }: Engine) {
           onClose={() => setEditing(null)}
         />
       )}
+
+      {agentSheetEl}
 
       <BuySheet
         open={buying}
