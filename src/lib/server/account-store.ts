@@ -19,20 +19,39 @@ export interface AccountState {
 
 let supabase: SupabaseClient | null | undefined;
 let privy: PrivyClient | null | undefined;
+/** Por qué no se pudo armar un cliente (para /api/health). Nunca incluye valores. */
+export const initErrors: { supabase?: string; privy?: string } = {};
+
+function clean(value: string | undefined): string | undefined {
+  const v = value?.trim();
+  return v ? v : undefined;
+}
 
 export function db(): SupabaseClient | null {
   if (supabase !== undefined) return supabase;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-  supabase = url && key ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
+  const url = clean(process.env.SUPABASE_URL)?.replace(/\/+$/, "");
+  const key = clean(process.env.SUPABASE_SECRET_KEY) ?? clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  try {
+    supabase = url && key ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
+  } catch (err) {
+    initErrors.supabase = err instanceof Error ? err.message : "error al conectar";
+    console.error("[db] no se pudo armar el cliente de Supabase:", initErrors.supabase);
+    supabase = null;
+  }
   return supabase;
 }
 
 export function privyClient(): PrivyClient | null {
   if (privy !== undefined) return privy;
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const appSecret = process.env.PRIVY_APP_SECRET;
-  privy = appId && appSecret ? new PrivyClient({ appId, appSecret }) : null;
+  const appId = clean(process.env.NEXT_PUBLIC_PRIVY_APP_ID);
+  const appSecret = clean(process.env.PRIVY_APP_SECRET);
+  try {
+    privy = appId && appSecret ? new PrivyClient({ appId, appSecret }) : null;
+  } catch (err) {
+    initErrors.privy = err instanceof Error ? err.message : "error al conectar";
+    console.error("[privy] no se pudo armar el cliente:", initErrors.privy);
+    privy = null;
+  }
   return privy;
 }
 
