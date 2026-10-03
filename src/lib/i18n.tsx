@@ -144,7 +144,7 @@ const es = {
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC de comisión (${pct} %, tope medio dólar).`,
     calcFootnote:
-      "Aparte va Jupiter, 0,10 %, y la red, que pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que queda en tu cuenta. Lo ves antes de confirmar.",
+      "Aparte va el costo del mercado, 0,10 %, y la red, que pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que queda en tu cuenta. Lo ves antes de confirmar.",
     trustTitle: "Pensado para que duermas tranquilo",
     trust: [
       {
@@ -164,7 +164,7 @@ const es = {
     faqs: [
       {
         q: "¿Qué compro exactamente?",
-        a: "Acciones tokenizadas de xStocks, emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real y los dividendos se reinvierten solos. No son la acción: no votás, y Backed puede congelarlas si la ley lo exige. Si elegís dólares que rinden, no comprás nada: tus USDC se ponen a rendir.",
+        a: "Acciones tokenizadas emitidas por Backed, una empresa suiza regulada. Siguen el precio de la acción real y los dividendos se reinvierten solos. No son la acción: no votás, y el emisor puede congelarlas si la ley lo exige. Si elegís dólares que rinden, no comprás nada: tus USDC se ponen a rendir.",
       },
       {
         q: "¿Qué es la meta?",
@@ -172,7 +172,7 @@ const es = {
       },
       {
         q: "¿Y si no quiero acciones?",
-        a: "Elegís «dólares que rinden»: tus USDC se ponen a rendir en dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo). Rinden 3,6 % anual hoy y suben de a poco todos los días, sin el sube y baja de las acciones. Los sacás cuando quieras, gratis. No es un banco ni un plazo fijo: el riesgo es del emisor. Ahí la comisión es 0,10 %. El colchón de tres meses va ahí por defecto.",
+        a: "Elegís «dólares que rinden»: tus USDC se ponen a rendir en dólares respaldados por letras del Tesoro de Estados Unidos. Rinden 3,6 % anual hoy y suben de a poco todos los días, sin el sube y baja de las acciones. Los sacás cuando quieras, gratis. No es un banco ni un plazo fijo: el riesgo es del emisor. Ahí la comisión es 0,10 %. El colchón de tres meses va ahí por defecto.",
       },
       {
         q: "¿Puede bajar?",
@@ -180,7 +180,7 @@ const es = {
       },
       {
         q: "¿Cuánto cuesta?",
-        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. En dólares que rinden, 0,10 %. Vender o sacar es gratis. Aparte, Jupiter cobra 0,10 % y la red la pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que se carga sola y queda en tu cuenta. La primera compra de cada acción abre su cuenta: unos 25 centavos, de esa reserva.",
+        a: "0,45 % por compra, nunca más de medio dólar, a la vista antes de confirmar. En dólares que rinden, 0,10 %. Vender o sacar es gratis. Aparte, el mercado cobra 0,10 % y la red la pagás vos: menos de un centavo por operación, desde una reserva de 1 dólar que se carga sola y queda en tu cuenta. La primera compra de cada acción abre su cuenta: unos 25 centavos, de esa reserva.",
       },
       {
         q: "¿Y si no me pagan en Solana?",
@@ -192,11 +192,11 @@ const es = {
       },
       {
         q: "¿Qué son las empresas antes de salir a bolsa?",
-        a: "Tokens de PreStocks que siguen el valor de empresas privadas grandes, sobre todo de tecnología. No son acciones ni dan derechos. El precio es lo que el mercado cree que valen y puede alejarse mucho de la referencia que publica PreStocks: la app te lo muestra, y la regla no compra si el token está más de 5 % caro. PreStocks cobra 1 % por transferencia. Es más riesgo que una acción que cotiza.",
+        a: "Tokens que siguen el valor de empresas privadas grandes, sobre todo de tecnología. No son acciones ni dan derechos. El precio es lo que el mercado cree que valen y puede alejarse mucho de la referencia que publica el emisor: la app te lo muestra, y la regla no compra si el token está más de 5 % caro. El emisor cobra 1 % por transferencia. Es más riesgo que una acción que cotiza.",
       },
       {
         q: "¿Es legal desde Argentina?",
-        a: "xStocks no está disponible en Estados Unidos, Reino Unido, Canadá y Australia. En Argentina, Backed no lo restringe. Camalote no custodia: vos firmás cada compra. Para impuestos, tu contador.",
+        a: "Las acciones no están disponibles en Estados Unidos, Reino Unido, Canadá y Australia. En Argentina, el emisor no las restringe. Camalote no custodia: vos firmás cada compra. Para impuestos, tu contador.",
       },
       {
         q: "¿Por qué en Solana?",
@@ -209,7 +209,7 @@ const es = {
     finalCta: "Armar mi regla",
     footerMadeIn: "Hecho en Argentina 🇦🇷",
     footerNote:
-      "xStocks las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Los dólares que rinden (USDY) los emite Ondo, para personas fuera de Estados Unidos. Camalote no da consejos de inversión.",
+      "Las acciones las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Los dólares que rinden (USDY) los emite Ondo, para personas fuera de Estados Unidos. Camalote no da consejos de inversión.",
   },
   app: {
     loginTitle: "Entrá con tu email",
@@ -500,11 +500,11 @@ const es = {
     assetGroupDollars: "Dólares",
     dollarsChipSub: "Cerca del 4 % anual, sin el sube y baja de las acciones",
     dollarsPickerNote:
-      "Dólares respaldados por letras del Tesoro de Estados Unidos (USDY, de Ondo). Rinden 3,6 % anual hoy; el porcentaje cambia con la tasa de Estados Unidos. No es un banco ni un plazo fijo: el riesgo es del emisor, no del mercado. Comisión de Camalote: 0,10 %.",
+      "Dólares respaldados por letras del Tesoro de Estados Unidos. Rinden 3,6 % anual hoy; el porcentaje cambia con la tasa de Estados Unidos. No es un banco ni un plazo fijo: el riesgo es del emisor, no del mercado. Comisión de Camalote: 0,10 %.",
     dollarsRuleNote:
       "Sin horario ni referencia: la regla compra apenas junta el mínimo. El rendimiento se ve como un precio que sube de a poco todos los días.",
     dollarsNote:
-      "El rendimiento se ve como un precio que sube de a poco cada día. Lo emite Ondo: no es un banco.",
+      "El rendimiento se ve como un precio que sube de a poco cada día. No es un banco.",
     // Con USDC en la mano no se "compran dólares": se ponen a rendir y se sacan.
     dollarsBuyTitle: "Poner dólares a rendir",
     dollarsBuySub:
@@ -532,11 +532,11 @@ const es = {
     dollarsRowSub: "Cerca del 4 % anual",
     kindTakeOut: "Sacaste",
     preIpoPickerNote:
-      "Tokens de PreStocks que siguen el valor de empresas privadas. Más riesgo: sin derechos, 1 % por transferencia y un precio que puede alejarse de su referencia.",
+      "Tokens que siguen el valor de empresas privadas. Más riesgo: sin derechos, 1 % por transferencia y un precio que puede alejarse de su referencia.",
     waitMarketLabel: "Comprar solo con Wall Street abierto",
-    waitMarketHint: "Fuera de horario el token puede alejarse del precio de la acción. Horario de Pyth.",
+    waitMarketHint: "Fuera de horario, el precio puede alejarse del de la acción.",
     preIpoRuleNote:
-      "Sin horario de mercado. La regla no compra si el token está más de 5 % arriba de su valor de referencia de PreStocks.",
+      "Sin horario de mercado. La regla no compra si el token está más de 5 % arriba de su valor de referencia.",
     waitingMarket: (when: string) => `Listo para comprar. Esperando a que abra Wall Street (${when}).`,
     waitingPremium: (asset: string, pct: string) =>
       `Listo para comprar, pero ${asset} está ${pct} arriba de su referencia. Esperando a que baje.`,
@@ -544,9 +544,9 @@ const es = {
     marketOpenNote: (when: string) => `Wall Street está abierto. Cierra ${when}.`,
     marketClosedNote: (when: string) =>
       `Wall Street está cerrado hasta ${when}. Fuera de horario el token puede alejarse del precio de la acción.`,
-    referenceLine: (mark: string, pct: string) => `Referencia PreStocks: $${mark} · el token está ${pct}.`,
+    referenceLine: (mark: string, pct: string) => `Valor de referencia: $${mark} · el token está ${pct}.`,
     premiumHighNote: "Está caro. Podés esperar.",
-    transferFeeNote: (pct: string) => `PreStocks cobra ${pct} % por transferencia, ya en el precio.`,
+    transferFeeNote: (pct: string) => `El emisor cobra ${pct} % por transferencia, ya en el precio.`,
     ruleSummary: (pct: string, asset: string) =>
       `De cada cobro, el ${pct} % va a ${asset}.`,
     ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
@@ -610,7 +610,7 @@ const es = {
     emptyPortfolio: "Todavía nada. Se compra solo con tu próximo cobro.",
     emptyPortfolioNoRule: "Todavía nada. Armá la regla y se compra solo con tu próximo cobro.",
     pricesLive:
-      "Precios de mercado de Jupiter. El rendimiento se calcula sobre lo comprado y vendido desde Camalote.",
+      "Precios de mercado en vivo. El rendimiento se calcula sobre lo comprado y vendido desde Camalote.",
     pricesFallback:
       "Precios de referencia: no pudimos consultar el mercado. El rendimiento se calcula sobre lo comprado y vendido desde Camalote.",
     priceEach: "c/u",
@@ -633,7 +633,7 @@ const es = {
     quoteLoading: "Buscando el mejor precio…",
     rowSpend: "Invertís",
     rowCamaloteFee: (pct: string) => `Comisión Camalote (${pct} %)`,
-    rowJupiter: (pct: string) => `Jupiter y red (${pct} %)`,
+    rowJupiter: (pct: string) => `Mercado y red (${pct} %)`,
     rowIncluded: "en el precio",
     rowFeeShort: (fee: string) => `comisión ${fee}`,
     rowFuel: "Reserva de red (una vez)",
@@ -654,7 +654,7 @@ const es = {
       `${tokens} ${asset} por ${usdc} USDC ya están en tu cuenta de Solana.`,
     camaloteFeeLine: (fee: string) => `Comisión de Camalote: ${fee} USDC.`,
     camaloteFeeSkipped: "Comisión de Camalote: esta vez no se pudo cobrar.",
-    feeLine: (pct: string) => `Jupiter y red: ${pct} %, ya en el precio.`,
+    feeLine: (pct: string) => `Mercado y red: ${pct} %, ya en el precio.`,
     fuelDoneLine: (fuel: string) =>
       `Reserva de red: ${fuel} USDC quedaron en tu cuenta como SOL.`,
     viewOnSolana: "Ver en Solana",
@@ -686,15 +686,15 @@ const es = {
     sim: " · simulación",
     disclosureTitle: "Lo que tenés que saber",
     disclosure: [
-      "Son acciones tokenizadas de xStocks, emitidas por Backed. Siguen el precio de la acción, pero no son la acción ni dan derecho a voto. Suben y bajan: no hay rendimiento prometido.",
+      "Son acciones tokenizadas emitidas por Backed. Siguen el precio de la acción, pero no son la acción ni dan derecho a voto. Suben y bajan: no hay rendimiento prometido.",
       "Los dividendos se reinvierten solos: cuando la acción paga, tu cantidad crece un poco. Lo ves en tu cartera.",
       "Backed puede congelarlas o retirarlas si la ley se lo exige. Esa parte no es solo tuya, como sí lo son tus USDC.",
       "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
       "Las empresas antes de salir a bolsa son tokens de PreStocks: exposición al valor de empresas privadas, sin derechos ni dividendos, con 1 % por transferencia y un precio que a veces se aleja mucho de su referencia. Más riesgo que una acción que cotiza. Tampoco para residentes de Estados Unidos.",
-      "El horario de Wall Street sale de los datos públicos de Pyth. Fuera de horario, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
+      "Fuera del horario de Wall Street, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
       "Los dólares que rinden son USDY, emitidos por Ondo y respaldados por letras del Tesoro de Estados Unidos, para personas fuera de Estados Unidos. El rendimiento (3,6 % anual hoy) cambia con la tasa de Estados Unidos y se ve como un precio que sube. No es un depósito bancario: si el emisor falla, el riesgo es tuyo.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
-      "Tu agente firma por vos con un permiso limitado de Privy: solo compras por Jupiter de lo que dice tu regla y la comisión de Camalote, hasta medio dólar. No puede retirar ni mandar tu plata a otra cuenta. Lo apagás cuando quieras y el permiso se borra.",
+      "Tu agente firma por vos con un permiso limitado: solo las compras que dice tu regla y la comisión de Camalote, hasta medio dólar. No puede retirar ni mandar tu plata a otra cuenta. Lo apagás cuando quieras y el permiso se borra.",
     ],
   },
   agent: {
@@ -726,7 +726,7 @@ const es = {
       "Comprar otra cosa, ni más de lo que dice tu regla.",
       "Cambiar tu regla.",
     ],
-    sheetNote: "Lo apagás cuando quieras. Privy te va a pedir que confirmes el permiso.",
+    sheetNote: "Lo apagás cuando quieras. Antes de activarlo, te pedimos que confirmes el permiso.",
     sheetNoteDemo: "En el demo, el permiso se simula.",
     confirm: "Dar permiso y activar",
     enabling: "Activando…",
@@ -882,7 +882,7 @@ const en: Dictionary = {
     calcFeeLine: (fee: string, pct: string) =>
       `${fee} USDC is our fee (${pct}%, capped at half a dollar).`,
     calcFootnote:
-      "On top comes Jupiter, 0.10%, and the network, which you pay: under a cent per operation, from a 1-dollar reserve that stays in your account. You see it before confirming.",
+      "On top comes the market cost, 0.10%, and the network, which you pay: under a cent per operation, from a 1-dollar reserve that stays in your account. You see it before confirming.",
     trustTitle: "Built so you can sleep at night",
     trust: [
       {
@@ -902,7 +902,7 @@ const en: Dictionary = {
     faqs: [
       {
         q: "What exactly am I buying?",
-        a: "Tokenized stocks by xStocks, issued by Backed, a regulated Swiss company. They track the real stock's price and dividends reinvest on their own. They aren't the stock: you don't vote, and Backed can freeze them if the law requires it. If you pick dollars that earn, you don't buy anything: your USDC are put to earn.",
+        a: "Tokenized stocks issued by Backed, a regulated Swiss company. They track the real stock's price and dividends reinvest on their own. They aren't the stock: you don't vote, and the issuer can freeze them if the law requires it. If you pick dollars that earn, you don't buy anything: your USDC are put to earn.",
       },
       {
         q: "What's the goal?",
@@ -910,7 +910,7 @@ const en: Dictionary = {
       },
       {
         q: "What if I don't want stocks?",
-        a: "Pick «dollars that earn»: your USDC are put to earn in dollars backed by short-term US Treasuries (USDY, by Ondo). They yield 3.6% a year today and creep up a little every day, without the ups and downs of stocks. Take them out whenever you like, for free. Not a bank and not a term deposit: the risk is the issuer's. The fee there is 0.10%. The three-month cushion goes there by default.",
+        a: "Pick «dollars that earn»: your USDC are put to earn in dollars backed by short-term US Treasuries. They yield 3.6% a year today and creep up a little every day, without the ups and downs of stocks. Take them out whenever you like, for free. Not a bank and not a term deposit: the risk is the issuer's. The fee there is 0.10%. The three-month cushion goes there by default.",
       },
       {
         q: "Can it go down?",
@@ -918,7 +918,7 @@ const en: Dictionary = {
       },
       {
         q: "How much does it cost?",
-        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. In dollars that earn, 0.10%. Selling or taking out is free. On top, Jupiter charges 0.10% and you pay the network: under a cent per operation, from a 1-dollar reserve that loads on its own and stays in your account. The first purchase of each stock opens its account: about 25 cents, from that reserve.",
+        a: "0.45% per purchase, never more than half a dollar, shown before you confirm. In dollars that earn, 0.10%. Selling or taking out is free. On top, the market charges 0.10% and you pay the network: under a cent per operation, from a 1-dollar reserve that loads on its own and stays in your account. The first purchase of each stock opens its account: about 25 cents, from that reserve.",
       },
       {
         q: "What if I don't get paid on Solana?",
@@ -930,11 +930,11 @@ const en: Dictionary = {
       },
       {
         q: "What are pre-IPO companies?",
-        a: "PreStocks tokens that track the value of large private companies, mostly in tech. They aren't shares and carry no rights. The price is what the market thinks they're worth and can drift far from the reference PreStocks publishes: the app shows it, and the rule doesn't buy while the token is more than 5% expensive. PreStocks charges 1% per transfer. It's riskier than a listed stock.",
+        a: "Tokens that track the value of large private companies, mostly in tech. They aren't shares and carry no rights. The price is what the market thinks they're worth and can drift far from the reference the issuer publishes: the app shows it, and the rule doesn't buy while the token is more than 5% expensive. The issuer charges 1% per transfer. It's riskier than a listed stock.",
       },
       {
         q: "Is it legal from Argentina?",
-        a: "xStocks aren't available in the United States, United Kingdom, Canada and Australia. In Argentina, Backed doesn't restrict them. Camalote doesn't hold your funds: you sign every purchase. For taxes, ask your accountant.",
+        a: "The stocks aren't available in the United States, United Kingdom, Canada and Australia. In Argentina, the issuer doesn't restrict them. Camalote doesn't hold your funds: you sign every purchase. For taxes, ask your accountant.",
       },
       {
         q: "Why on Solana?",
@@ -947,7 +947,7 @@ const en: Dictionary = {
     finalCta: "Set my rule",
     footerMadeIn: "Made in Argentina 🇦🇷",
     footerNote:
-      "xStocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Dollars that earn (USDY) are issued by Ondo, for people outside the United States. Camalote doesn't give investment advice.",
+      "The stocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Dollars that earn (USDY) are issued by Ondo, for people outside the United States. Camalote doesn't give investment advice.",
   },
   app: {
     loginTitle: "Sign in with your email",
@@ -1235,11 +1235,11 @@ const en: Dictionary = {
     assetGroupDollars: "Dollars",
     dollarsChipSub: "About 4% a year, without the ups and downs of stocks",
     dollarsPickerNote:
-      "Dollars backed by short-term US Treasuries (USDY, by Ondo). They yield 3.6% a year today; the rate moves with US rates. Not a bank and not a term deposit: the risk is the issuer's, not the market's. Camalote fee: 0.10%.",
+      "Dollars backed by short-term US Treasuries. They yield 3.6% a year today; the rate moves with US rates. Not a bank and not a term deposit: the risk is the issuer's, not the market's. Camalote fee: 0.10%.",
     dollarsRuleNote:
       "No market hours and no reference: the rule buys as soon as it adds up to the minimum. The yield shows up as a price that creeps up a little every day.",
     dollarsNote:
-      "The yield shows up as a price that creeps up a little every day. Issued by Ondo: not a bank.",
+      "The yield shows up as a price that creeps up a little every day. Not a bank.",
     dollarsBuyTitle: "Put dollars to earn",
     dollarsBuySub:
       "Your USDC become dollars that earn. Take them out whenever you like, no Camalote fee.",
@@ -1266,11 +1266,11 @@ const en: Dictionary = {
     dollarsRowSub: "About 4% a year",
     kindTakeOut: "Took out",
     preIpoPickerNote:
-      "PreStocks tokens that track the value of private companies. Riskier: no rights, a 1% transfer fee and a price that can drift from its reference.",
+      "Tokens that track the value of private companies. Riskier: no rights, a 1% transfer fee and a price that can drift from its reference.",
     waitMarketLabel: "Buy only while Wall Street is open",
-    waitMarketHint: "Outside market hours the token can drift from the stock's price. Hours from Pyth.",
+    waitMarketHint: "Outside market hours, the price can drift from the stock's.",
     preIpoRuleNote:
-      "No market hours. The rule doesn't buy while the token trades more than 5% above its PreStocks reference value.",
+      "No market hours. The rule doesn't buy while the token trades more than 5% above its reference value.",
     waitingMarket: (when: string) => `Ready to buy. Waiting for Wall Street to open (${when}).`,
     waitingPremium: (asset: string, pct: string) =>
       `Ready to buy, but ${asset} is ${pct} above its reference. Waiting for it to come down.`,
@@ -1278,9 +1278,9 @@ const en: Dictionary = {
     marketOpenNote: (when: string) => `Wall Street is open. It closes ${when}.`,
     marketClosedNote: (when: string) =>
       `Wall Street is closed until ${when}. Outside market hours the token can drift from the stock's price.`,
-    referenceLine: (mark: string, pct: string) => `PreStocks reference: $${mark} · the token is ${pct}.`,
+    referenceLine: (mark: string, pct: string) => `Reference value: $${mark} · the token is ${pct}.`,
     premiumHighNote: "It's expensive. You can wait.",
-    transferFeeNote: (pct: string) => `PreStocks charges ${pct}% per transfer, already in the price.`,
+    transferFeeNote: (pct: string) => `The issuer charges ${pct}% per transfer, already in the price.`,
     ruleSummary: (pct: string, asset: string) =>
       `${pct}% of every payment goes to ${asset}.`,
     ruleSummaryGoal: (pct: string, goal: string, asset: string) =>
@@ -1343,7 +1343,7 @@ const en: Dictionary = {
     emptyPortfolio: "Nothing yet. It buys itself with your next payment.",
     emptyPortfolioNoRule: "Nothing yet. Set up the rule and it buys itself with your next payment.",
     pricesLive:
-      "Market prices from Jupiter. Return is computed on what was bought and sold through Camalote.",
+      "Live market prices. Return is computed on what was bought and sold through Camalote.",
     pricesFallback:
       "Reference prices: we couldn't reach the market. Return is computed on what was bought and sold through Camalote.",
     priceEach: "each",
@@ -1366,7 +1366,7 @@ const en: Dictionary = {
     quoteLoading: "Finding the best price…",
     rowSpend: "You invest",
     rowCamaloteFee: (pct: string) => `Camalote fee (${pct}%)`,
-    rowJupiter: (pct: string) => `Jupiter and network (${pct}%)`,
+    rowJupiter: (pct: string) => `Market and network (${pct}%)`,
     rowIncluded: "in the price",
     rowFeeShort: (fee: string) => `fee ${fee}`,
     rowFuel: "Network reserve (once)",
@@ -1387,7 +1387,7 @@ const en: Dictionary = {
       `${tokens} ${asset} for ${usdc} USDC are now in your Solana account.`,
     camaloteFeeLine: (fee: string) => `Camalote fee: ${fee} USDC.`,
     camaloteFeeSkipped: "Camalote fee: couldn't be collected this time.",
-    feeLine: (pct: string) => `Jupiter and network: ${pct}%, already in the price.`,
+    feeLine: (pct: string) => `Market and network: ${pct}%, already in the price.`,
     fuelDoneLine: (fuel: string) =>
       `Network reserve: ${fuel} USDC stayed in your account as SOL.`,
     viewOnSolana: "View on Solana",
@@ -1419,15 +1419,15 @@ const en: Dictionary = {
     sim: " · simulation",
     disclosureTitle: "What you should know",
     disclosure: [
-      "These are tokenized stocks by xStocks, issued by Backed. They track the stock's price, but they are not the stock and carry no voting rights. They go up and down: there's no promised return.",
+      "These are tokenized stocks issued by Backed. They track the stock's price, but they are not the stock and carry no voting rights. They go up and down: there's no promised return.",
       "Dividends reinvest on their own: when the stock pays, your amount grows a little. You see it in your portfolio.",
       "Backed can freeze or claw them back if the law requires it. That part isn't yours alone, the way your USDC are.",
       "Not available to residents of the United States, United Kingdom, Canada and Australia.",
       "Pre-IPO companies are PreStocks tokens: exposure to the value of private companies, with no rights or dividends, a 1% transfer fee and a price that sometimes drifts far from its reference. Riskier than a listed stock. Also not for US residents.",
-      "Wall Street hours come from Pyth's public data. Outside market hours a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
+      "Outside Wall Street hours, a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
       "Dollars that earn are USDY, issued by Ondo and backed by short-term US Treasuries, for people outside the United States. The yield (3.6% a year today) moves with US rates and shows up as a rising price. Not a bank deposit: if the issuer fails, the risk is yours.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",
-      "Your agent signs for you with a limited Privy permission: only Jupiter buys of what your rule says and Camalote's fee, up to half a dollar. It can't withdraw or send your money to another account. Switch it off anytime and the permission is removed.",
+      "Your agent signs for you with a limited permission: only the buys your rule says and Camalote's fee, up to half a dollar. It can't withdraw or send your money to another account. Switch it off anytime and the permission is removed.",
     ],
   },
   agent: {
@@ -1459,7 +1459,7 @@ const en: Dictionary = {
       "Buy something else, or more than your rule says.",
       "Change your rule.",
     ],
-    sheetNote: "Switch it off whenever you like. Privy will ask you to confirm the permission.",
+    sheetNote: "Switch it off whenever you like. Before it turns on, we'll ask you to confirm the permission.",
     sheetNoteDemo: "In the demo, the permission is simulated.",
     confirm: "Give permission and turn on",
     enabling: "Turning on…",
