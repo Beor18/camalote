@@ -9,7 +9,7 @@ import type { AgentEventView } from "@/components/bridge/types";
  */
 
 const PREFIX = "camalote.agent.v1:";
-const MAX_EVENTS = 30;
+const MAX_EVENTS = 50;
 /** Cambió el estado o la bitácora del agente. */
 export const AGENT_EVENT = "camalote:agent";
 

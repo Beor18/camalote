@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   if (!isAddress(address)) return NextResponse.json({ error: "Cuenta inválida." }, { status: 400 });
   try {
     await authorize(req, address);
-    const [account, events] = await Promise.all([getAgentAccount(address), listEvents(address, 20)]);
+    const [account, events] = await Promise.all([getAgentAccount(address), listEvents(address, 50)]);
     return NextResponse.json(
       {
         available: true,

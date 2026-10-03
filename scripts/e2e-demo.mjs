@@ -101,8 +101,8 @@ console.log("PURCHASE:", await text("[data-testid=invest-purchases] p"));
 console.log("GOAL 2:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("MOMENT:", await text("[data-testid=rule-moment]"));
 console.log("PACE:", await text("[data-testid=goal-pace]"));
-await page.waitForFunction(() => document.querySelectorAll("[data-testid=agent-events] li").length >= 2, null, { timeout: 15000 });
-console.log("AGENT SAID:", await text("[data-testid=agent-events] li p"));
+await page.waitForFunction(() => document.querySelectorAll("[data-testid=agent-events] li").length >= 1, null, { timeout: 15000 });
+console.log("AGENT SAID:", await text("[data-testid=agent-events] li p.text-xs.leading-relaxed"));
 
 // 4b. Edita: abre en el resumen, toca "Para qué" y baja la meta a 10: ya llegó.
 // Festejo y elige la próxima (el curso), que abre directo en ese paso.
