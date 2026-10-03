@@ -76,12 +76,12 @@ export function errorMessage(lang: Lang): string {
 
 export function enabledMessage(lang: Lang): string {
   return lang === "es"
-    ? "Listo, ya estoy a cargo. Cuando te paguen, aparto tu parte y compro, aunque cierres la app."
-    : "Done, I'm on it. When you get paid, I set aside your share and buy, even with the app closed.";
+    ? "Listo, ya estoy a cargo. Cuando te paguen, aparto tu parte y compro."
+    : "Done, I'm on it. When you get paid, I set aside your share and buy.";
 }
 
 export function disabledMessage(lang: Lang): string {
   return lang === "es"
-    ? "Me apagaste. Ya no puedo firmar nada por vos. La regla vuelve a correr solo con la app abierta."
-    : "You turned me off. I can't sign anything for you anymore. The rule runs only with the app open again.";
+    ? "Me apagaste. Ya no puedo firmar nada por vos."
+    : "You turned me off. I can't sign anything for you anymore.";
 }

@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camalote · Pitch Crypto World's Fair</title>
+<!--
+  Pitch deck de Camalote para el Crypto World's Fair de Colosseum (2026-10-03).
+  Abrilo en el navegador. Flechas o espacio para avanzar, N para las notas,
+  F para pantalla completa. Para el PDF: Imprimir, horizontal, sin márgenes,
+  con gráficos de fondo. Las capturas están en img/.
+  Pendientes marcados con [__]: cifras de mercado con fuente, tracción al 12/10, socio.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Inter:wght@400..700&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0f0d0c; }
+  h1, h2, h3, p, ul, ol { margin: 0; }
+  ul, ol { padding-left: 1.1em; }
+  li + li { margin-top: 0.15em; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 0.45em 0.6em; border-bottom: 1px solid #E7E5E4; text-align: left; }
+  th { font-weight: 600; }
+  aside { display: none; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; visibility: hidden; opacity: 0; transition: opacity 200ms ease-out; }
+  .slide.on { visibility: visible; opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+  #bar { position: fixed; left: 0; bottom: 0; height: 4px; background: linear-gradient(100deg,#0052ff,#8b5cf6 52%,#109d74); transition: width 200ms ease-out; }
+  #notes { position: fixed; left: 16px; right: 16px; bottom: 16px; max-height: 40vh; overflow: auto; padding: 16px 20px; border-radius: 12px; background: rgba(28,25,23,0.94); color: #f0eee9; font: 18px/1.5 Inter, Arial, sans-serif; display: none; }
+  #notes.on { display: block; }
+  #hint { position: fixed; top: 12px; right: 16px; color: #a8a29e; font: 13px Inter, Arial, sans-serif; opacity: 0.8; }
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: auto; height: auto; }
+    .slide { position: relative; visibility: visible; opacity: 1; break-after: page; }
+    #bar, #notes, #hint { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<section class="slide" id="cover" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<img src="img/tripulacion.png" alt="La tripulación de Camalote navegando sobre un camalote" style="position:absolute;left:1340px;top:330px;width:452px;height:316px;object-fit:contain">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Crypto World's Fair · Pista Solana</p>
+<div style="width:1180px;display:flex;flex-direction:column;gap:32px">
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.05;letter-spacing:-2px;color:#F0EEE9">Una parte de cada cobro</h1>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.05;letter-spacing:-2px;background:linear-gradient(100deg, #6D9BFF 0%, #B9A4F8 52%, #34D399 100%);background-clip:text;-webkit-text-fill-color:transparent">se invierte.</h1>
+<p style="font-size:32px;line-height:1.4;color:#C9C3BC">Para los que cobran en USDC. Antes de que la gastes, sin que tengas que hacer nada.</p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">camalote</p>
+<p style="font-size:24px;color:#C9C3BC">Fernando · Corrientes, Argentina · camalote.vercel.app</p>
+</div>
+<aside>Hola, soy Fernando, de Corrientes, Argentina. Esto es Camalote. Una parte de cada cobro se invierte sola, antes de que la gastes. Es para la gente que cobra en USDC, como yo. Y desde este hackathon, lo hace un agente por vos.</aside>
+</section>
+<section class="slide" id="problema" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">El problema</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;letter-spacing:-3px;color:#F0EEE9">Te pagan 40. Se van 40.</h2>
+<p style="font-size:32px;line-height:1.4;color:#C9C3BC;width:1300px">Un desarrollador freelance en Argentina cobra de clientes de afuera en USDC, sin fecha fija y sin broker. Su plan es invertir lo que sobra. Y nunca pasa.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#292524;padding:40px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">Nunca sobra</h3>
+<p style="font-size:28px;line-height:1.4;color:#C9C3BC">Alquiler, cuentas, tarjeta. Para vos queda lo que sobra, y no sobra.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#292524;padding:40px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">No hay sueldo</h3>
+<p style="font-size:28px;line-height:1.4;color:#C9C3BC">Invertir por calendario supone un sueldo fijo. El freelancer cobra cuando le pagan.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#292524;padding:40px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">El broker no sale</h3>
+<p style="font-size:28px;line-height:1.4;color:#C9C3BC">Papeles, mínimos y una transferencia que desde acá no sale.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#A8A29E">2</p></div>
+<aside>Te pagan 40 dólares y se van 40. Cobro de afuera en USDC, como miles de desarrolladores y diseñadores en Argentina. El plan de todos es invertir lo que sobra. Pero nunca sobra. Los planes de inversión automática suponen un sueldo fijo, y nosotros cobramos cuando nos pagan. Y abrir un broker desde acá es papeles, mínimos y una transferencia que no sale. Entonces los dólares quedan quietos en la billetera, o se gastan.</aside>
+</section>
+<section class="slide" id="idea" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">La idea</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;width:1500px">Invertir en el único momento en que hay plata: cuando entra.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:20px;background:#F3F1EE;padding:48px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#57534E">Por calendario</h3>
+<ul style="font-size:32px;line-height:1.5;color:#57534E">
+<li>Todos los meses, el mismo día.</li>
+<li>Un monto fijo, como si hubiera sueldo.</li>
+<li>Si ese mes no entró nada, falla.</li>
+</ul>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:48px;border-radius:24px;border:3px solid #7C3AED;box-shadow:0 24px 64px rgba(124,58,237,0.12)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#7C3AED">Por cobro</h3>
+<ul style="font-size:32px;line-height:1.5;color:#1C1917">
+<li>Cada vez que te pagan.</li>
+<li>Un porcentaje, no un monto.</li>
+<li>Los cobros chicos se juntan hasta 10 USDC.</li>
+</ul>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">3</p></div>
+<aside>La idea es simple. Págate primero solo funciona si pasa antes de que gastes, y ese momento es cuando entra la plata. Por eso Camalote no invierte por calendario: invierte por cobro. Un porcentaje de cada pago, no un monto fijo. Y los cobros chicos se van juntando hasta 10 dólares, así un trabajo de 25 dólares también invierte.</aside>
+</section>
+<section class="slide" id="producto" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:600px 1fr;gap:64px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">El producto</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Una regla, armada una sola vez.</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">1. Qué parte</h3><p style="font-size:28px;line-height:1.4;color:#57534E">El 10, el 20 o el 30 % de cada cobro.</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">2. Para qué</h3><p style="font-size:28px;line-height:1.4;color:#57534E">Una meta con nombre: el viaje, la compu, un colchón.</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">3. En qué</h3><p style="font-size:28px;line-height:1.4;color:#57534E">Acciones, empresas antes de salir a bolsa o dólares que rinden.</p></div>
+</div>
+</div>
+<img src="img/cuenta.png" alt="La app de Camalote: la regla del 30 % para el viaje, la cuenta y el agente con su primera compra" style="width:1000px;height:625px;object-fit:cover;border-radius:24px;border:1px solid #E7E5E4;box-shadow:0 32px 80px rgba(28,25,23,0.14)">
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">4</p></div>
+<aside>Entrás con tu email y tenés una cuenta en Solana donde te pagan. Contestás tres preguntas, una sola vez: qué parte de cada cobro, para qué, y en qué. Desde ahí la regla es el titular de la app: el 30 % de cada cobro va a El viaje. Ves cuánto llevás, cuánto falta en cobros, y cada compra con su comprobante.</aside>
+</section>
+<section class="slide" id="como" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Cómo funciona</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">De cada cobro, a tu meta. Solo.</h2>
+</div>
+<div style="display:flex;align-items:center;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Te pagan</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">Llegan 40 USDC a tu cuenta.</p>
+</div>
+<svg aria-hidden="true" width="48" height="24" viewBox="0 0 48 24" style="flex:none"><path d="M0 7h28V0l20 12-20 12v-7H0z" fill="#7C3AED"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Aparta</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">El 30 %: 12 USDC son tuyos primero.</p>
+</div>
+<svg aria-hidden="true" width="48" height="24" viewBox="0 0 48 24" style="flex:none"><path d="M0 7h28V0l20 12-20 12v-7H0z" fill="#7C3AED"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Junta</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">Al llegar a 10 USDC, está listo.</p>
+</div>
+<svg aria-hidden="true" width="48" height="24" viewBox="0 0 48 24" style="flex:none"><path d="M0 7h28V0l20 12-20 12v-7H0z" fill="#7C3AED"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Compra</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">En lo que elegiste, en tu cuenta.</p>
+</div>
+<svg aria-hidden="true" width="48" height="24" viewBox="0 0 48 24" style="flex:none"><path d="M0 7h28V0l20 12-20 12v-7H0z" fill="#7C3AED"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#7C3AED;padding:32px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#FFFFFF">Tu meta avanza</p>
+<p style="font-size:24px;line-height:1.35;color:#EDE7FD">Te avisa cuánto falta.</p>
+</div>
+</div>
+<div style="display:flex;gap:48px">
+<p style="font-size:28px;color:#57534E"><b style="color:#1C1917">Desde 2 USDC</b> si comprás a mano.</p>
+<p style="font-size:28px;color:#57534E"><b style="color:#1C1917">Precio y comisión</b> a la vista antes.</p>
+<p style="font-size:28px;color:#57534E"><b style="color:#1C1917">Comprobante</b> de cada operación.</p>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">5</p></div>
+<aside>Así funciona. Te llegan 40 USDC. La regla aparta el 30 %, 12 dólares que ya son tuyos. Cuando lo apartado llega a 10, compra en lo que elegiste y lo deja en tu propia cuenta. La meta avanza y la app te dice cuánto falta, en cobros como el último. Si querés comprar a mano, es desde 2 dólares, y siempre ves el precio y la comisión antes de confirmar.</aside>
+</section>
+<section class="slide" id="agente" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:1fr 660px;gap:64px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Nuevo en el hackathon</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Un agente cumple tu regla por vos.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#ECFDF3;padding:32px;border-radius:24px;border:1px solid #B7E4C7">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#15803D">Puede</h3>
+<ul style="font-size:26px;line-height:1.45;color:#1C1917">
+<li>Comprar lo que elegiste, con tu parte.</li>
+<li>Cobrar la comisión, hasta 0,50.</li>
+<li>Contarte qué hizo.</li>
+</ul>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F3F1EE;padding:32px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;color:#57534E">No puede</h3>
+<ul style="font-size:26px;line-height:1.45;color:#1C1917">
+<li>Retirar ni mandar tu plata a otra cuenta.</li>
+<li>Comprar otra cosa o más.</li>
+<li>Cambiar tu regla.</li>
+</ul>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:40px;justify-content:center">
+<img src="img/onboarding-agente.png" alt="Onboarding: el paso que presenta al agente" style="width:300px;height:650px;object-fit:cover;border-radius:32px;border:1px solid #E7E5E4;box-shadow:0 24px 64px rgba(28,25,23,0.14)">
+<img src="img/permiso-agente.png" alt="El permiso del agente: lo que puede y lo que no puede" style="width:300px;height:650px;object-fit:cover;border-radius:32px;border:1px solid #E7E5E4;box-shadow:0 24px 64px rgba(28,25,23,0.14)">
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">6</p></div>
+<aside>Lo que hicimos en este hackathon: un agente. El usuario lo activa una vez en el onboarding, y desde ahí, cuando le pagan, el agente aparta su parte y compra solo, sin que tenga que hacer nada. Antes de activarlo, la app dice en claro qué puede y qué no. Puede comprar lo que elegiste, con la parte que elegiste, y cobrar la comisión. No puede retirar tu plata, ni mandarla a otra cuenta, ni comprar otra cosa, ni cambiar tu regla. Y te cuenta cada cosa que hace.</aside>
+</section>
+<section class="slide" id="seguro" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Por qué es seguro</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#F0EEE9">La IA decide cuándo. Nunca cuánto ni en qué.</h2>
+</div>
+<div style="display:flex;align-items:stretch;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:28px;border-radius:20px">
+<p style="font-size:24px;font-weight:600;color:#B9A4F8">1 · Aviso</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.2;color:#F0EEE9">Entra un cobro</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">Helius avisa en segundos. Un reloj de respaldo cubre el resto.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:28px;border-radius:20px">
+<p style="font-size:24px;font-weight:600;color:#B9A4F8">2 · Decide</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.2;color:#F0EEE9">Comprar o esperar</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">Un modelo en Groq, con una sola herramienta que no elige monto ni destino.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:28px;border-radius:20px">
+<p style="font-size:24px;font-weight:600;color:#B9A4F8">3 · Revisa</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.2;color:#F0EEE9">Simula la orden</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">La orden de Jupiter se simula: tiene que dejar lo comprado en tu cuenta.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:28px;border-radius:20px">
+<p style="font-size:24px;font-weight:600;color:#B9A4F8">4 · Firma</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;line-height:1.2;color:#F0EEE9">Solo dentro del permiso</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">Privy firma si cada instrucción cumple la política del usuario.</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.4;color:#F0EEE9;width:1500px">Si la IA no responde, compra la regla sola. Si la orden no cierra, no se firma. <span style="color:#B9A4F8">El modelo nunca tiene la llave.</span></p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#A8A29E">7</p></div>
+<aside>La pregunta obvia es: ¿y si la IA se equivoca? La respuesta está en cuatro controles. Helius nos avisa cuando entra un cobro. Un modelo en Groq decide si comprar ahora o esperar, pero su única herramienta es comprar según la regla: no puede elegir cuánto ni en qué. Antes de firmar, el servidor simula la orden de Jupiter y confirma que lo comprado llega a la cuenta del usuario. Y Privy firma solo si cada instrucción cumple la política que el usuario aceptó: compras por Jupiter y la comisión hasta medio dólar. Si la IA no responde, la regla compra sola. El modelo nunca tiene la llave. Lo probamos contra mainnet con órdenes reales: las que sacaban de más, quedaron frenadas.</aside>
+</section>
+<section class="slide" id="destinos" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">En qué</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Tres destinos. Lo cambiás cuando quieras.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#7C3AED;background:#F1EBFE;padding:6px 16px;border-radius:999px;align-self:start">0,45 % por compra</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15">Acciones que cotizan</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Cinco para empezar, de las más de 60 tokenizadas en Solana. Los dividendos se reinvierten solos.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#7C3AED;background:#F1EBFE;padding:6px 16px;border-radius:999px;align-self:start">0,45 % por compra</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15">Empresas antes de salir a bolsa</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Ocho empresas privadas, con su riesgo dicho. La regla no compra si el precio está más de 5 % arriba de su referencia.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#15803D;background:#ECFDF3;padding:6px 16px;border-radius:999px;align-self:start">0,10 % por depósito</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15">Dólares que rinden</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Respaldados por letras del Tesoro de EE. UU. Cerca de 3,6 % anual hoy, sin sube y baja.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026 · Sin custodia: todo queda en la cuenta del usuario</p><p style="font-size:24px;color:#78716C">8</p></div>
+<aside>Tres destinos. Acciones que cotizan, tokenizadas en Solana, con los dividendos reinvertidos solos. Empresas privadas antes de salir a bolsa, con su riesgo dicho en la app: la regla no compra si el token está más de 5 % arriba del valor de referencia. Y para el que no quiere el sube y baja, dólares que rinden, respaldados por letras del Tesoro, cerca de 3,6 % anual hoy. El colchón de tres meses va ahí por defecto. Nada queda en nuestras manos: todo está en la cuenta del usuario.</aside>
+</section>
+<section class="slide" id="negocio" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Modelo de negocio</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Una comisión chica, siempre a la vista.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;letter-spacing:-3px;color:#7C3AED">0,45 %</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">por compra de acciones, nunca más de 0,50 USDC.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;letter-spacing:-3px;color:#15803D">0,10 %</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">al poner dólares a rendir.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1;letter-spacing:-3px;color:#1C1917">0</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">por vender o sacar. Sin suscripción ni spread escondido.</p>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<p style="font-size:30px;line-height:1.4;color:#1C1917"><b>Números honestos.</b> Quien invierte 200 USDC por mes paga cerca de 0,90. Es un negocio de volumen.</p>
+<p style="font-size:30px;line-height:1.4;color:#1C1917"><b>Camino a más.</b> Plataformas que pagan en USDC ofrecen Camalote a quienes cobran.</p>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">9</p></div>
+<aside>El modelo es una comisión chica y siempre a la vista. 0,45 % por compra de acciones, con tope de medio dólar. 0,10 % en dólares que rinden. Vender y sacar es gratis. No hay suscripción ni spread escondido, y la comisión se cobra recién después de que la compra salió bien. Siendo honestos: alguien que invierte 200 dólares por mes nos deja 90 centavos. Esto es un negocio de volumen, y el camino a escala es que las plataformas que ya pagan en USDC ofrezcan Camalote a quienes cobran.</aside>
+</section>
+<section class="slide" id="mercado" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Mercado</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Quien cobra en USDC y no tiene broker.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:3px solid #7C3AED">
+<p style="font-size:24px;font-weight:600;color:#7C3AED">Empezamos acá</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1C1917">[__]</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">freelancers en Argentina que cobran de afuera en USDC.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#57534E">Después</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1C1917">[__]</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">remotos y bounties en Latinoamérica cobrando en stablecoins.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#57534E">Viento a favor</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#1C1917">[__]</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">en acciones tokenizadas en Solana, y creciendo.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026 · Fuentes: [completar]</p><p style="font-size:24px;color:#78716C">10</p></div>
+<aside>El mercado empieza muy concreto: freelancers en Argentina que cobran de afuera en USDC. [Completar con la cifra y su fuente.] Después, remotos y gente que cobra bounties en toda Latinoamérica. [Cifra y fuente.] Y el viento a favor: las acciones tokenizadas en Solana están creciendo rápido. [Cifra de volumen o valor y su fuente.] No damos un número que no podamos respaldar.</aside>
+</section>
+<section class="slide" id="competencia" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Competencia</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Todos venden acceso. Nadie invierte al cobrar.</h2>
+</div>
+<table style="font-size:28px;color:#1C1917;font-family:'Inter', Arial, sans-serif">
+<tr style="background:#F3F1EE"><th style="width:28%;text-align:left">Opción</th><th style="width:20%;text-align:left">Invierte al cobrar</th><th style="width:18%;text-align:left">Meta con nombre</th><th style="width:16%;text-align:left">Sin custodia</th><th style="width:18%;text-align:left">Por compra</th></tr>
+<tr style="background:#F1EBFE"><td><b>Camalote</b></td><td><b>Sí, solo</b></td><td><b>Sí</b></td><td><b>Sí</b></td><td><b>0,45 %, tope 0,50</b></td></tr>
+<tr><td>Lemon, acciones</td><td>No</td><td>No</td><td>No</td><td>0,5 % + 0,5 %</td></tr>
+<tr><td>Takenos</td><td>No</td><td>No</td><td>No</td><td>0 % en ETFs</td></tr>
+<tr><td>Phantom</td><td>No</td><td>No</td><td>Sí</td><td>0,85 %</td></tr>
+<tr><td>Jupiter, a mano</td><td>No</td><td>No</td><td>Sí</td><td>0,10 %</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4;color:#57534E;width:1500px">En los 4.068 proyectos de hackathons de Colosseum, ninguno invierte en el momento del cobro con una meta con nombre. La diferencia es el mecanismo, no el precio.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Comisiones publicadas al 13/09/2026 · Proyectos: Colosseum Copilot, al 29/09/2026</p><p style="font-size:24px;color:#78716C">11</p></div>
+<aside>Hay buenas opciones para comprar acciones o cripto. Lemon cobra medio por ciento de cada lado, Takenos tiene ETFs sin comisión, Phantom 0,85 %, Jupiter 0,10 % a mano. Todos venden acceso: vos te tenés que acordar de comprar. Ninguno invierte en el momento en que te pagan. Revisamos los 4.068 proyectos del corpus de Colosseum y ninguno tiene la regla por cobro con una meta. Nuestra ventaja no es ser más baratos que Jupiter: es el mecanismo.</aside>
+</section>
+<section class="slide" id="traccion" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:1fr 1fr;gap:64px">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Tracción</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Números chicos y reales.</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">reglas armadas</p></div>
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">cobros reales que pasaron por la regla</p></div>
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">USDC invertidos, con comprobante</p></div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#57534E">Al 12/10/2026. Cada número sale de la base y se puede verificar en la red.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px;background:#FFFFFF;padding:48px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700">Hecho en el hackathon, del 14/9 al 12/10</h3>
+<ul style="font-size:28px;line-height:1.55;color:#1C1917">
+<li>Metas con nombre y cuánto falta, en cobros.</li>
+<li>Dólares que rinden como destino.</li>
+<li>Rediseño y onboarding de tres pasos.</li>
+<li>El agente que cumple la regla solo.</li>
+<li>La regla y lo apartado guardados en la base.</li>
+</ul>
+<p style="font-size:24px;line-height:1.4;color:#57534E">Camalote existe desde agosto de 2026. Lo anterior está declarado y en el historial del repo.</p>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">12</p></div>
+<aside>Tracción. [Completar el 12 de octubre con los números reales: cuántas personas armaron su regla, cuántos cobros reales pasaron por ella y cuántos USDC se invirtieron. Piso comprometido: 10 reglas, 3 cobros, 50 USDC.] Son números chicos, pero son reales, y cada uno se puede verificar. Y esto es lo que hicimos dentro de la ventana del hackathon: metas con nombre, dólares que rinden, el rediseño con onboarding, el agente que cumple la regla solo, y la regla guardada en la base. Camalote existe desde agosto: todo lo anterior está declarado.</aside>
+</section>
+<section class="slide" id="salida" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Salida al mercado</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Los primeros veinte, uno por uno.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">1</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Superteam Argentina</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Cobran bounties en USDC directo a la billetera. Un canal, veinte nombres.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">2</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Diez minutos con cada uno</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">«Dame diez minutos y tu próximo cobro invierte solo, sin abrir un broker.»</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">3</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Plataformas que pagan</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Quien paga en USDC ofrece Camalote a quien cobra. Ahí está la escala.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026</p><p style="font-size:24px;color:#78716C">13</p></div>
+<aside>Cómo llegamos a los primeros veinte. Un solo canal: Superteam Argentina, gente que cobra bounties en USDC directo a la billetera. La oferta es concreta: dame diez minutos y tu próximo cobro invierte solo, sin abrir un broker. Diez minutos es lo que tarda armar la regla y activar el agente con alguien al lado. Y la escala viene después, de las plataformas que ya pagan en USDC y pueden ofrecer Camalote a quienes cobran.</aside>
+</section>
+<section class="slide" id="equipo" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:1fr 560px;gap:64px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Equipo</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Fernando, fundador. Cobra en dólares desde Corrientes.</h2>
+</div>
+<ul style="font-size:30px;line-height:1.55;color:#1C1917">
+<li>Más de diez años construyendo producto.</li>
+<li>Hizo tuneport.xyz: música independiente en Base, con login por email.</li>
+<li>Vive el problema: cobra de afuera y no tiene broker.</li>
+<li>Busca: [socio o socia para distribución].</li>
+</ul>
+</div>
+<img src="img/tripulacion.png" alt="La tripulación de Camalote" style="width:560px;height:392px;object-fit:contain">
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Crypto World's Fair 2026 · github.com/Beor18</p><p style="font-size:24px;color:#78716C">14</p></div>
+<aside>Soy Fernando. Hace más de diez años que construyo producto. Antes hice tuneport, una plataforma de música independiente en Base con login por email: la misma obsesión de esconder la parte cripto. Y vivo el problema: cobro de afuera, en dólares, desde Corrientes, sin broker. Hoy estoy solo, y estoy buscando a alguien para distribución. [Completar si se suma alguien.]</aside>
+</section>
+<section class="slide" id="cierre" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:48px">
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;letter-spacing:-3px;color:#F0EEE9">Pagate primero.</h1>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;letter-spacing:-3px;background:linear-gradient(100deg, #6D9BFF 0%, #B9A4F8 52%, #34D399 100%);background-clip:text;-webkit-text-fill-color:transparent">Sin acordarte nunca más.</h1>
+<div style="display:flex;gap:64px">
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Probalo</p><p style="font-size:36px;color:#F0EEE9">camalote.vercel.app</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Código</p><p style="font-size:36px;color:#F0EEE9">github.com/Beor18/camalote</p></div>
+</div>
+<aside>Camalote: pagate primero, sin acordarte nunca más. Lo pueden probar en camalote.vercel.app, y el código está abierto en GitHub. Gracias.</aside>
+</section>
+</div></div>
+<div id="bar"></div>
+<div id="notes" aria-live="polite"></div>
+<div id="hint">← → avanzar · N notas · F pantalla completa</div>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const deck = document.getElementById("deck");
+  const bar = document.getElementById("bar");
+  const notes = document.getElementById("notes");
+  let i = Math.min(Math.max(parseInt(location.hash.slice(1), 10) - 1 || 0, 0), slides.length - 1);
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    deck.style.transform = `scale(${s})`;
+  }
+  function show(n) {
+    i = Math.min(Math.max(n, 0), slides.length - 1);
+    slides.forEach((el, k) => el.classList.toggle("on", k === i));
+    bar.style.width = `${((i + 1) / slides.length) * 100}%`;
+    notes.textContent = slides[i].querySelector("aside")?.textContent.trim() ?? "";
+    history.replaceState(null, "", `#${i + 1}`);
+  }
+  addEventListener("resize", fit);
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key.toLowerCase() === "n") notes.classList.toggle("on");
+    else if (e.key.toLowerCase() === "f") (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
+  });
+  document.getElementById("stage").addEventListener("click", (e) => show(e.clientX > innerWidth / 3 ? i + 1 : i - 1));
+  setTimeout(() => (document.getElementById("hint").style.display = "none"), 4000);
+  fit();
+  show(i);
+</script>
+</body>
+</html>

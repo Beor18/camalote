@@ -188,7 +188,7 @@ const es = {
       },
       {
         q: "¿Cuándo se mueve la plata?",
-        a: "En segundos. Con tu agente activo, aunque la app esté cerrada. Sin agente, se mueve cuando abrís la app. Los cobros chicos se juntan hasta 10 dólares.",
+        a: "En segundos, con tu agente activo: te pagan y él aparta tu parte. Los cobros chicos se juntan hasta 10 dólares.",
       },
       {
         q: "¿Qué son las empresas antes de salir a bolsa?",
@@ -598,7 +598,7 @@ const es = {
       `Junté ${goal} sin acordarme: una parte de cada cobro se invirtió sola con Camalote.`,
     ruleMin: (min: string) => `Cuando esa parte junta ${min} USDC, se compra sola.`,
     ruleOpenNote:
-      "Sin agente, la regla corre mientras Camalote está abierta. Con tu agente activo, compra aunque la cierres.",
+      "Con tu agente activo, la regla compra sola en cuanto te pagan.",
     pendingLabel: (pending: string, min: string) =>
       `Apartado: ${pending} USDC. Compra al juntar ${min}.`,
     paused: (msg: string) =>
@@ -701,8 +701,8 @@ const es = {
     title: "Tu agente",
     on: "Activo",
     off: "Apagado",
-    offSub: "Compra según tu regla aunque cierres la app.",
-    onSub: "Cuando te pagan, aparta tu parte y compra. Aunque la app esté cerrada.",
+    offSub: "Cumple tu regla por vos, sin que tengas que acordarte.",
+    onSub: "Cuando te pagan, aparta tu parte y compra. Solo.",
     enable: "Activar mi agente",
     runNow: "Revisar ahora",
     running: "Revisando…",
@@ -753,7 +753,7 @@ const es = {
     stepOf: (n: number, total: number) => `Paso ${n} de ${total}`,
     steps: ["Tu regla", "Tu agente", "Tu primer cobro"],
     agentTitle: "Ahora, que lo haga solo.",
-    agentSub: "Tu agente cumple tu regla aunque no abras la app. Y te cuenta cada cosa que hace.",
+    agentSub: "Tu agente cumple tu regla por vos. Y te cuenta cada cosa que hace.",
     agentPoints: [
       "Te pagan y aparta tu parte al toque.",
       "Al juntar 10 dólares, compra.",
@@ -940,7 +940,7 @@ const en: Dictionary = {
       },
       {
         q: "When does the money move?",
-        a: "In seconds. With your agent on, even with the app closed. Without it, it moves when you open the app. Small payments add up to 10 dollars.",
+        a: "In seconds, with your agent on: you get paid and it sets your share aside. Small payments add up to 10 dollars.",
       },
       {
         q: "What are pre-IPO companies?",
@@ -1345,7 +1345,7 @@ const en: Dictionary = {
       `I saved up for ${goal} without remembering once: part of every payment invested itself with Camalote.`,
     ruleMin: (min: string) => `Once that part adds up to ${min} USDC, it buys itself.`,
     ruleOpenNote:
-      "Without the agent, the rule runs while Camalote is open. With your agent on, it buys even when it's closed.",
+      "With your agent on, the rule buys on its own as soon as you get paid.",
     pendingLabel: (pending: string, min: string) =>
       `Set aside: ${pending} USDC. Buys once it reaches ${min}.`,
     paused: (msg: string) =>
@@ -1448,8 +1448,8 @@ const en: Dictionary = {
     title: "Your agent",
     on: "On",
     off: "Off",
-    offSub: "Buys by your rule even with the app closed.",
-    onSub: "When you get paid, it sets your share aside and buys. Even with the app closed.",
+    offSub: "Follows your rule for you, without you having to remember.",
+    onSub: "When you get paid, it sets your share aside and buys. On its own.",
     enable: "Turn on my agent",
     runNow: "Check now",
     running: "Checking…",
@@ -1500,7 +1500,7 @@ const en: Dictionary = {
     stepOf: (n: number, total: number) => `Step ${n} of ${total}`,
     steps: ["Your rule", "Your agent", "Your first payment"],
     agentTitle: "Now, let it run on its own.",
-    agentSub: "Your agent follows your rule even if you never open the app. And it tells you everything it does.",
+    agentSub: "Your agent follows your rule for you. And it tells you everything it does.",
     agentPoints: [
       "You get paid and it sets your share aside right away.",
       "Once it saves 10 dollars, it buys.",
