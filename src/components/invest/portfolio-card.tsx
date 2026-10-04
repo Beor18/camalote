@@ -1,6 +1,5 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,7 +28,6 @@ export function StocksSection({
   reference,
   demo,
   hasRule,
-  onBuy,
   onSell,
 }: {
   summary: PortfolioSummary;
@@ -40,7 +38,6 @@ export function StocksSection({
   demo: boolean;
   /** La regla está armada: el vacío dice "se compra solo con tu próximo cobro". */
   hasRule: boolean;
-  onBuy: () => void;
   onSell: (asset: XStockSymbol) => void;
 }) {
   const { lang, t } = useLang();
@@ -56,15 +53,9 @@ export function StocksSection({
 
   return (
     <section aria-labelledby="stocks-title" data-testid="invest-portfolio">
-      <div className="mb-2 flex items-center justify-between gap-3 px-1">
-        <h2 id="stocks-title" className="text-sm font-medium text-muted-foreground">
-          {t.invest.portfolioTitle}
-        </h2>
-        <Button variant="secondary" size="sm" onClick={onBuy} data-testid="buy-open">
-          <Plus className="size-4" aria-hidden="true" />
-          {t.invest.buyOnce}
-        </Button>
-      </div>
+      <h2 id="stocks-title" className="mb-2 px-1 text-sm font-medium text-muted-foreground">
+        {t.invest.portfolioTitle}
+      </h2>
 
       <Card className="overflow-hidden">
         {loading ? (

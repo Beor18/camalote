@@ -45,6 +45,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // La barra de abajo respeta el borde redondeado del teléfono (safe area).
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
     { media: "(prefers-color-scheme: dark)", color: "#12100e" },

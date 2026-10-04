@@ -10,6 +10,7 @@ import { Onboarding, type OnboardingStep } from "@/components/invest/onboarding"
 import { BuySheet } from "@/components/invest/buy-sheet";
 import { GoalReachedSheet } from "@/components/invest/goal-reached-sheet";
 import { StocksSection } from "@/components/invest/portfolio-card";
+import { ActionBar } from "@/components/invest/action-bar";
 import { PurchasesList } from "@/components/invest/purchases-list";
 import { RuleHero } from "@/components/invest/rule-hero";
 import { RuleSheet, type RuleDraft, type RuleSheetMode, type RuleStep } from "@/components/invest/rule-sheet";
@@ -337,7 +338,6 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           reference={prices?.reference}
           demo={session.demo}
           hasRule={Boolean(rule?.enabled)}
-          onBuy={() => setBuying(true)}
           onSell={(asset) => setSelling(asset)}
         />
       </div>
@@ -373,6 +373,8 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
       )}
 
       {agentSheetEl}
+
+      <ActionBar session={session} balances={balances} actions={actions} onBuy={() => setBuying(true)} />
 
       <BuySheet
         open={buying}

@@ -45,7 +45,7 @@ export function BridgeShell({
   // La regla de inversión corre mientras la app está abierta.
   useAutoInvest({ session, balances, actions, agent });
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col [&:has([data-action-bar])]:pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 w-full max-w-md items-center justify-between gap-3 px-4">
           <Link
