@@ -347,8 +347,13 @@
 <div id="bar"></div>
 <div id="notes" aria-live="polite"></div>
 <div id="hint">← → avanzar · N notas · P notas aparte · F pantalla completa</div>
+<!-- Notas privadas opcionales (preguntas y respuestas): el archivo vive solo en la máquina de quien presenta. -->
+<script src="notas-privadas.js"></script>
 <script>
   const slides = [...document.querySelectorAll(".slide")];
+  for (const [id, html] of Object.entries(window.NOTAS_PRIVADAS ?? {})) {
+    document.querySelector(`#${id} aside`)?.insertAdjacentHTML("beforeend", html);
+  }
   const deck = document.getElementById("deck");
   const bar = document.getElementById("bar");
   const notes = document.getElementById("notes");
