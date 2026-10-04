@@ -85,8 +85,8 @@ function AgentStep({ onAgent, onSkip }: { onAgent: () => void; onSkip: () => voi
           <Bot className="size-9" aria-hidden="true" />
         </span>
       </div>
-      <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6">
-        <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+      <div className="px-5 pb-5 pt-5">
+        <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight">
           {t.onboarding.agentTitle}
         </h2>
         <p className="mt-2 text-muted-foreground">{t.onboarding.agentSub}</p>
@@ -101,12 +101,12 @@ function AgentStep({ onAgent, onSkip }: { onAgent: () => void; onSkip: () => voi
             );
           })}
         </ul>
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button size="lg" onClick={onAgent} className="w-full sm:w-auto" data-testid="onb-agent-enable">
+        <div className="mt-5 flex flex-col gap-2">
+          <Button size="lg" onClick={onAgent} className="w-full" data-testid="onb-agent-enable">
             <Bot className="size-5" aria-hidden="true" />
             {t.agent.enable}
           </Button>
-          <Button variant="ghost" onClick={onSkip} className="w-full sm:w-auto" data-testid="onb-agent-skip">
+          <Button variant="ghost" onClick={onSkip} className="w-full" data-testid="onb-agent-skip">
             {t.onboarding.skip}
           </Button>
         </div>
@@ -129,14 +129,14 @@ function FundStep({
   const { t } = useLang();
   const [qr, setQr] = useState(false);
   return (
-    <Card className="p-5 sm:p-6" data-testid="onb-fund">
+    <Card className="p-5" data-testid="onb-fund">
       {agentEnabled && (
         <Badge tone="success" className="mb-3">
           <Check className="size-3" aria-hidden="true" />
           {t.onboarding.agentOnTag}
         </Badge>
       )}
-      <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+      <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight">
         {t.onboarding.fundTitle}
       </h2>
       <p className="mt-2 text-muted-foreground">{t.onboarding.fundSub}</p>
@@ -155,13 +155,13 @@ function FundStep({
       )}
       {demo && <p className="mt-3 text-xs text-muted-foreground">{t.onboarding.fundDemo}</p>}
 
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <Button size="lg" onClick={onFinish} className="w-full sm:w-auto" data-testid="onb-finish">
+      <div className="mt-5 flex flex-col gap-2">
+        <Button size="lg" onClick={onFinish} className="w-full" data-testid="onb-finish">
           {t.onboarding.finish}
           <ArrowRight className="size-5" aria-hidden="true" />
         </Button>
         {address && (
-          <Button variant="ghost" onClick={() => setQr(true)} className="w-full sm:w-auto">
+          <Button variant="ghost" onClick={() => setQr(true)} className="w-full">
             <QrCode className="size-4" aria-hidden="true" />
             {t.onboarding.fundQr}
           </Button>

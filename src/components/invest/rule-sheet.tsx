@@ -142,7 +142,7 @@ function Wizard({
           : t.invest.assetLabel;
 
   return (
-    <div className="flex flex-col gap-5 p-5 sm:p-6">
+    <div className="flex flex-col gap-5 p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {view !== "review" && mode === "setup" && (
@@ -194,7 +194,7 @@ function Wizard({
                     aria-pressed={active}
                     data-testid={`rule-percent-${pct}`}
                     onClick={() => patch({ percent: pct })}
-                    className={`h-14 rounded-xl border font-display text-base font-semibold tabular-nums transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer sm:text-lg ${
+                    className={`h-14 rounded-xl border font-display text-base font-semibold tabular-nums transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer ${
                       active
                         ? "border-primary bg-primary/10 text-foreground"
                         : "border-border bg-surface text-muted-foreground hover:bg-muted hover:text-foreground"

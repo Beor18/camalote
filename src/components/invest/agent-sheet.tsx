@@ -69,7 +69,7 @@ export function AgentSheet({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3">
           <div className="rounded-xl border border-success/30 bg-success/5 p-4">
             <p className="text-sm font-semibold">{t.agent.canTitle}</p>
             <ul className="mt-2 flex flex-col gap-2">
@@ -104,7 +104,7 @@ export function AgentSheet({
           </p>
         )}
 
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2">
           <Button variant="ghost" onClick={onClose} disabled={busy} data-testid="agent-later">
             {t.agent.later}
           </Button>

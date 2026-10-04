@@ -244,7 +244,7 @@ export function BuyCard({
   const quoted = state.phase === "quoted" ? state.quote : null;
 
   return (
-    <Card className={`p-5 sm:p-6 ${frame}`} data-testid="invest-buy">
+    <Card className={`p-5 ${frame}`} data-testid="invest-buy">
       <div className="flex items-center gap-2">
         {dollars ? (
           <Coins className="size-4 text-primary" aria-hidden="true" />

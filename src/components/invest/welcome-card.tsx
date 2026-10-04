@@ -16,21 +16,21 @@ export function WelcomeCard({ onSetup }: { onSetup: () => void }) {
   return (
     <Card className="overflow-hidden" data-testid="invest-welcome">
       <River progress={50} sailing />
-      <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-        <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+      <div className="px-5 pb-5">
+        <h2 className="font-display text-2xl font-semibold leading-tight tracking-tight">
           {t.invest.welcomeTitle}
         </h2>
         <p className="mt-2 text-muted-foreground">{t.invest.welcomeSub}</p>
 
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-          <Button size="lg" onClick={onSetup} data-testid="rule-setup" className="w-full sm:w-auto">
+        <div className="mt-5 flex flex-col gap-2">
+          <Button size="lg" onClick={onSetup} data-testid="rule-setup" className="w-full">
             {t.invest.setupCta}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Button>
-          <p className="text-center text-xs text-muted-foreground sm:text-left">{t.invest.setupTakes}</p>
+          <p className="text-center text-xs text-muted-foreground">{t.invest.setupTakes}</p>
         </div>
 
-        <ol className="mt-5 grid gap-2 sm:grid-cols-3">
+        <ol className="mt-5 grid gap-2">
           {t.invest.welcomeSteps.map((step, i) => (
             <li key={step.title} className="flex items-start gap-3 rounded-xl bg-muted p-3">
               <span

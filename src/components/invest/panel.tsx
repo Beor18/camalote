@@ -246,7 +246,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
       <div className="w-full" data-testid="invest-panel">
         <h1 className="sr-only">{t.invest.title}</h1>
         {onboardingStep === "loading" ? (
-          <Skeleton className="mx-auto h-96 w-full max-w-2xl" />
+          <Skeleton className="h-96 w-full" />
         ) : (
           <Onboarding
             step={onboardingStep}
@@ -276,7 +276,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
 
   return (
     <div
-      className="grid w-full grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-x-8"
+      className="grid w-full grid-cols-1 gap-6"
       data-testid="invest-panel"
     >
       <h1 className="sr-only">{t.invest.title}</h1>
@@ -300,10 +300,8 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
         )}
       </div>
 
-      {/* En el teléfono, la cuenta va después de la regla y el aviso al final
-          (`contents` + `order`); en pantallas anchas, los dos forman la
-          columna derecha, que acompaña al hacer scroll. */}
-      <aside className="contents lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:row-span-4 lg:flex lg:flex-col lg:gap-6 lg:self-start">
+      {/* Una sola columna: la cuenta va después de la regla y el aviso al final (`contents` + `order`). */}
+      <aside className="contents">
         <div className="order-2 min-w-0">
           <AccountCard session={session} balances={balances} actions={actions} agent={agent} />
         </div>

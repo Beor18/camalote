@@ -136,7 +136,7 @@ export function RuleHero({
 
   return (
     <Card className="overflow-hidden" data-testid="invest-rule">
-      <div className="flex items-center justify-between gap-3 px-4 pt-4 sm:px-6 sm:pt-5">
+      <div className="flex items-center justify-between gap-3 px-4 pt-4">
         <button
           type="button"
           role="switch"
@@ -175,9 +175,9 @@ export function RuleHero({
         </Button>
       </div>
 
-      <div className="px-4 pt-3 sm:px-6 sm:pt-4">
+      <div className="px-4 pt-3">
         <h2
-          className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight sm:text-[2rem]"
+          className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight"
           data-testid="rule-headline"
         >
           {t.invest.ruleHeadline(rule.percent)}
@@ -200,7 +200,7 @@ export function RuleHero({
       </div>
 
       {withGoal && (
-        <div className="px-4 pt-5 sm:px-6">
+        <div className="px-4 pt-5">
           <div className="flex items-end justify-between gap-3">
             {holdingsLoading ? (
               <Skeleton className="h-8 w-28" />
@@ -248,7 +248,7 @@ export function RuleHero({
 
       <River progress={progress} sailing={rule.enabled} jump={jump} chip={chip} />
 
-      <div className="border-t border-border px-4 py-4 sm:px-6">
+      <div className="border-t border-border px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground" data-testid="rule-pending">
             {statusText}

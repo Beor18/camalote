@@ -184,7 +184,7 @@ export function AgentCard({
   };
 
   return (
-    <Card className="p-5 sm:p-6" data-testid="agent-card">
+    <Card className="p-5" data-testid="agent-card">
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-sm font-semibold">
           <Bot className="size-4 text-primary" aria-hidden="true" />

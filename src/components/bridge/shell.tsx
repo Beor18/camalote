@@ -30,6 +30,10 @@ export type ShellView = "bridge" | "cobros" | "invest";
  * La app es Invertir. Cobrar con links y el cruce desde Base quedaron
  * ocultos (SHOW_HIDDEN_VIEWS); el motor sigue siendo uno solo.
  */
+/**
+ * Mobile first en todas las pantallas: la app es una sola columna de teléfono,
+ * centrada también en escritorio. Adentro no hay variantes por ancho de pantalla.
+ */
 export function BridgeShell({
   session,
   balances,
@@ -43,7 +47,7 @@ export function BridgeShell({
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-border">
-        <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between gap-3 px-4 sm:px-6 lg:max-w-5xl">
+        <div className="mx-auto flex h-16 w-full max-w-md items-center justify-between gap-3 px-4">
           <Link
             href="/"
             className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -55,8 +59,9 @@ export function BridgeShell({
             {session.demo && (
               <Badge tone="warning" title={t.common.demoBadge}>
                 <Sparkles className="size-3" aria-hidden="true" />
-                <span className="hidden sm:inline">{t.common.demoBadge}</span>
-                <span className="sr-only sm:hidden">{t.common.demoBadge}</span>
+                {/* En teléfonos muy angostos el texto no entra al lado del logo. */}
+                <span className="hidden min-[400px]:inline">{t.common.demoBadge}</span>
+                <span className="sr-only min-[400px]:hidden">{t.common.demoBadge}</span>
               </Badge>
             )}
             {session.authenticated && (
@@ -65,18 +70,15 @@ export function BridgeShell({
                 onClick={session.logout}
                 className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-pointer"
               >
-                <span className="hidden max-w-40 truncate sm:inline">
-                  {session.accountLabel}
-                </span>
                 <LogOut className="size-4" aria-hidden="true" />
-                <span className="sr-only">{t.app.logout}</span>
+                <span className="sr-only">{t.app.logout} ({session.accountLabel})</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8 lg:max-w-5xl">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-6">
         {!session.ready ? (
           <LoadingState />
         ) : session.authenticated ? (
@@ -96,7 +98,7 @@ export function BridgeShell({
       </main>
 
       <footer className="border-t border-border py-6">
-        <p className="mx-auto max-w-3xl px-4 text-center text-xs text-muted-foreground sm:px-6 lg:max-w-5xl">
+        <p className="mx-auto max-w-md px-4 text-center text-xs text-muted-foreground">
           {t.app.footer}
         </p>
       </footer>
@@ -161,7 +163,7 @@ function ViewTabs({ view }: { view: ShellView }) {
 function LoadingState() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         <Skeleton className="h-28" />
         <Skeleton className="h-28" />
       </div>

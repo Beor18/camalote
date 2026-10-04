@@ -30,7 +30,7 @@ export function AccountCard({ session, balances, actions }: Engine) {
   };
 
   return (
-    <Card className="p-5 sm:p-6" data-testid="invest-account">
+    <Card className="p-5" data-testid="invest-account">
       <p className="text-xs font-medium text-muted-foreground">{t.invest.accountTitle}</p>
       {balances.solanaUnits === null ? (
         <Skeleton className="mt-1 h-9 w-32" />

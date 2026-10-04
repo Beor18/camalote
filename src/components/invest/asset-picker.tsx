@@ -74,7 +74,7 @@ export function AssetPicker({
       <div
         role="radiogroup"
         aria-label={t.invest.assetLabel}
-        className={group === "dollars" ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2 sm:grid-cols-4"}
+        className={group === "dollars" ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}
       >
         {list.map((stock) => {
           const active = stock.symbol === value;
