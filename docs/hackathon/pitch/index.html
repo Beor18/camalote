@@ -7,6 +7,7 @@
 <!--
   Pitch deck de Camalote para el Crypto World's Fair de Colosseum (2026-10-03).
   Abrilo en el navegador. Flechas o espacio para avanzar, N para las notas,
+  P para abrir las notas en otra ventana (T arranca el cronómetro de 2 minutos),
   F para pantalla completa. Para el PDF: Imprimir, horizontal, sin márgenes,
   con gráficos de fondo. Las capturas están en img/.
   La slide de tracción está oculta.
@@ -31,6 +32,7 @@
   #bar { position: fixed; left: 0; bottom: 0; height: 4px; background: linear-gradient(100deg,#0052ff,#8b5cf6 52%,#109d74); transition: width 200ms ease-out; }
   #notes { position: fixed; left: 16px; right: 16px; bottom: 16px; max-height: 40vh; overflow: auto; padding: 16px 20px; border-radius: 12px; background: rgba(28,25,23,0.94); color: #f0eee9; font: 18px/1.5 Inter, Arial, sans-serif; display: none; }
   #notes.on { display: block; }
+  #notes b { color: #fff; margin-right: 0.4em; }
   #hint { position: fixed; top: 12px; right: 16px; color: #a8a29e; font: 13px Inter, Arial, sans-serif; opacity: 0.8; }
   @page { size: 1920px 1080px; margin: 0; }
   @media print {
@@ -56,7 +58,7 @@
 <p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">camalote</p>
 <p style="font-size:24px;color:#C9C3BC">Fernando · Corrientes, Argentina · camalote.vercel.app</p>
 </div>
-<aside>[0:00] Hace unas semanas me pagaron 400 dólares por un trabajo. Y pensé lo de siempre: si me sobra algo, lo invierto.</aside>
+<aside><b>0:00–0:08</b> Hace unas semanas me pagaron 400 dólares por un trabajo. Y pensé lo de siempre: si me sobra algo, lo invierto.</aside>
 </section>
 <section class="slide" id="problema" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -87,7 +89,7 @@
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#A8A29E">2</p></div>
-<aside>[0:08] El 5 pagué el alquiler. El 12, la tarjeta. Y a fin de mes… invertí cero. Como siempre. Y esto le pasa a cualquiera que cobra en dólares digitales sin sueldo fijo.</aside>
+<aside><b>0:08–0:22</b> El 5 pagué el alquiler. El 12, la tarjeta. Y a fin de mes… invertí cero. Como siempre. Y esto le pasa a cualquiera que cobra en dólares digitales sin sueldo fijo.</aside>
 </section>
 <section class="slide" id="idea" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -105,7 +107,7 @@
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#78716C">3</p></div>
-<aside>[0:22] El problema no es la plata, es el momento. Hay un solo momento en que siempre hay plata: cuando entra.</aside>
+<aside><b>0:22–0:30</b> El problema no es la plata, es el momento. Hay un solo momento en que siempre hay plata: cuando entra.</aside>
 </section>
 <section class="slide" id="producto" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -119,7 +121,7 @@
 </div>
 <img src="img/cuenta.png" alt="La app de Camalote: la regla del 30 % para el viaje, la cuenta y el agente con su primera compra" style="position:absolute;right:128px;top:200px;width:1000px;height:625px;object-fit:cover;object-position:top;border-radius:24px;border:1px solid #E7E5E4;box-shadow:0 32px 80px rgba(28,25,23,0.14)">
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#78716C">4</p></div>
-<aside>[0:30] Camalote es eso. Armás una regla una vez, por ejemplo: el 30 % de cada cobro para El viaje, en el S&P 500. Y cada cobro la cumple. Con esos 400, 120 hubieran quedado invertidos el mismo día que me pagaron.</aside>
+<aside><b>0:30–0:45</b> Camalote es eso. Armás una regla una vez, por ejemplo: el 30 % de cada cobro para El viaje, en el S&amp;P 500. Y cada cobro la cumple. Con esos 400, 120 hubieran quedado invertidos el mismo día que me pagaron.</aside>
 </section>
 <!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
 <section hidden id="cobro" data-transition="fade" style="display:none !important;background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
@@ -175,7 +177,7 @@
 <p style="font-size:28px;line-height:1.45;color:#C9C3BC;width:1000px;background:#292524;padding:28px 32px;border-radius:20px"><b style="color:#F0EEE9">Vos le das el permiso, con límites.</b> Solo puede invertir lo que dice tu regla. Nunca puede sacar ni mover tu plata. Lo apagás cuando quieras.</p>
 <img src="img/permiso-agente.png" alt="El permiso del agente: lo que puede y lo que no puede" style="position:absolute;right:160px;top:150px;width:360px;height:780px;object-fit:cover;object-position:top;border-radius:36px;box-shadow:0 32px 80px rgba(0,0,0,0.5)">
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#A8A29E">5</p></div>
-<aside>[0:45] Lo hace un agente de IA. Se entera de que te pagaron, aparta tu parte, la invierte y te cuenta qué hizo. Y tiene un permiso con límites: solo puede invertir lo que dice tu regla. Nunca puede sacar ni mover tu plata.</aside>
+<aside><b>0:45–1:05</b> Lo hace un agente de IA. Se entera de que te pagaron, aparta tu parte, la invierte y te cuenta qué hizo. Y tiene un permiso con límites: solo puede invertir lo que dice tu regla. Nunca puede sacar ni mover tu plata.</aside>
 </section>
 <section class="slide" id="ahora" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -197,7 +199,7 @@
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Fuentes: McKinsey y Artemis 2025 · volumen en Solana, H1 2026</p><p style="font-size:24px;color:#78716C">6</p></div>
-<aside>[1:05] ¿Por qué ahora? Los pagos en stablecoins se duplicaron, las acciones ya están en Solana, y los agentes ya pueden actuar dentro de un permiso.</aside>
+<aside><b>1:05–1:15</b> ¿Por qué ahora? Los pagos en stablecoins se duplicaron, las acciones ya están en Solana, y los agentes ya pueden actuar dentro de un permiso.</aside>
 </section>
 <section class="slide" id="mercado" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -223,7 +225,7 @@
 </div>
 <p style="font-size:28px;line-height:1.4;color:#57534E;width:1500px"><b style="color:#1C1917">Meta del primer año:</b> el 1 % de ese mercado pasando por una regla de Camalote.</p>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Fuentes: McKinsey y Artemis 2025 · Chainalysis 2025 · Ministerio de Economía · iProUP</p><p style="font-size:24px;color:#78716C">7</p></div>
-<aside>[1:15] En el mundo se pagan 390 mil millones de dólares por año en stablecoins. Arrancamos en Argentina, con 7.800 millones.</aside>
+<aside><b>1:15–1:25</b> En el mundo se pagan 390 mil millones de dólares por año en stablecoins. Arrancamos en Argentina, con 7.800 millones.</aside>
 </section>
 <!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
 <section hidden id="competencia" data-transition="fade" style="display:none !important;background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
@@ -255,7 +257,7 @@
 </div>
 <p style="font-size:30px;line-height:1.4;color:#1C1917;width:1500px">Es un negocio de volumen: cada cobro es una compra. <b>La escala viene de las plataformas que pagan en USDC</b> y ofrecen Camalote a quienes cobran.</p>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#78716C">8</p></div>
-<aside>[1:25] Ganamos una comisión chica, solo cuando tu regla compra.</aside>
+<aside><b>1:25–1:30</b> Ganamos una comisión chica, solo cuando tu regla compra.</aside>
 </section>
 <section class="slide" id="salida" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -280,7 +282,7 @@
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Track Superteam Argentina</p><p style="font-size:24px;color:#78716C">9</p></div>
-<aside>[1:30] Los primeros veinte salen de Superteam Argentina, uno por uno. Después, país por país.</aside>
+<aside><b>1:30–1:38</b> Los primeros veinte salen de Superteam Argentina, uno por uno. Después, país por país.</aside>
 </section>
 <section class="slide" id="equipo" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -295,7 +297,7 @@
 </ul>
 <img src="img/tripulacion.png" alt="La tripulación de Camalote" style="position:absolute;right:128px;top:330px;width:560px;height:392px;object-fit:contain">
 <div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Track Superteam Argentina · github.com/Beor18</p><p style="font-size:24px;color:#78716C">10</p></div>
-<aside>[1:38] Soy Fernando, desarrollador fullstack en Corrientes. Fundé Tuneport, y busco un cofundador de crecimiento.</aside>
+<aside><b>1:38–1:48</b> Soy Fernando, desarrollador fullstack en Corrientes. Fundé Tuneport, y busco un cofundador de crecimiento.</aside>
 </section>
 <section class="slide" id="cierre" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:48px">
 <p style="font-size:32px;line-height:1.4;color:#C9C3BC">Mi próximo cobro ya tiene destino. El tuyo también puede.</p>
@@ -305,7 +307,7 @@
 <div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Probalo</p><p style="font-size:36px;color:#F0EEE9">camalote.vercel.app</p></div>
 <div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Código</p><p style="font-size:36px;color:#F0EEE9">github.com/Beor18/camalote</p></div>
 </div>
-<aside>[1:48] Mi próximo cobro ya tiene destino. Pagate primero, sin acordarte nunca más. Gracias. [2:00]</aside>
+<aside><b>1:48–2:00</b> Mi próximo cobro ya tiene destino. Pagate primero, sin acordarte nunca más. Gracias.</aside>
 </section>
 <!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
 <section hidden id="traccion" data-transition="fade" style="display:none !important;background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:1fr 1fr;gap:64px">
@@ -338,7 +340,7 @@
 </div></div>
 <div id="bar"></div>
 <div id="notes" aria-live="polite"></div>
-<div id="hint">← → avanzar · N notas · F pantalla completa</div>
+<div id="hint">← → avanzar · N notas · P notas aparte · F pantalla completa</div>
 <script>
   const slides = [...document.querySelectorAll(".slide")];
   const deck = document.getElementById("deck");
@@ -353,8 +355,60 @@
     i = Math.min(Math.max(n, 0), slides.length - 1);
     slides.forEach((el, k) => el.classList.toggle("on", k === i));
     bar.style.width = `${((i + 1) / slides.length) * 100}%`;
-    notes.textContent = slides[i].querySelector("aside")?.textContent.trim() ?? "";
+    notes.innerHTML = slides[i].querySelector("aside")?.innerHTML.trim() ?? "";
+    renderPresenter();
     history.replaceState(null, "", `#${i + 1}`);
+  }
+  // P abre las notas en otra ventana: grabás o compartís solo esta pestaña y leés de la otra.
+  // Las flechas andan desde las dos ventanas; T en la de notas arranca o reinicia el cronómetro.
+  let presenter = null;
+  let startedAt = null;
+  const titleOf = (el) => (el?.querySelector("h1, h2")?.textContent ?? "").replace(/\s+/g, " ").trim();
+  function renderPresenter() {
+    if (!presenter || presenter.closed) return;
+    const d = presenter.document;
+    d.getElementById("pos").textContent = `${i + 1} / ${slides.length}`;
+    d.getElementById("title").textContent = titleOf(slides[i]);
+    d.getElementById("note").innerHTML = slides[i].querySelector("aside")?.innerHTML ?? "<i>Sin notas</i>";
+    d.getElementById("next").textContent = slides[i + 1] ? `Sigue: ${titleOf(slides[i + 1])}` : "Último slide";
+  }
+  function openPresenter() {
+    if (presenter && !presenter.closed) return presenter.focus();
+    presenter = window.open("", "camalote-notas", "width=820,height=640");
+    if (!presenter) return alert("Permití las ventanas emergentes para abrir las notas aparte.");
+    const d = presenter.document;
+    d.open();
+    d.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Notas · Camalote</title><style>
+      body { margin: 0; padding: 24px 28px; background: #1c1917; color: #d6d3d1; font: 24px/1.55 Inter, system-ui, sans-serif; }
+      header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; color: #a8a29e; font-size: 16px; }
+      #clock { font: 600 30px ui-monospace, monospace; color: #f0eee9; }
+      #clock.over { color: #f87171; }
+      h1 { margin: 10px 0 16px; font-size: 20px; color: #b9a4f8; }
+      #note b { display: block; margin-bottom: 6px; font-size: 18px; color: #b9a4f8; }
+      #next { margin-top: 22px; padding-top: 12px; border-top: 1px solid #292524; color: #a8a29e; font-size: 16px; }
+      button { font: inherit; font-size: 15px; background: #292524; color: #f0eee9; border: 1px solid #44403c; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    </style></head><body>
+      <header><span id="pos"></span><span><span id="clock">0:00</span> <button id="timer" type="button">Iniciar (T)</button></span></header>
+      <h1 id="title"></h1><div id="note"></div><p id="next"></p>
+    </body></html>`);
+    d.close();
+    const toggleTimer = () => { startedAt = startedAt ? null : Date.now(); d.getElementById("timer").textContent = startedAt ? "Reiniciar (T)" : "Iniciar (T)"; };
+    d.getElementById("timer").addEventListener("click", toggleTimer);
+    d.addEventListener("keydown", (e) => {
+      if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); show(i + 1); }
+      else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+      else if (e.key.toLowerCase() === "t") toggleTimer();
+    });
+    const tick = setInterval(() => {
+      if (presenter.closed) return clearInterval(tick);
+      const sec = startedAt ? Math.floor((Date.now() - startedAt) / 1000) : 0;
+      const clock = d.getElementById("clock");
+      clock.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+      clock.classList.toggle("over", sec > 120);
+    }, 250);
+    // Escondemos las notas de esta ventana para que nunca salgan en la grabación.
+    notes.classList.remove("on");
+    renderPresenter();
   }
   addEventListener("resize", fit);
   addEventListener("keydown", (e) => {
@@ -363,6 +417,7 @@
     else if (e.key === "Home") show(0);
     else if (e.key === "End") show(slides.length - 1);
     else if (e.key.toLowerCase() === "n") notes.classList.toggle("on");
+    else if (e.key.toLowerCase() === "p") openPresenter();
     else if (e.key.toLowerCase() === "f") (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
   });
   document.getElementById("stage").addEventListener("click", (e) => show(e.clientX > innerWidth / 3 ? i + 1 : i - 1));
