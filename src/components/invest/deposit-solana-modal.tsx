@@ -24,7 +24,7 @@ export function SolanaDepositModal({
   address: string | null;
   demo: boolean;
   /** Con sesión y acciones, suma "Cargar desde Phantom" debajo de la dirección. */
-  phantom?: { session: BridgeSession; actions: BridgeActions; onFunded: () => void };
+  phantom?: { session: BridgeSession; actions: BridgeActions; onFunded: () => void; onConnect?: () => void };
 }) {
   const { t } = useLang();
   const dialogRef = useRef<HTMLDialogElement>(null);

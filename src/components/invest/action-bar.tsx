@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowUpFromLine, Plus, QrCode } from "lucide-react";
 import { WithdrawModal } from "@/components/bridge/withdraw-modal";
 import { SolanaDepositModal } from "@/components/invest/deposit-solana-modal";
@@ -19,11 +19,31 @@ const side =
 export function ActionBar({ session, balances, actions, onBuy }: Omit<Engine, "agent"> & { onBuy: () => void }) {
   const { t } = useLang();
   const [modal, setModal] = useState<"deposit" | "withdraw" | null>(null);
+  // La ventana de Phantom no puede quedar arriba de un <dialog> abierto: se
+  // cierra Recibir, se conecta, y Recibir vuelve sola cuando Phantom está.
+  const [awaitingPhantom, setAwaitingPhantom] = useState(false);
   const address = session.solanaAddress;
+  const depositOpen = modal === "deposit" || (awaitingPhantom && session.externalWallet !== null);
+
+  // Cerrar Recibir para conectar dispara su evento de cierre: ese no cancela la espera.
+  const closingForPhantom = useRef(false);
 
   const close = () => {
+    if (closingForPhantom.current && !session.externalWallet) {
+      closingForPhantom.current = false;
+      return;
+    }
+    closingForPhantom.current = false;
     setModal(null);
+    setAwaitingPhantom(false);
     balances.refresh();
+  };
+
+  const connectPhantom = () => {
+    closingForPhantom.current = true;
+    setModal(null);
+    setAwaitingPhantom(true);
+    session.connectExternal();
   };
 
   return (
@@ -66,11 +86,11 @@ export function ActionBar({ session, balances, actions, onBuy }: Omit<Engine, "a
       </nav>
 
       <SolanaDepositModal
-        open={modal === "deposit"}
+        open={depositOpen}
         onClose={close}
         address={address}
         demo={session.demo}
-        phantom={{ session, actions, onFunded: balances.refresh }}
+        phantom={{ session, actions, onFunded: balances.refresh, onConnect: connectPhantom }}
       />
       <WithdrawModal
         open={modal === "withdraw"}

@@ -20,10 +20,13 @@ export function PhantomFund({
   session,
   actions,
   onFunded,
+  onConnect,
 }: {
   session: BridgeSession;
   actions: BridgeActions;
   onFunded: () => void;
+  /** Conectar Phantom; por defecto, la ventana de la billetera directo. */
+  onConnect?: () => void;
 }) {
   const { lang, t } = useLang();
   const wallet = session.externalWallet;
@@ -56,7 +59,7 @@ export function PhantomFund({
 
   if (!wallet) {
     return (
-      <Button type="button" variant="secondary" className="w-full" onClick={session.connectExternal} data-testid="phantom-connect">
+      <Button type="button" variant="secondary" className="w-full" onClick={onConnect ?? session.connectExternal} data-testid="phantom-connect">
         <Ghost className="size-4" aria-hidden="true" />
         {t.invest.phantomConnect}
       </Button>
