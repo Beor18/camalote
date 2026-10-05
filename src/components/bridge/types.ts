@@ -18,7 +18,16 @@ export interface BridgeSession {
   solanaAddress: string | null;
   demo: boolean;
   login: (email?: string) => void;
+  /** Entrar con Phantom: firma un mensaje, no mueve plata. */
+  loginWithWallet: () => void;
   logout: () => void;
+  /**
+   * La Phantom conectada, si hay. Sirve para cargar y retirar; la cuenta de
+   * Camalote (donde opera el agente) es siempre la billetera de Privy.
+   */
+  externalWallet: { name: string; address: string } | null;
+  /** Pide conectar Phantom (abre la ventana de la billetera). */
+  connectExternal: () => void;
 }
 
 export interface BridgeBalances {
@@ -92,6 +101,17 @@ export interface BridgeActions {
   simulateDeposit?: (address: string, amountUnits: bigint) => void;
   /** Solo demo: simula que llegaron USDC a esa cuenta de Solana. */
   simulateIncoming?: (solanaAddress: string, amountUnits: bigint) => void;
+
+  /** Saldo de USDC de la Phantom conectada (0 si no hay). */
+  readExternalUsdc: () => Promise<bigint>;
+  /**
+   * Pasa USDC de la Phantom conectada a la cuenta de Camalote. El usuario lo
+   * aprueba en su Phantom; la red la paga esa billetera. Devuelve la firma.
+   */
+  fundFromExternal: (
+    amountUnits: bigint,
+    onStep?: (step: "signing" | "sending") => void
+  ) => Promise<string>;
 
   /** Acciones tokenizadas que hay en la cuenta Solana del usuario. */
   listHoldings: () => Promise<Holding[]>;

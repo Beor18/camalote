@@ -3,12 +3,16 @@
 import type { ReactNode } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
+import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 import { base } from "viem/chains";
 import {
   createSolanaRpc,
   createSolanaRpcSubscriptions,
 } from "@solana/kit";
 import { ADDRESSES, DEMO_MODE, PRIVY_APP_ID } from "@/lib/config";
+
+// Phantom (extensión o la app): para entrar, cargar y retirar. Una sola vez por módulo.
+const solanaConnectors = toSolanaWalletConnectors();
 
 /**
  * En modo demo (sin App ID de Privy) no montamos el proveedor: la app usa el
@@ -34,18 +38,23 @@ export function Providers({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ["email", "google"],
+        loginMethods: ["email", "google", "wallet"],
         appearance: {
           theme: "light",
           accentColor: "#7c3aed",
           logo: "/icons/icon-192.png",
+          walletChainType: "solana-only",
+          walletList: ["phantom"],
         },
+        externalWallets: { solana: { connectors: solanaConnectors } },
         embeddedWallets: {
           // La app muestra su propio desglose antes de cada firma; el modal
           // de confirmación de Privy encima es doble fricción.
           showWalletUIs: false,
           ethereum: { createOnLogin: "users-without-wallets" },
-          solana: { createOnLogin: "users-without-wallets" },
+          // También a quien entra con Phantom: la cuenta de Camalote (donde
+          // firma el agente) es siempre la de Privy.
+          solana: { createOnLogin: "all-users" },
         },
         defaultChain: chain,
         supportedChains: [chain],

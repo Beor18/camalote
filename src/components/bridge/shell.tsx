@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowLeftRight,
+  Ghost,
   HandCoins,
   LogOut,
   Mail,
@@ -185,6 +186,20 @@ export function LoginCard({
 }) {
   const { t } = useLang();
   const [email, setEmail] = useState("");
+  // Entrar con Phantom es para la app; los links de pago siguen solo con email.
+  const phantomOption = (
+    <>
+      <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true">
+        <span className="h-px flex-1 bg-border" />
+        {t.app.loginOr}
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <Button type="button" variant="secondary" size="lg" className="w-full" onClick={session.loginWithWallet} data-testid="login-phantom">
+        <Ghost className="size-4" aria-hidden="true" />
+        {t.app.loginPhantom}
+      </Button>
+    </>
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 animate-fade-up">
@@ -224,6 +239,7 @@ export function LoginCard({
               <Mail className="size-4" aria-hidden="true" />
               {t.app.continue}
             </Button>
+            {!button && phantomOption}
             <p className="text-center text-xs text-muted-foreground">
               {t.app.demoLoginNote}
             </p>
@@ -237,6 +253,7 @@ export function LoginCard({
             <p className="text-center text-xs text-muted-foreground">
               {t.app.loginHint}
             </p>
+            {!button && phantomOption}
           </div>
         )}
       </Card>

@@ -31,6 +31,48 @@ import type {
 } from "@/components/bridge/types";
 
 const EMAIL_KEY = "camalote.demo.email";
+/** Quien entra con Phantom en el demo usa esta cuenta de muestra. */
+const PHANTOM_EMAIL = "phantom@camalote.demo";
+/** Lo que trae la Phantom de muestra la primera vez que se conecta. */
+const DEMO_PHANTOM_UNITS = 50_000_000n;
+const phantomKey = (email: string) => `camalote.demo.phantom:${email}`;
+
+interface DemoPhantom {
+  address: string;
+  units: string;
+}
+
+function loadDemoPhantom(email: string): DemoPhantom | null {
+  try {
+    const raw = localStorage.getItem(phantomKey(email));
+    return raw ? (JSON.parse(raw) as DemoPhantom) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDemoPhantom(email: string, phantom: DemoPhantom): void {
+  try {
+    localStorage.setItem(phantomKey(email), JSON.stringify(phantom));
+  } catch {
+    // no crítico
+  }
+}
+
+/** Conecta (o recupera) la Phantom de muestra de esa cuenta. */
+function connectDemoPhantom(email: string): DemoPhantom {
+  const existing = loadDemoPhantom(email);
+  if (existing) return existing;
+  const phantom = {
+    // Otra semilla: que no empiece igual que la cuenta de Camalote.
+    address: demoSolanaAddress(`wallet-${[...email].reverse().join("")}`),
+    units: DEMO_PHANTOM_UNITS.toString(),
+  };
+  saveDemoPhantom(email, phantom);
+  return phantom;
+}
+
+const shortAddress = (address: string) => `${address.slice(0, 4)}…${address.slice(-4)}`;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Direcciones de muestra, estables por email (solo para la simulación). */
@@ -72,6 +114,7 @@ export function useDemoEngine(): Engine {
   const [baseUnits, setBaseUnits] = useState<bigint | null>(null);
   const [solanaUnits, setSolanaUnits] = useState<bigint | null>(null);
   const [solanaLamports, setSolanaLamports] = useState<bigint | null>(null);
+  const [phantom, setPhantom] = useState<DemoPhantom | null>(null);
 
   useEffect(() => {
     // Lectura inicial de localStorage: sincronización con un sistema externo.
@@ -80,6 +123,7 @@ export function useDemoEngine(): Engine {
       if (stored) registerDemoAccount(stored, demoSolanaAddress(stored), demoBaseAddress(stored));
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEmail(stored);
+      if (stored) setPhantom(loadDemoPhantom(stored));
     } catch {
       // sin almacenamiento seguimos sin sesión
     }
@@ -103,23 +147,36 @@ export function useDemoEngine(): Engine {
 
   const solanaAddress = email ? demoSolanaAddress(email) : null;
 
+  const enter = (value: string) => {
+    const clean = value.trim().toLowerCase();
+    try {
+      localStorage.setItem(EMAIL_KEY, clean);
+    } catch {
+      // no crítico
+    }
+    registerDemoAccount(clean, demoSolanaAddress(clean), demoBaseAddress(clean));
+    setEmail(clean);
+    setPhantom(loadDemoPhantom(clean));
+  };
+
   const session: BridgeSession = {
     ready,
     authenticated: email !== null,
-    accountLabel: email,
+    accountLabel:
+      email === PHANTOM_EMAIL && phantom ? `Phantom ${shortAddress(phantom.address)}` : email,
     baseAddress: email ? demoBaseAddress(email) : null,
     solanaAddress,
     demo: true,
     login: (value?: string) => {
-      if (!value) return;
-      const clean = value.trim().toLowerCase();
-      try {
-        localStorage.setItem(EMAIL_KEY, clean);
-      } catch {
-        // no crítico
-      }
-      registerDemoAccount(clean, demoSolanaAddress(clean), demoBaseAddress(clean));
-      setEmail(clean);
+      if (value) enter(value);
+    },
+    loginWithWallet: () => {
+      enter(PHANTOM_EMAIL);
+      setPhantom(connectDemoPhantom(PHANTOM_EMAIL));
+    },
+    externalWallet: phantom ? { name: "Phantom", address: phantom.address } : null,
+    connectExternal: () => {
+      if (email) setPhantom(connectDemoPhantom(email));
     },
     logout: () => {
       try {
@@ -128,6 +185,7 @@ export function useDemoEngine(): Engine {
         // no crítico
       }
       setEmail(null);
+      setPhantom(null);
       setBaseUnits(null);
       setSolanaUnits(null);
       setSolanaLamports(null);
@@ -177,6 +235,25 @@ export function useDemoEngine(): Engine {
       readBaseBalance: async (address) => loadDemoBaseBalance(address),
       simulateDeposit: (address, amountUnits) => simulateDemoDeposit(address, amountUnits),
       simulateIncoming: (address, amountUnits) => simulateDemoIncoming(address, amountUnits),
+      readExternalUsdc: async () => {
+        await wait(400);
+        return email ? BigInt(loadDemoPhantom(email)?.units ?? "0") : 0n;
+      },
+      fundFromExternal: async (amountUnits, onStep) => {
+        const current = email ? loadDemoPhantom(email) : null;
+        if (!email || !solanaAddress || !current) throw new Error("Conectá tu Phantom para cargar.");
+        if (amountUnits > BigInt(current.units)) throw new Error("Tu Phantom no tiene tanto USDC.");
+        onStep?.("signing");
+        await wait(1200);
+        onStep?.("sending");
+        await wait(900);
+        const next = { ...current, units: (BigInt(current.units) - amountUnits).toString() };
+        saveDemoPhantom(email, next);
+        setPhantom(next);
+        // Llega como cualquier cobro: cuenta para la regla.
+        simulateDemoIncoming(solanaAddress, amountUnits);
+        return `demo-${Date.now().toString(36)}`;
+      },
       listHoldings: async () => (email ? loadDemoHoldings(email) : []),
       quoteStock: async (asset, usdcUnits) => {
         const { prices, multipliers, previousMultipliers } = await fetchPrices();

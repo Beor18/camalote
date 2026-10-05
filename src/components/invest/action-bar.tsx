@@ -65,13 +65,20 @@ export function ActionBar({ session, balances, actions, onBuy }: Omit<Engine, "a
         </div>
       </nav>
 
-      <SolanaDepositModal open={modal === "deposit"} onClose={close} address={address} demo={session.demo} />
+      <SolanaDepositModal
+        open={modal === "deposit"}
+        onClose={close}
+        address={address}
+        demo={session.demo}
+        phantom={{ session, actions, onFunded: balances.refresh }}
+      />
       <WithdrawModal
         open={modal === "withdraw"}
         onClose={close}
         balanceUnits={balances.solanaUnits}
         fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         ownAddress={address}
+        phantomAddress={session.externalWallet?.address ?? null}
         demo={session.demo}
         onWithdraw={async (destination, amountUnits, onStep) => {
           const sig = await actions.withdrawSolana(destination, amountUnits, onStep);

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useConnectWallet, usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import {
   useCreateWallet,
   useSignTransaction,
   useWallets as useSolanaWallets,
+  type ConnectedStandardSolanaWallet,
 } from "@privy-io/react-auth/solana";
 import { createPublicClient, erc20Abi, http } from "viem";
 import { Connection, PublicKey, type ParsedAccountData } from "@solana/web3.js";
@@ -44,6 +45,13 @@ const publicClient = createPublicClient({ transport: http(BASE_RPC_URL) });
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** La billetera embebida de Privy (la cuenta de Camalote), no una externa como Phantom. */
+function isPrivyWallet(wallet: ConnectedStandardSolanaWallet): boolean {
+  return (wallet.standardWallet as { isPrivyWallet?: boolean }).isPrivyWallet === true;
+}
+
+const shortAddress = (address: string) => `${address.slice(0, 4)}…${address.slice(-4)}`;
+
 /** Espera de la certificación de Circle: rápida al principio, paciente después. */
 const ATTESTATION_TIMEOUT_MS = 25 * 60 * 1000;
 
@@ -61,6 +69,7 @@ async function fetchQuote(query: string): Promise<Quote> {
  */
 export function useRealEngine(): Engine {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
+  const { connectWallet } = useConnectWallet();
   const { client: smartWalletClient } = useSmartWallets();
   const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets();
   const { createWallet } = useCreateWallet();
@@ -69,17 +78,27 @@ export function useRealEngine(): Engine {
 
   const baseAddress = smartWalletClient?.account?.address ?? null;
 
+  // La cuenta de Camalote es siempre la billetera de Privy: ahí firma el
+  // agente. Una Phantom conectada solo sirve para entrar, cargar y retirar.
+  const embeddedWallet = useMemo(() => solanaWallets.find(isPrivyWallet) ?? null, [solanaWallets]);
+  const phantomWallet = useMemo(
+    () => solanaWallets.find((wallet) => !isPrivyWallet(wallet)) ?? null,
+    [solanaWallets]
+  );
+
   const solanaAddress = useMemo(() => {
-    const fromWallets = solanaWallets[0]?.address;
-    if (fromWallets) return fromWallets;
+    if (embeddedWallet) return embeddedWallet.address;
     const linked = user?.linkedAccounts?.find(
       (account) =>
-        account.type === "wallet" && account.chainType === "solana"
+        account.type === "wallet" &&
+        account.chainType === "solana" &&
+        account.walletClientType === "privy"
     );
     return linked && "address" in linked ? (linked.address as string) : null;
-  }, [solanaWallets, user]);
+  }, [embeddedWallet, user]);
 
-  // Si la cuenta todavía no tiene billetera de Solana, la creamos una sola vez.
+  // Si la cuenta todavía no tiene billetera de Privy (por ejemplo, entró con
+  // Phantom), la creamos una sola vez.
   useEffect(() => {
     if (
       authenticated &&
@@ -145,12 +164,20 @@ export function useRealEngine(): Engine {
   const session: BridgeSession = {
     ready,
     authenticated,
-    accountLabel: user?.email?.address ?? user?.google?.email ?? null,
+    accountLabel:
+      user?.email?.address ??
+      user?.google?.email ??
+      (user?.wallet?.address ? `Phantom ${shortAddress(user.wallet.address)}` : null),
     baseAddress,
     solanaAddress,
     demo: false,
-    login: () => login(),
+    login: () => login({ loginMethods: ["email", "google"] }),
+    loginWithWallet: () => login({ loginMethods: ["wallet"], walletChainType: "solana-only" }),
     logout: () => logout(),
+    externalWallet: phantomWallet
+      ? { name: phantomWallet.standardWallet.name, address: phantomWallet.address }
+      : null,
+    connectExternal: () => connectWallet({ walletChainType: "solana-only", walletList: ["phantom"] }),
   };
 
   const balances: BridgeBalances = {
@@ -218,7 +245,7 @@ export function useRealEngine(): Engine {
         return result.signature ?? null;
       },
       withdrawSolana: async (destination, amountUnits, onStep) => {
-        const wallet = solanaWallets[0];
+        const wallet = embeddedWallet;
         const owner = requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         const sign = (transaction: Uint8Array) =>
@@ -232,6 +259,22 @@ export function useRealEngine(): Engine {
         const signed = await sign(base64ToBytes(built.transactionBase64));
         onStep?.("sending");
         return submitTransfer(signed, built, "withdraw");
+      },
+      readExternalUsdc: async () =>
+        phantomWallet ? fetchSolanaUsdcBalance(phantomWallet.address) : 0n,
+      fundFromExternal: async (amountUnits, onStep) => {
+        const owner = requireAccount(solanaAddress);
+        if (!phantomWallet) throw new Error("Conectá tu Phantom para cargar.");
+        // Misma transferencia que un retiro, al revés: de Phantom a la cuenta
+        // de Camalote. La red la paga Phantom y el servidor no firma nada.
+        const built = await buildTransfer(phantomWallet.address, owner, amountUnits, "withdraw");
+        onStep?.("signing");
+        const { signedTransaction } = await phantomWallet.signTransaction({
+          transaction: base64ToBytes(built.transactionBase64),
+          chain: "solana:mainnet",
+        });
+        onStep?.("sending");
+        return submitTransfer(signedTransaction, built, "withdraw");
       },
       listIncoming: async () => {
         if (!solanaAddress) return [];
@@ -282,7 +325,7 @@ export function useRealEngine(): Engine {
         };
       },
       buyStock: async (quote, onStep) => {
-        const wallet = solanaWallets[0];
+        const wallet = embeddedWallet;
         const owner = requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
@@ -358,7 +401,7 @@ export function useRealEngine(): Engine {
         };
       },
       sellStock: async (quote, onStep) => {
-        const wallet = solanaWallets[0];
+        const wallet = embeddedWallet;
         requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
@@ -376,7 +419,7 @@ export function useRealEngine(): Engine {
         };
       },
     }),
-    [smartWalletClient, solanaAddress, solanaWallets, signTransaction]
+    [smartWalletClient, solanaAddress, embeddedWallet, phantomWallet, signTransaction]
   );
 
   const agent = useRealAgent(solanaAddress, authenticated, getAccessToken);

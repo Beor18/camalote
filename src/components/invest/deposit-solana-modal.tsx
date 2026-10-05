@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
 import { X } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
+import { PhantomFund } from "@/components/invest/phantom-fund";
+import type { BridgeActions, BridgeSession } from "@/components/bridge/types";
 import { useLang } from "@/lib/i18n";
 
 /**
@@ -15,11 +17,14 @@ export function SolanaDepositModal({
   onClose,
   address,
   demo,
+  phantom,
 }: {
   open: boolean;
   onClose: () => void;
   address: string | null;
   demo: boolean;
+  /** Con sesión y acciones, suma "Cargar desde Phantom" debajo de la dirección. */
+  phantom?: { session: BridgeSession; actions: BridgeActions; onFunded: () => void };
 }) {
   const { t } = useLang();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -80,6 +85,7 @@ export function SolanaDepositModal({
               </span>
               <CopyButton value={address} label={t.invest.copyAddress} />
             </div>
+            {phantom && open && <PhantomFund {...phantom} />}
           </>
         ) : (
           <p className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">

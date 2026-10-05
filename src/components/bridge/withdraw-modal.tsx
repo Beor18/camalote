@@ -21,6 +21,7 @@ export function WithdrawModal({
   balanceUnits,
   fuelUnits,
   ownAddress,
+  phantomAddress,
   demo,
   onWithdraw,
 }: {
@@ -30,6 +31,8 @@ export function WithdrawModal({
   /** Reserva de red que se carga antes del retiro (0 si la cuenta ya tiene SOL). */
   fuelUnits: bigint;
   ownAddress: string | null;
+  /** La Phantom conectada: un toque completa la dirección. */
+  phantomAddress?: string | null;
   demo: boolean;
   onWithdraw: (
     destination: string,
@@ -213,6 +216,16 @@ export function WithdrawModal({
               aria-describedby={destinationError ? "withdraw-destination-error" : undefined}
               className="h-12 w-full rounded-xl border border-border bg-surface px-4 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             />
+            {phantomAddress && destination.trim() !== phantomAddress && (
+              <button
+                type="button"
+                onClick={() => setDestination(phantomAddress)}
+                className="self-start rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary transition-colors duration-100 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                data-testid="withdraw-to-phantom"
+              >
+                {t.withdrawModal.toPhantom(`${phantomAddress.slice(0, 4)}…${phantomAddress.slice(-4)}`)}
+              </button>
+            )}
             {destinationError && (
               <p id="withdraw-destination-error" className="text-xs text-destructive">
                 {destinationError}
