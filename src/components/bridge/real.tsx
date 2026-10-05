@@ -33,6 +33,7 @@ import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { feeBpsFor, investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
+import { sendFromExternalWallet } from "@/lib/solana/externalSend";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
 import type {
   BridgeActions,
@@ -268,15 +269,16 @@ export function useRealEngine(): Engine {
         const owner = requireAccount(solanaAddress);
         if (!phantomWallet) throw new Error("Conectá tu Phantom para cargar.");
         // Misma transferencia que un retiro, al revés: de Phantom a la cuenta
-        // de Camalote. La red la paga Phantom y el servidor no firma nada.
+        // de Camalote. La red la paga Phantom, que además la manda ella misma.
         const built = await buildTransfer(phantomWallet.address, owner, amountUnits, "withdraw");
         onStep?.("signing");
-        const { signedTransaction } = await phantomWallet.signTransaction({
-          transaction: base64ToBytes(built.transactionBase64),
-          chain: "solana:mainnet",
-        });
-        onStep?.("sending");
-        return submitTransfer(signedTransaction, built, "withdraw");
+        return sendFromExternalWallet(
+          phantomWallet,
+          base64ToBytes(built.transactionBase64),
+          built,
+          new Connection(SOLANA_RPC_URL, "confirmed"),
+          () => onStep?.("sending")
+        );
       },
       listIncoming: async () => {
         if (!solanaAddress) return [];
