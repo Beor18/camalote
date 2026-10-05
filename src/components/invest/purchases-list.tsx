@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ExternalLink, Info, Loader2 } from "lucide-react";
+import { AssetIcon } from "@/components/invest/asset-icon";
 import { Card } from "@/components/ui/card";
 import { solanaExplorerTx } from "@/lib/config";
 import { formatUsdc } from "@/lib/format";
@@ -45,23 +46,27 @@ export function PurchasesList({
           return (
             <div key={p.id} className="flex items-center justify-between gap-3 p-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-full ${
-                    p.status === "done"
-                      ? "bg-success/10 text-success"
-                      : p.status === "error"
-                        ? "bg-destructive/10 text-destructive"
-                        : "bg-primary/10 text-primary"
-                  }`}
-                  aria-hidden="true"
-                >
-                  {p.status === "done" ? (
-                    <Check className="size-4" />
-                  ) : p.status === "error" ? (
-                    <Info className="size-4" />
-                  ) : (
-                    <Loader2 className="size-4 animate-spin" />
-                  )}
+                {/* El ícono del activo y, en la esquina, cómo salió (el texto está a la derecha).
+                    Blanco sobre verde o rojo: esos fondos no tienen token de texto propio. */}
+                <span className="relative shrink-0" aria-hidden="true">
+                  <AssetIcon symbol={p.asset} className="size-8" />
+                  <span
+                    className={`absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full ring-2 ring-surface ${
+                      p.status === "done"
+                        ? "bg-success text-white"
+                        : p.status === "error"
+                          ? "bg-destructive text-white"
+                          : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    {p.status === "done" ? (
+                      <Check className="size-2.5" strokeWidth={3} />
+                    ) : p.status === "error" ? (
+                      <Info className="size-2.5" strokeWidth={3} />
+                    ) : (
+                      <Loader2 className="size-2.5 animate-spin motion-reduce:animate-none" strokeWidth={3} />
+                    )}
+                  </span>
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">

@@ -1,5 +1,6 @@
 "use client";
 
+import { AssetIcon } from "@/components/invest/asset-icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -88,19 +89,22 @@ export function StocksSection({
                 return (
                   <li key={row.asset} className="flex flex-col gap-2 p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{assetName(row.asset, lang)}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {stock?.kind === "dollars" ? (
-                            // El precio por USDY no le dice nada a nadie: lo que importa es cuánto rinde.
-                            t.invest.dollarsRowSub
-                          ) : (
-                            <>
-                              <span className="font-mono">{row.asset}</span> · {formatUsd(row.priceEachUsd, lang)}{" "}
-                              {t.invest.priceEach}
-                            </>
-                          )}
-                        </p>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <AssetIcon symbol={row.asset} className="size-9" />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">{assetName(row.asset, lang)}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {stock?.kind === "dollars" ? (
+                              // El precio por USDY no le dice nada a nadie: lo que importa es cuánto rinde.
+                              t.invest.dollarsRowSub
+                            ) : (
+                              <>
+                                <span className="font-mono">{row.asset}</span> · {formatUsd(row.priceEachUsd, lang)}{" "}
+                                {t.invest.priceEach}
+                              </>
+                            )}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <div className="text-right">

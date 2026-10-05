@@ -10,6 +10,7 @@ import {
   type XStockSymbol,
 } from "@/lib/invest/catalog";
 import { useLang } from "@/lib/i18n";
+import { AssetIcon } from "@/components/invest/asset-icon";
 
 const LISTS: Record<AssetKind, readonly { symbol: XStockSymbol; kind: AssetKind }[]> = {
   stock: STOCKS,
@@ -74,7 +75,7 @@ export function AssetPicker({
       <div
         role="radiogroup"
         aria-label={t.invest.assetLabel}
-        className={group === "dollars" ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}
+        className={group === "dollars" ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2 min-[360px]:grid-cols-3"}
       >
         {list.map((stock) => {
           const active = stock.symbol === value;
@@ -88,22 +89,32 @@ export function AssetPicker({
               disabled={disabled}
               data-testid={`${idPrefix}-asset-${stock.symbol}`}
               onClick={() => onChange(stock.symbol)}
-              className={`flex min-h-14 flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
+              className={`flex min-h-14 flex-col items-start justify-center rounded-xl border px-2.5 py-2 text-left transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50 cursor-pointer ${
                 active
                   ? "border-primary bg-primary/10"
                   : "border-border bg-surface hover:bg-muted"
               }`}
             >
               {dollars ? (
-                <>
-                  <span className="max-w-full text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
-                  {/* la ficha ocupa todo el ancho: el subtítulo baja de línea si hace falta */}
-                  <span className="max-w-full text-xs leading-snug text-muted-foreground">{t.invest.dollarsChipSub}</span>
-                </>
+                <span className="flex w-full items-center gap-3">
+                  <AssetIcon symbol={stock.symbol} className="size-8" />
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
+                    {/* la ficha ocupa todo el ancho: el subtítulo baja de línea si hace falta */}
+                    <span className="text-xs leading-snug text-muted-foreground">{t.invest.dollarsChipSub}</span>
+                  </span>
+                </span>
               ) : (
                 <>
-                  <span className="max-w-full truncate font-mono text-sm font-semibold">{stock.symbol}</span>
-                  <span className="max-w-full truncate text-xs text-muted-foreground">{assetName(stock.symbol, lang)}</span>
+                  <AssetIcon symbol={stock.symbol} className="mb-1.5 size-7" />
+                  {/* 13 px: así "Polymarket" y "Nasdaq 100" entran enteros a 375 de ancho */}
+                  <span className="line-clamp-2 max-w-full break-words text-[13px] font-semibold leading-tight">
+                    {assetName(stock.symbol, lang)}
+                  </span>
+                  {/* en las privadas el símbolo repite el nombre */}
+                  {stock.kind === "stock" && (
+                    <span className="max-w-full truncate font-mono text-xs text-muted-foreground">{stock.symbol}</span>
+                  )}
                 </>
               )}
             </button>
