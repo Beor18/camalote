@@ -18,6 +18,8 @@ export interface BridgeSession {
   solanaAddress: string | null;
   demo: boolean;
   login: (email?: string) => void;
+  /** Entrar con Google directo, sin pasar por la ventana de Privy. */
+  loginWithGoogle: () => Promise<void> | void;
   /** Entrar con Phantom: firma un mensaje, no mueve plata. */
   loginWithWallet: () => void;
   logout: () => void;

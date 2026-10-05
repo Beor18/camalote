@@ -214,13 +214,16 @@ const es = {
   app: {
     loginTitle: "Entrá a tu cuenta",
     loginSub:
-      "Con tu email o tu Phantom. Tu cuenta se crea sola y es solo tuya.",
+      "Con tu Gmail o tu Phantom. Tu cuenta se crea sola y es solo tuya.",
     emailLabel: "Tu email",
     emailPlaceholder: "vos@ejemplo.com",
     continue: "Continuar",
     demoLoginNote:
       "Estás en el modo demo: todo se simula y no se mueven fondos reales.",
-    loginButton: "Entrar con email",
+    loginGoogle: "Entrar con Google",
+    loginGoogleHint: "Con tu cuenta de Gmail. Sin contraseñas nuevas.",
+    loginGoogleError: "No se pudo abrir Google. Probá de nuevo.",
+    loginEmailLink: "Prefiero entrar con email",
     loginPhantom: "Entrar con Phantom",
     loginOr: "o",
     loginHint: "Te llega un código de 6 dígitos. Nada más.",
@@ -986,13 +989,16 @@ const en: Dictionary = {
   app: {
     loginTitle: "Sign in to your account",
     loginSub:
-      "With your email or your Phantom. Your account creates itself and it's yours alone.",
+      "With your Gmail or your Phantom. Your account creates itself and it's yours alone.",
     emailLabel: "Your email",
     emailPlaceholder: "you@example.com",
     continue: "Continue",
     demoLoginNote:
       "You're in demo mode: everything is simulated and no real funds move.",
-    loginButton: "Sign in with email",
+    loginGoogle: "Sign in with Google",
+    loginGoogleHint: "With your Gmail account. No new passwords.",
+    loginGoogleError: "Couldn't open Google. Try again.",
+    loginEmailLink: "I'd rather use email",
     loginPhantom: "Sign in with Phantom",
     loginOr: "or",
     loginHint: "You get a 6-digit code. That's it.",

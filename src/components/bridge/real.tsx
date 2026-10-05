@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useConnectWallet, usePrivy } from "@privy-io/react-auth";
+import { useConnectWallet, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import {
   useCreateWallet,
@@ -70,6 +70,7 @@ async function fetchQuote(query: string): Promise<Quote> {
 export function useRealEngine(): Engine {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
   const { connectWallet } = useConnectWallet();
+  const { initOAuth } = useLoginWithOAuth();
   const { client: smartWalletClient } = useSmartWallets();
   const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets();
   const { createWallet } = useCreateWallet();
@@ -172,6 +173,7 @@ export function useRealEngine(): Engine {
     solanaAddress,
     demo: false,
     login: () => login({ loginMethods: ["email", "google"] }),
+    loginWithGoogle: () => initOAuth({ provider: "google" }),
     loginWithWallet: () => login({ loginMethods: ["wallet"], walletChainType: "solana-only" }),
     logout: () => logout(),
     externalWallet: phantomWallet

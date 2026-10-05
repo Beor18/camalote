@@ -31,6 +31,8 @@ import type {
 } from "@/components/bridge/types";
 
 const EMAIL_KEY = "camalote.demo.email";
+/** Quien entra con Google en el demo usa esta cuenta de muestra. */
+const GOOGLE_EMAIL = "vos@gmail.com";
 /** Quien entra con Phantom en el demo usa esta cuenta de muestra. */
 const PHANTOM_EMAIL = "phantom@camalote.demo";
 /** Lo que trae la Phantom de muestra la primera vez que se conecta. */
@@ -170,6 +172,7 @@ export function useDemoEngine(): Engine {
     login: (value?: string) => {
       if (value) enter(value);
     },
+    loginWithGoogle: () => enter(GOOGLE_EMAIL),
     loginWithWallet: () => {
       enter(PHANTOM_EMAIL);
       setPhantom(connectDemoPhantom(PHANTOM_EMAIL));
