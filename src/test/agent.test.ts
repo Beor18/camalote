@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import {
@@ -12,7 +12,7 @@ import {
 } from "@solana/web3.js";
 import { createCloseAccountInstruction, createTransferCheckedInstruction } from "@solana/spl-token";
 import { assertAllowedPrograms, tokenAmountOf } from "@/lib/server/agent/verify";
-import { cleanMessage } from "@/lib/server/agent/brain";
+import { agentTurn, cleanMessage } from "@/lib/server/agent/brain";
 import { ownersReceivingUsdc } from "@/lib/server/agent/helius";
 import { boughtMessage, setAsideMessage, waitingMarketMessage } from "@/lib/invest/agent-messages";
 import { USDC_MAINNET_MINT } from "@/lib/invest/catalog";
@@ -89,6 +89,79 @@ describe("cleanMessage", () => {
     expect(cleanMessage(null)).toBeNull();
     expect(cleanMessage("a".repeat(400))).toBeNull();
     expect(cleanMessage("Compré — listo")).toBeNull();
+  });
+});
+
+describe("agentTurn: Groq, después AI Gateway, después la regla", () => {
+  const GROQ = "https://api.groq.com/openai/v1/chat/completions";
+  const GATEWAY = "https://ai-gateway.vercel.sh/v1/chat/completions";
+  const buyCall = { role: "assistant", content: null, tool_calls: [{ id: "c1", type: "function", function: { name: "comprar_segun_regla", arguments: "{}" } }] };
+  const reply = (message: unknown) => new Response(JSON.stringify({ choices: [{ message }] }), { status: 200 });
+  const input = { lang: "es" as const, facts: { listo_para_comprar_usdc: 12 }, canBuy: true };
+
+  function setup(answers: Record<string, (() => Response)[]>) {
+    const calls: { url: string; body: Record<string, unknown> }[] = [];
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
+      calls.push({ url, body: JSON.parse(String(init.body)) });
+      const next = answers[url]?.shift();
+      if (!next) throw new Error(`fetch inesperado a ${url}`);
+      return next();
+    });
+    return calls;
+  }
+
+  beforeEach(() => {
+    vi.stubEnv("GROQ_API_KEY", "groq-test");
+    vi.stubEnv("AI_GATEWAY_API_KEY", "gateway-test");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("con Groq andando, el respaldo ni se llama", async () => {
+    const calls = setup({ [GROQ]: [() => reply(buyCall), () => reply({ role: "assistant", content: "Puse 12 USDC." })] });
+    const act = vi.fn(async () => ({ resultado: "comprado" }));
+    const turn = await agentTurn(input, act);
+    expect(turn).toMatchObject({ action: "buy", acted: true, message: "Puse 12 USDC." });
+    expect(calls.map((c) => c.url)).toEqual([GROQ, GROQ]);
+  });
+
+  it("si Groq falla, responde AI Gateway y Groq no se vuelve a esperar en el turno", async () => {
+    const calls = setup({
+      [GROQ]: [() => new Response("caído", { status: 503 })],
+      [GATEWAY]: [() => reply(buyCall), () => reply({ role: "assistant", content: "Puse 12 USDC." })],
+    });
+    const act = vi.fn(async () => ({ resultado: "comprado" }));
+    const turn = await agentTurn(input, act);
+    expect(turn).toMatchObject({ action: "buy", acted: true, message: "Puse 12 USDC." });
+    expect(act).toHaveBeenCalledTimes(1);
+    expect(calls.map((c) => c.url)).toEqual([GROQ, GATEWAY, GATEWAY]);
+    expect(calls[1].body).toMatchObject({ model: "openai/gpt-oss-120b", providerOptions: { gateway: { models: expect.any(Array) } } });
+  });
+
+  it("si nadie responde, no actúa y decide la regla", async () => {
+    setup({
+      [GROQ]: [() => new Response("caído", { status: 503 })],
+      [GATEWAY]: [() => new Response("caído", { status: 502 })],
+    });
+    const act = vi.fn();
+    const turn = await agentTurn(input, act);
+    expect(turn).toMatchObject({ action: "none", acted: false, message: null });
+    expect(act).not.toHaveBeenCalled();
+  });
+
+  it("si la compra ya se hizo y después fallan las dos, el mensaje sale de la plantilla", async () => {
+    setup({
+      [GROQ]: [() => reply(buyCall), () => new Response("caído", { status: 503 })],
+      [GATEWAY]: [() => new Response("caído", { status: 502 })],
+    });
+    const act = vi.fn(async () => ({ resultado: "comprado" }));
+    const turn = await agentTurn(input, act);
+    expect(turn).toMatchObject({ action: "buy", acted: true, message: null });
+    expect(act).toHaveBeenCalledTimes(1);
   });
 });
 

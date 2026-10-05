@@ -1,26 +1,60 @@
 import "server-only";
+import { getVercelOidcToken } from "@vercel/oidc";
 
 /**
- * La cabeza del agente: un modelo de IA (Groq, por defecto gpt-oss 120B) que
- * recibe los hechos de la cuenta, decide si compra ahora y le escribe al
- * usuario. Tiene dos herramientas y ninguna le deja elegir cuánto ni en qué:
+ * La cabeza del agente: un modelo de IA (gpt-oss 120B) que recibe los hechos
+ * de la cuenta, decide si compra ahora y le escribe al usuario. Tiene dos
+ * herramientas y ninguna le deja elegir cuánto ni en qué:
  *
  *   comprar_segun_regla()   compra lo apartado, en el destino de la regla
  *   esperar(motivo)         deja lo apartado para la próxima vuelta
  *
  * El código ya decidió si se puede comprar (horario, referencia, saldo); si
- * no se puede, la herramienta de comprar ni se ofrece. Si el modelo no
- * responde, se equivoca de formato o tarda, decide la regla sola (plan B) y
- * el mensaje sale de las plantillas. La plata nunca depende del modelo.
+ * no se puede, la herramienta de comprar ni se ofrece.
+ *
+ * Responde Groq. Si Groq falla, el mismo modelo va por AI Gateway de Vercel,
+ * que lo prueba en otros proveedores y, si tampoco, en otros dos modelos. Si
+ * nadie responde, se equivoca de formato o tarda, decide la regla sola
+ * (plan B) y el mensaje sale de las plantillas. La plata nunca depende del
+ * modelo.
  */
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
-const TIMEOUT_MS = 12_000;
+type Provider = "groq" | "gateway";
+
+const URLS: Record<Provider, string> = {
+  groq: "https://api.groq.com/openai/v1/chat/completions",
+  gateway: "https://ai-gateway.vercel.sh/v1/chat/completions",
+};
+const MODELS: Record<Provider, string> = {
+  groq: process.env.GROQ_MODEL ?? "openai/gpt-oss-120b",
+  gateway: "openai/gpt-oss-120b",
+};
+/** Si el modelo no responde en ningún proveedor de AI Gateway, estos, en orden. */
+const GATEWAY_FALLBACKS = ["google/gemini-3.1-flash-lite", "anthropic/claude-haiku-4.5"];
+/** Groq es rápido: si tarda, se pasa al respaldo antes. */
+const TIMEOUT_MS: Record<Provider, number> = { groq: 8_000, gateway: 12_000 };
 const MAX_MESSAGE = 280;
 
+/** En Vercel alcanza con el token OIDC del deploy; fuera de Vercel, una clave. */
+function gatewayConfigured(): boolean {
+  return Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL);
+}
+
+/** Los proveedores configurados, en el orden en que se prueban. */
+export function brainProviders(): Provider[] {
+  const list: Provider[] = [];
+  if (process.env.GROQ_API_KEY) list.push("groq");
+  if (gatewayConfigured()) list.push("gateway");
+  return list;
+}
+
 export function brainConfigured(): boolean {
-  return Boolean(process.env.GROQ_API_KEY);
+  return brainProviders().length > 0;
+}
+
+async function credential(provider: Provider): Promise<string> {
+  if (provider === "groq") return process.env.GROQ_API_KEY as string;
+  return process.env.AI_GATEWAY_API_KEY || (await getVercelOidcToken());
 }
 
 export interface BrainFacts {
@@ -85,34 +119,70 @@ const WAIT_TOOL = {
   },
 };
 
-async function chat(messages: ChatMessage[], tools: unknown[] | undefined): Promise<ChatMessage> {
+const LABEL: Record<Provider, string> = { groq: "Groq", gateway: "AI Gateway" };
+
+async function ask(provider: Provider, messages: ChatMessage[], tools: unknown[] | undefined): Promise<ChatMessage> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS[provider]);
   try {
-    const res = await fetch(GROQ_URL, {
+    const res = await fetch(URLS[provider], {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        Authorization: `Bearer ${await credential(provider)}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: MODELS[provider],
         messages,
         ...(tools ? { tools, tool_choice: "auto" } : {}),
         temperature: 0.3,
         max_tokens: 400,
+        ...(provider === "gateway" ? { providerOptions: { gateway: { models: GATEWAY_FALLBACKS } } } : {}),
       }),
       signal: controller.signal,
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`Groq respondió ${res.status}`);
+    if (!res.ok) throw new Error(`${LABEL[provider]} respondió ${res.status}`);
     const data = (await res.json()) as { choices?: { message?: ChatMessage }[] };
     const message = data.choices?.[0]?.message;
-    if (!message) throw new Error("Groq no devolvió mensaje");
+    if (!message) throw new Error(`${LABEL[provider]} no devolvió mensaje`);
     return message;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Prueba los proveedores en orden. El que falla queda afuera del resto del
+ * turno, así el segundo mensaje no vuelve a esperar al que ya no respondió.
+ */
+async function chat(messages: ChatMessage[], tools: unknown[] | undefined, providers: Provider[]): Promise<ChatMessage> {
+  let lastError: unknown = new Error("sin proveedor de IA");
+  while (providers.length > 0) {
+    try {
+      return await ask(providers[0], messages, tools);
+    } catch (err) {
+      lastError = err;
+      console.warn(`[agent] ${LABEL[providers[0]]} no respondió:`, err instanceof Error ? err.message : err);
+      providers.shift();
+    }
+  }
+  throw lastError;
+}
+
+/** Una pregunta mínima a cada proveedor, para saber si responde. No toca cuentas. */
+export async function probeBrain(): Promise<Partial<Record<Provider, string>>> {
+  const out: Partial<Record<Provider, string>> = {};
+  for (const provider of brainProviders()) {
+    const started = Date.now();
+    try {
+      await ask(provider, [{ role: "user", content: "Respondé solo: ok" }], undefined);
+      out[provider] = `ok (${Date.now() - started} ms)`;
+    } catch (err) {
+      out[provider] = err instanceof Error ? err.message : "error";
+    }
+  }
+  return out;
 }
 
 /** Limpia el mensaje del modelo; null si no sirve (vacío, largo, con guion largo). */
@@ -131,7 +201,8 @@ export async function agentTurn(
   input: BrainFacts,
   act: (action: "buy" | "wait", waitReason?: string) => Promise<Record<string, unknown>>
 ): Promise<BrainResult & { acted: boolean }> {
-  if (!brainConfigured()) return { action: "none", message: null, acted: false };
+  const providers = brainProviders();
+  if (providers.length === 0) return { action: "none", message: null, acted: false };
   const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt(input.lang) },
     { role: "user", content: JSON.stringify({ hechos: input.facts, puede_comprar_ahora: input.canBuy }) },
@@ -142,7 +213,7 @@ export async function agentTurn(
   let waitReason: string | undefined;
   let acted = false;
   try {
-    const first = await chat(messages, tools);
+    const first = await chat(messages, tools, providers);
     const call = first.tool_calls?.[0];
     if (call && input.canBuy) {
       if (call.function.name === "comprar_segun_regla") action = "buy";
@@ -163,7 +234,7 @@ export async function agentTurn(
     acted = true;
     messages.push({ role: "assistant", content: first.content ?? null, tool_calls: [call!] });
     messages.push({ role: "tool", tool_call_id: call!.id, content: JSON.stringify(result) });
-    const second = await chat(messages, undefined);
+    const second = await chat(messages, undefined, providers);
     return { action, waitReason, message: cleanMessage(second.content), acted };
   } catch (err) {
     console.warn("[agent] la IA no respondió:", err instanceof Error ? err.message : err);

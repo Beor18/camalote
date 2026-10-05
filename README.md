@@ -202,6 +202,13 @@ Variables nuevas (servidor salvo las públicas): `PRIVY_AGENT_AUTH_KEY`,
 `HELIUS_API_KEY`, `HELIUS_WEBHOOK_ID`, `HELIUS_WEBHOOK_SECRET`, `CRON_SECRET`.
 Esquema en `supabase/migrations/20261003000000_agent.sql`.
 
+**Si Groq falla**, el mismo modelo va por AI Gateway de Vercel (otros
+proveedores y, si tampoco, otros dos modelos) y recién después decide la
+regla. En Vercel no hace falta configurar nada: usa el token OIDC del
+deploy. Fuera de Vercel, `AI_GATEWAY_API_KEY`. Para ver si las dos IA
+responden: `GET /api/health?probar=ia` con
+`Authorization: Bearer $CRON_SECRET`.
+
 ## Correr el proyecto
 
 ```bash

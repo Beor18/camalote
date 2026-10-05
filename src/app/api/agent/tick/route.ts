@@ -1,20 +1,12 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { runAgent, type RunOutcome } from "@/lib/server/agent/executor";
 import { listAgentAccounts } from "@/lib/server/agent/store";
+import { cronAuthorized } from "@/lib/server/cron-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const BUDGET_MS = 50_000;
-
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET ?? "";
-  const got = req.headers.get("authorization") ?? "";
-  const want = `Bearer ${secret}`;
-  if (!secret || got.length !== want.length) return false;
-  return timingSafeEqual(Buffer.from(got), Buffer.from(want));
-}
 
 /**
  * GET /api/agent/tick ← el reloj de respaldo (cron de Vercel, de Supabase o
@@ -24,7 +16,7 @@ function authorized(req: NextRequest): boolean {
  * apertura de Wall Street.
  */
 export async function GET(req: NextRequest) {
-  if (!authorized(req)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  if (!cronAuthorized(req)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   const started = Date.now();
   const accounts = await listAgentAccounts(50);
   const outcomes: Partial<Record<RunOutcome, number>> = {};

@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db, initErrors, privyClient } from "@/lib/server/account-store";
 import { agentSignerConfigured } from "@/lib/server/agent/privy";
-import { brainConfigured } from "@/lib/server/agent/brain";
+import { brainConfigured, brainProviders, probeBrain } from "@/lib/server/agent/brain";
 import { heliusConfigured } from "@/lib/server/agent/helius";
+import { cronAuthorized } from "@/lib/server/cron-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +13,15 @@ const has = (name: string) => Boolean(process.env[name]?.trim());
 /**
  * GET /api/health → qué está configurado en este servidor, en sí o no.
  * Nunca devuelve valores: sirve para saber qué variable falta en Vercel.
+ *
+ * GET /api/health?probar=ia con Authorization: Bearer CRON_SECRET → además
+ * le hace una pregunta mínima a cada IA (Groq y el respaldo) y dice si respondió.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (req.nextUrl.searchParams.get("probar") === "ia") {
+    if (!cronAuthorized(req)) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+    return NextResponse.json(await probeBrain(), { headers: { "Cache-Control": "no-store" } });
+  }
   const supabase = db();
   const privy = privyClient();
   let database: "ok" | "sin configurar" | "sin tablas" | "error" = supabase ? "ok" : "sin configurar";
@@ -27,6 +35,7 @@ export async function GET() {
       privy: privy ? "ok" : "sin configurar",
       agente: agentSignerConfigured() ? "ok" : "sin configurar",
       ia: brainConfigured() ? "ok" : "sin configurar",
+      ia_respaldo: brainProviders().includes("gateway") ? "ok" : "sin configurar",
       aviso_helius: heliusConfigured() && has("HELIUS_WEBHOOK_SECRET") ? "ok" : "sin configurar",
       reloj: has("CRON_SECRET") ? "ok" : "sin configurar",
       faltan: [
