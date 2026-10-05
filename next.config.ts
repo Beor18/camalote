@@ -5,7 +5,9 @@ import type { NextConfig } from "next";
  * - frame-ancestors 'none' + X-Frame-Options DENY: nadie puede embeber
  *   a Camalote en un iframe (anti-clickjacking).
  * - frame-src: los únicos iframes que Camalote puede abrir son los de la
- *   billetera embebida de Privy y el captcha de Cloudflare.
+ *   billetera embebida de Privy, el captcha de Cloudflare y la verificación
+ *   de WalletConnect (conectar billeteras desde el celular), como pide la
+ *   guía de CSP de Privy.
  * Solo definimos esas directivas: el resto de la CSP queda por defecto
  * para no romper scripts/estilos propios.
  */
@@ -13,7 +15,7 @@ const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value:
-      "frame-ancestors 'none'; frame-src https://auth.privy.io https://challenges.cloudflare.com;",
+      "frame-ancestors 'none'; frame-src https://auth.privy.io https://challenges.cloudflare.com https://verify.walletconnect.com https://verify.walletconnect.org;",
   },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
