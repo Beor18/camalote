@@ -1,5 +1,8 @@
 "use client";
 
+/** Dólares que rinden se muestra con el ícono de USDC: es el dólar que el usuario reconoce. */
+const ICON: Partial<Record<string, string>> = { USDY: "USDC" };
+
 /**
  * El ícono oficial del token, el que publica su emisor (el mismo que muestran
  * las billeteras). Vive en /public/assets para no depender de otro servidor.
@@ -9,7 +12,7 @@ export function AssetIcon({ symbol, className = "size-8" }: { symbol: string; cl
   return (
     // eslint-disable-next-line @next/next/no-img-element -- 2 KB, ya en el tamaño justo
     <img
-      src={`/assets/${symbol}.webp`}
+      src={`/assets/${ICON[symbol] ?? symbol}.webp`}
       alt=""
       width={96}
       height={96}
