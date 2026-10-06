@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AssetPicker } from "@/components/invest/asset-picker";
+import type { YieldMap } from "@/lib/invest/yields";
 import { GoalEditor } from "@/components/invest/goal-editor";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
@@ -32,6 +33,7 @@ export function RuleSheet({
   onSave,
   onTurnOff,
   onClose,
+  yields,
 }: {
   open: boolean;
   mode: RuleSheetMode;
@@ -41,6 +43,8 @@ export function RuleSheet({
   onSave: (draft: RuleDraft, turnOn: boolean) => void;
   onTurnOff: () => void;
   onClose: () => void;
+  /** Rendimiento de hoy de los dólares, para el selector. */
+  yields?: YieldMap;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -68,6 +72,7 @@ export function RuleSheet({
           onSave={onSave}
           onTurnOff={onTurnOff}
           onClose={onClose}
+          yields={yields}
         />
       )}
     </dialog>
@@ -81,6 +86,7 @@ function Wizard({
   onSave,
   onTurnOff,
   onClose,
+  yields,
 }: {
   mode: RuleSheetMode;
   initialStep?: RuleStep;
@@ -88,6 +94,7 @@ function Wizard({
   onSave: (draft: RuleDraft, turnOn: boolean) => void;
   onTurnOff: () => void;
   onClose: () => void;
+  yields?: YieldMap;
 }) {
   const { lang, t } = useLang();
   const [draft, setDraft] = useState<RuleDraft>(() => ({
@@ -216,7 +223,7 @@ function Wizard({
 
         {view === "asset" && (
           <>
-            <AssetPicker value={draft.asset} onChange={(asset) => patch({ asset })} idPrefix="rule" />
+            <AssetPicker value={draft.asset} onChange={(asset) => patch({ asset })} idPrefix="rule" yields={yields} />
             {kind === "preipo" ? (
               <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground" data-testid="rule-preipo-note">
                 {t.invest.preIpoRuleNote}

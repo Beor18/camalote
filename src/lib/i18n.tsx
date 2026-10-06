@@ -534,9 +534,16 @@ const es = {
     stockGroupConsumer: "Consumo",
     assetGroupPreIpo: "Privadas",
     assetGroupDollars: "Dólares",
-    dollarsChipSub: "Cerca del 4 % anual, sin el sube y baja de las acciones",
-    dollarsPickerNote:
-      "Dólares respaldados por letras del Tesoro de Estados Unidos. Rinden 3,6 % anual hoy; el porcentaje cambia con la tasa de Estados Unidos. No es un banco ni un plazo fijo: el riesgo es del emisor, no del mercado. Comisión de Camalote: 0,10 %.",
+    dollarsApy: (apy: string) => `≈${apy} % al año, puede variar`,
+    dollarsRisk: { low: "Riesgo bajo", medium: "Riesgo medio" },
+    dollarsOptionSub: {
+      USDY: "Lo más conservador.",
+      jlUSDC: "Lo sacás al instante, casi sin costo.",
+    } as Record<string, string>,
+    dollarsOptionNote: {
+      USDY: "Dólares respaldados por letras del Tesoro de EE. UU., emitidos por Ondo. El porcentaje cambia con la tasa de EE. UU. Entrar y salir cuesta cerca de 0,5 % en el mercado. No es un plazo fijo: el riesgo es del emisor. Comisión de Camalote: 0,10 %.",
+      jlUSDC: "Tus dólares se prestan en Jupiter Lend a quienes dejan cripto en garantía. El porcentaje cambia con lo que se pide prestado. Los sacás al instante. El riesgo es una falla del programa o préstamos que no se cobren. Comisión de Camalote: 0,10 %.",
+    } as Record<string, string>,
     dollarsRuleNote:
       "Sin horario ni referencia: la regla compra apenas junta el mínimo. El rendimiento se ve como un precio que sube de a poco todos los días.",
     dollarsNote:
@@ -549,12 +556,12 @@ const es = {
     dollarsQuote: "Ver cuánto queda rindiendo",
     dollarsRowSpend: "Ponés",
     dollarsRowReceive: "Queda rindiendo",
-    dollarsRowUnits: (tokens: string, price: string) => `${tokens} USDY a ${price} c/u`,
+    dollarsRowUnits: (tokens: string, price: string, symbol: string) => `${tokens} ${symbol} a ${price} c/u`,
     dollarsConfirm: "Confirmar",
     dollarsStepSending: "Pasando a dólares que rinden",
     dollarsDoneTitle: "¡Ya rinden!",
-    dollarsDoneBody: (usdc: string, tokens: string) =>
-      `${usdc} USDC ya están rindiendo en tu cuenta (${tokens} USDY).`,
+    dollarsDoneBody: (usdc: string, tokens: string, symbol: string) =>
+      `${usdc} USDC ya están rindiendo en tu cuenta (${tokens} ${symbol}).`,
     dollarsAgain: "Poner más",
     dollarsTakeOut: "Sacar",
     dollarsSellTitle: "Sacar los dólares",
@@ -565,7 +572,7 @@ const es = {
     dollarsStepTakingOut: "Sacando los dólares",
     dollarsSellDoneTitle: "¡Listo!",
     dollarsSellDoneBody: (usdc: string) => `${usdc} USDC volvieron a tu cuenta.`,
-    dollarsRowSub: "Cerca del 4 % anual",
+    dollarsRowSub: (apy: string) => `≈${apy} % al año`,
     kindTakeOut: "Sacaste",
     preIpoPickerNote:
       "Tokens que siguen el valor de empresas privadas. Más riesgo: sin derechos, 1 % por transferencia y un precio que puede alejarse de su referencia.",
@@ -1319,9 +1326,16 @@ const en: Dictionary = {
     stockGroupConsumer: "Consumer",
     assetGroupPreIpo: "Pre-IPO",
     assetGroupDollars: "Dollars",
-    dollarsChipSub: "About 4% a year, without the ups and downs of stocks",
-    dollarsPickerNote:
-      "Dollars backed by short-term US Treasuries. They yield 3.6% a year today; the rate moves with US rates. Not a bank and not a term deposit: the risk is the issuer's, not the market's. Camalote fee: 0.10%.",
+    dollarsApy: (apy: string) => `≈${apy}% a year, may vary`,
+    dollarsRisk: { low: "Low risk", medium: "Medium risk" },
+    dollarsOptionSub: {
+      USDY: "The most conservative.",
+      jlUSDC: "Take it out instantly, at almost no cost.",
+    } as Record<string, string>,
+    dollarsOptionNote: {
+      USDY: "Dollars backed by US Treasury bills, issued by Ondo. The rate moves with US rates. Getting in and out costs about 0.5% on the market. Not a term deposit: the risk is the issuer's. Camalote fee: 0.10%.",
+      jlUSDC: "Your dollars are lent on Jupiter Lend to people who leave crypto as collateral. The rate moves with how much is borrowed. You can take them out instantly. The risk is a bug in the program or loans that don't get repaid. Camalote fee: 0.10%.",
+    } as Record<string, string>,
     dollarsRuleNote:
       "No market hours and no reference: the rule buys as soon as it adds up to the minimum. The yield shows up as a price that creeps up a little every day.",
     dollarsNote:
@@ -1333,12 +1347,12 @@ const en: Dictionary = {
     dollarsQuote: "See how much ends up earning",
     dollarsRowSpend: "You put in",
     dollarsRowReceive: "Ends up earning",
-    dollarsRowUnits: (tokens: string, price: string) => `${tokens} USDY at ${price} each`,
+    dollarsRowUnits: (tokens: string, price: string, symbol: string) => `${tokens} ${symbol} at ${price} each`,
     dollarsConfirm: "Confirm",
     dollarsStepSending: "Moving into dollars that earn",
     dollarsDoneTitle: "Earning!",
-    dollarsDoneBody: (usdc: string, tokens: string) =>
-      `${usdc} USDC are now earning in your account (${tokens} USDY).`,
+    dollarsDoneBody: (usdc: string, tokens: string, symbol: string) =>
+      `${usdc} USDC are now earning in your account (${tokens} ${symbol}).`,
     dollarsAgain: "Put more",
     dollarsTakeOut: "Take out",
     dollarsSellTitle: "Take the dollars out",
@@ -1349,7 +1363,7 @@ const en: Dictionary = {
     dollarsStepTakingOut: "Taking the dollars out",
     dollarsSellDoneTitle: "Done!",
     dollarsSellDoneBody: (usdc: string) => `${usdc} USDC are back in your account.`,
-    dollarsRowSub: "About 4% a year",
+    dollarsRowSub: (apy: string) => `≈${apy}% a year`,
     kindTakeOut: "Took out",
     preIpoPickerNote:
       "Tokens that track the value of private companies. Riskier: no rights, a 1% transfer fee and a price that can drift from its reference.",

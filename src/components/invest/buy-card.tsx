@@ -157,7 +157,7 @@ export function BuyCard({
             {pd ? t.invest.dollarsDoneTitle : t.invest.doneTitle}
           </h2>
           <p className="text-muted-foreground">
-            {pd ? t.invest.dollarsDoneBody(usdcText, tokensText) : t.invest.doneBody(tokensText, p.asset, usdcText)}
+            {pd ? t.invest.dollarsDoneBody(usdcText, tokensText, p.asset) : t.invest.doneBody(tokensText, p.asset, usdcText)}
           </p>
           <p className="text-xs text-muted-foreground">
             {camaloteFee > 0n
@@ -280,6 +280,7 @@ export function BuyCard({
             onChange={setAsset}
             idPrefix="buy"
             disabled={state.phase !== "idle"}
+            yields={prices?.yields}
           />
           <div className="mt-2">
             <MarketNote
@@ -362,7 +363,8 @@ export function BuyCard({
                   <span className="block text-xs text-muted-foreground">
                     {t.invest.dollarsRowUnits(
                       formatTokens(toDisplayUnits(quoted.expectedTokenUnits, quoted.multiplier), lang, decimalsOf(quoted.asset)),
-                      formatUsd(priceOf(quoted.asset), lang)
+                      formatUsd(priceOf(quoted.asset), lang),
+                      quoted.asset
                     )}
                   </span>
                 </dd>

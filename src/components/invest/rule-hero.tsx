@@ -194,7 +194,8 @@ export function RuleHero({
             )}
           </span>
         </h2>
-        {rule.goal && (
+        {/* Con meta, o con dólares (hay dos opciones): en qué está la parte. */}
+        {(rule.goal || dollars) && (
           <p className="mt-1 text-sm text-muted-foreground">{t.invest.ruleInAsset(stockName)}</p>
         )}
       </div>

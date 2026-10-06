@@ -25,9 +25,9 @@ describe("catálogo", () => {
   it("tiene veintiuna acciones, ocho pre-IPO y los dólares que rinden, sin repetir", () => {
     expect(STOCKS).toHaveLength(21);
     expect(PREIPO).toHaveLength(8);
-    expect(DOLLARS).toHaveLength(1);
-    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(30);
-    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(30);
+    expect(DOLLARS).toHaveLength(2);
+    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(31);
+    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(31);
   });
 
   it("los dólares que rinden son un token clásico de 6 decimales, con nombre en cada idioma", () => {
@@ -38,10 +38,24 @@ describe("catálogo", () => {
     expect(isDollars("USDY")).toBe(true);
     expect(isDollars("SPYx")).toBe(false);
     expect(kindOf("USDY")).toBe("dollars");
-    expect(assetName("USDY", "es")).toBe("Dólares que rinden");
-    expect(assetName("USDY", "en")).toBe("Dollars that earn");
+    expect(assetName("USDY", "es")).toBe("Bonos del Tesoro");
+    expect(assetName("USDY", "en")).toBe("US Treasuries");
     expect(assetName("SPYx", "es")).toBe("S&P 500");
     expect(assetName("nada", "es")).toBe("nada");
+  });
+
+  it("dos opciones de dólares: los bonos primero (riesgo bajo) y los préstamos con garantía (riesgo medio)", () => {
+    expect(DOLLARS.map((d) => d.symbol)).toEqual(["USDY", "jlUSDC"]);
+    const loans = findXStock("jlUSDC");
+    expect(loans?.kind).toBe("dollars");
+    expect(loans?.issuer).toBe("Jupiter Lend");
+    expect(decimalsOf("jlUSDC")).toBe(6);
+    expect(assetName("jlUSDC", "es")).toBe("Préstamos con garantía");
+    expect(assetName("jlUSDC", "en")).toBe("Secured loans");
+    expect(findXStock("USDY")?.risk).toBe("low");
+    expect(loans?.risk).toBe("medium");
+    for (const d of DOLLARS) expect(d.apyFallback, d.symbol).toBeGreaterThan(0);
+    expect(feeBpsFor("jlUSDC")).toBe(10);
   });
 
   it("los dólares que rinden pagan 0,10 % y las acciones 0,45 %", () => {

@@ -3,6 +3,7 @@
 import { fallbackPrices } from "@/lib/invest/catalog";
 import type { MarketMap, ReferenceMap } from "@/lib/invest/guards";
 import type { MultiplierMap, PriceMap } from "@/lib/invest/types";
+import type { YieldMap } from "@/lib/invest/yields";
 
 export interface PricesResult {
   prices: PriceMap;
@@ -16,6 +17,8 @@ export interface PricesResult {
   market: MarketMap;
   /** Referencia de PreStocks por empresa pre-IPO; vacío si no se pudo leer. */
   reference: ReferenceMap;
+  /** Rendimiento anual (%) de los dólares que rinden; vacío si no se pudo leer. */
+  yields: YieldMap;
   updatedAt: number;
 }
 
@@ -41,6 +44,18 @@ function readMarket(raw: unknown, known: PriceMap): MarketMap {
     if (typeof v.open !== "boolean") continue;
     const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) ? n : null);
     out[symbol as keyof MarketMap] = { open: v.open, nextOpen: num(v.nextOpen), nextClose: num(v.nextClose) };
+  }
+  return out;
+}
+
+function readYields(raw: unknown, known: PriceMap): YieldMap {
+  const out: YieldMap = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [symbol, value] of Object.entries(raw as Record<string, unknown>)) {
+    // Un rendimiento de más de 50 % no es de dólares que rinden: se descarta.
+    if (symbol in known && typeof value === "number" && Number.isFinite(value) && value > 0 && value < 50) {
+      out[symbol] = value;
+    }
   }
   return out;
 }
@@ -88,6 +103,7 @@ export async function fetchPrices(): Promise<PricesResult> {
       previousMultipliers?: unknown;
       market?: unknown;
       reference?: unknown;
+      yields?: unknown;
       updatedAt?: number;
     };
     const prices: PriceMap = { ...fallback };
@@ -105,6 +121,7 @@ export async function fetchPrices(): Promise<PricesResult> {
       previousMultipliers: readMultipliers(data.previousMultipliers, fallback),
       market: readMarket(data.market, fallback),
       reference: readReference(data.reference, fallback),
+      yields: readYields(data.yields, fallback),
       updatedAt: data.updatedAt ?? Date.now(),
     };
   } catch {
@@ -115,6 +132,7 @@ export async function fetchPrices(): Promise<PricesResult> {
       previousMultipliers: {},
       market: {},
       reference: {},
+      yields: {},
       updatedAt: Date.now(),
     };
   }

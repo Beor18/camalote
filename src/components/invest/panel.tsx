@@ -269,6 +269,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           onSave={saveDraft}
           onTurnOff={turnOff}
           onClose={() => setEditing(null)}
+          yields={prices?.yields}
         />
         {agentSheetEl}
       </div>
@@ -336,6 +337,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           loading={holdings === null}
           pricesLive={prices ? prices.live : null}
           reference={prices?.reference}
+          yields={prices?.yields}
           demo={session.demo}
           hasRule={Boolean(rule?.enabled)}
           onSell={(asset) => setSelling(asset)}
@@ -369,6 +371,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           onSave={saveDraft}
           onTurnOff={turnOff}
           onClose={() => setEditing(null)}
+          yields={prices?.yields}
         />
       )}
 

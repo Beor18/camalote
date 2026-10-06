@@ -1,7 +1,7 @@
 "use client";
 
 /** Dólares que rinden se muestra con el ícono de USDC: es el dólar que el usuario reconoce. */
-const ICON: Partial<Record<string, string>> = { USDY: "USDC" };
+const ICON: Partial<Record<string, string>> = { USDY: "USDC", jlUSDC: "USDC" };
 
 /**
  * El ícono oficial del token, el que publica su emisor (el mismo que muestran

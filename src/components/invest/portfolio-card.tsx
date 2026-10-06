@@ -14,6 +14,7 @@ import {
   type PortfolioSummary,
 } from "@/lib/invest/rules";
 import { formatUsdc } from "@/lib/format";
+import { apyOf, formatApy, type YieldMap } from "@/lib/invest/yields";
 import { useLang } from "@/lib/i18n";
 
 /**
@@ -27,6 +28,7 @@ export function StocksSection({
   loading,
   pricesLive,
   reference,
+  yields = {},
   demo,
   hasRule,
   onSell,
@@ -36,6 +38,8 @@ export function StocksSection({
   pricesLive: boolean | null;
   /** Referencia de PreStocks por empresa pre-IPO, para mostrar la distancia del token. */
   reference?: ReferenceMap;
+  /** Rendimiento de hoy de los dólares; si falta, el de referencia. */
+  yields?: YieldMap;
   demo: boolean;
   /** La regla está armada: el vacío dice "se compra solo con tu próximo cobro". */
   hasRule: boolean;
@@ -92,11 +96,11 @@ export function StocksSection({
                       <div className="flex min-w-0 items-center gap-3">
                         <AssetIcon symbol={row.asset} className="size-9" />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{assetName(row.asset, lang)}</p>
+                          <p className="line-clamp-2 break-words text-sm font-semibold leading-tight">{assetName(row.asset, lang)}</p>
                           <p className="truncate text-xs text-muted-foreground">
                             {stock?.kind === "dollars" ? (
-                              // El precio por USDY no le dice nada a nadie: lo que importa es cuánto rinde.
-                              t.invest.dollarsRowSub
+                              // El precio por token no le dice nada a nadie: lo que importa es cuánto rinde.
+                              t.invest.dollarsRowSub(formatApy(apyOf(row.asset, yields) ?? 0, lang))
                             ) : (
                               <>
                                 <span className="font-mono">{row.asset}</span> · {formatUsd(row.priceEachUsd, lang)}{" "}

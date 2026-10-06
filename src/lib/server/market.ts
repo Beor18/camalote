@@ -2,7 +2,7 @@ import "server-only";
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { SOLANA_RPC_URL } from "@/lib/config";
-import { STOCKS, XSTOCKS, xStockByMint } from "@/lib/invest/catalog";
+import { STOCKS, XSTOCKS, findXStock, xStockByMint } from "@/lib/invest/catalog";
 import {
   parsePythMarketHours,
   premiumBps,
@@ -12,6 +12,7 @@ import {
 import { effectiveMultiplier, type ScaledUiAmountState } from "@/lib/invest/multiplier";
 import type { MultiplierMap } from "@/lib/invest/types";
 import { priceV3 } from "@/lib/server/jupiter";
+import { parseLendRate, parseLlamaApy, type YieldMap } from "@/lib/invest/yields";
 
 /**
  * Precios, multiplicadores, horario de Wall Street y referencia de
@@ -26,6 +27,11 @@ const EXTERNAL_TIMEOUT_MS = 5_000;
 
 const PYTH_FEEDS_URL = "https://hermes.pyth.network/v2/price_feeds";
 const PRESTOCKS_URL = "https://prestocks.com/api/prestocks";
+/** El rendimiento de los dólares cambia en el día, no en el minuto. */
+const YIELD_CACHE_MS = 30 * 60_000;
+const JUPITER_LEND_URL = "https://lite-api.jup.ag/lend/v1/earn/tokens";
+/** Pool de USDY en Solana en DefiLlama (ondo-yield-assets). */
+const LLAMA_USDY_URL = "https://yields.llama.fi/chart/00b83068-9f87-4411-b5d7-5d2ff48c40c4";
 
 export interface MarketData {
   prices: Record<string, number>;
@@ -37,11 +43,14 @@ export interface MarketData {
   market: MarketMap;
   /** Valor de referencia de PreStocks por empresa pre-IPO y distancia del token. */
   reference: ReferenceMap;
+  /** Rendimiento anual de los dólares que rinden, en %, leído en vivo. */
+  yields: YieldMap;
   updatedAt: number;
 }
 
 let cached: MarketData | null = null;
 let slow: { market: MarketMap; reference: ReferenceMap; updatedAt: number } | null = null;
+let yieldsCache: { yields: YieldMap; updatedAt: number } | null = null;
 
 function fetchJson(url: string): Promise<unknown> {
   const controller = new AbortController();
@@ -120,6 +129,23 @@ async function readReference(): Promise<ReferenceMap> {
   return out;
 }
 
+/** Cada fuente por separado: si una no responde, la otra igual se muestra. */
+async function readYields(): Promise<YieldMap> {
+  if (yieldsCache && Date.now() - yieldsCache.updatedAt < YIELD_CACHE_MS) return yieldsCache.yields;
+  const loans = findXStock("jlUSDC");
+  const [lend, llama] = await Promise.all([
+    fetchJson(JUPITER_LEND_URL).catch(() => null),
+    fetchJson(LLAMA_USDY_URL).catch(() => null),
+  ]);
+  const yields: YieldMap = { ...(yieldsCache?.yields ?? {}) };
+  const loansApy = loans ? parseLendRate(lend, loans.mint) : null;
+  const usdyApy = parseLlamaApy(llama);
+  if (loansApy !== null) yields.jlUSDC = loansApy;
+  if (usdyApy !== null) yields.USDY = usdyApy;
+  yieldsCache = { yields, updatedAt: Date.now() };
+  return yields;
+}
+
 async function readSlow(): Promise<{ market: MarketMap; reference: ReferenceMap }> {
   if (slow && Date.now() - slow.updatedAt < SLOW_CACHE_MS) return slow;
   const [market, reference] = await Promise.all([
@@ -141,13 +167,14 @@ async function readSlow(): Promise<{ market: MarketMap; reference: ReferenceMap 
 export async function getMarketData(): Promise<MarketData> {
   if (cached && Date.now() - cached.updatedAt < CACHE_MS) return cached;
   try {
-    const [byMint, multipliers, slowData] = await Promise.all([
+    const [byMint, multipliers, slowData, yields] = await Promise.all([
       priceV3(XSTOCKS.map((s) => s.mint)),
       readMultipliers().catch((err: unknown) => {
         console.warn("[invest/prices] sin multiplicadores:", err instanceof Error ? err.message : err);
         return null;
       }),
       readSlow().catch(() => ({ market: {}, reference: {} })),
+      readYields().catch(() => yieldsCache?.yields ?? {}),
     ]);
     const currentMultipliers = multipliers?.current ?? cached?.multipliers ?? {};
     const prices: Record<string, number> = {};
@@ -166,6 +193,7 @@ export async function getMarketData(): Promise<MarketData> {
       previousMultipliers: multipliers?.previous ?? cached?.previousMultipliers ?? {},
       market: slowData.market,
       reference: slowData.reference,
+      yields,
       updatedAt: Date.now(),
     };
     return cached;

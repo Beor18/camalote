@@ -12,11 +12,18 @@
  *   de empresas privadas (SPV 1:1). Token-2022 con 9 decimales y 1 % de
  *   comisión de transferencia del emisor. Mints de prestocks.com/api y
  *   verificados en Jupiter el 2026-09-21 (tags: verified, prestocks, rwa).
- * - Dólares que rinden: USDY de Ondo, dólares respaldados por letras del
- *   Tesoro de Estados Unidos; el precio del token sube a diario con el
- *   rendimiento (3,6 % anual el 2026-09-29, varía). Token clásico (SPL) con
- *   6 decimales. Solo para personas fuera de Estados Unidos. Mint verificado
- *   en Jupiter el 2026-09-29 (8.272 tenedores, 2 M de liquidez).
+ * - Dólares que rinden, dos opciones (las dos suben de precio a diario con
+ *   el rendimiento; tokens clásicos SPL de 6 decimales):
+ *   - Bonos del Tesoro: USDY de Ondo, respaldado por letras del Tesoro de
+ *     Estados Unidos (3,6 % anual el 2026-10-06, varía). Solo para personas
+ *     fuera de Estados Unidos. Riesgo bajo; entrar y salir por el mercado
+ *     cuesta cerca de 0,5 %.
+ *   - Préstamos con garantía: jlUSDC, el depósito de USDC en Jupiter Lend,
+ *     que presta a quien deja cripto en garantía (4 % el 2026-10-06, varía).
+ *     Se saca al instante y casi sin costo. Riesgo medio: falla del
+ *     programa o préstamos que no se cobran (10 auditorías de 6 firmas).
+ *   Las dos se compran por el agregador de Jupiter: el permiso del agente no
+ *   cambia.
  *
  * Nada de esto existe en devnet.
  */
@@ -51,7 +58,8 @@ export type XStockSymbol =
   | "ANDURIL"
   | "FIGUREAI"
   | "POLYMARKET"
-  | "USDY";
+  | "USDY"
+  | "jlUSDC";
 
 /** Acción que cotiza, empresa antes de salir a bolsa, o dólares que rinden. */
 export type AssetKind = "stock" | "preipo" | "dollars";
@@ -70,13 +78,17 @@ export interface XStock {
   /** Precio de referencia (USD, sep-2026) por si el mercado no responde. */
   fallbackPriceUsd: number;
   kind: AssetKind;
-  issuer: "xStocks" | "PreStocks" | "Ondo";
+  issuer: "xStocks" | "PreStocks" | "Ondo" | "Jupiter Lend";
   /** Símbolo del feed de Pyth para el horario de Wall Street (solo acciones). */
   pyth?: string;
   /** Grupo en la lista completa de acciones (solo acciones). */
   group?: StockGroup;
   /** Comisión de transferencia del emisor (Token-2022), en puntos básicos. */
   transferFeeBps?: number;
+  /** Dólares: rendimiento anual de referencia (%) si no se puede leer en vivo. */
+  apyFallback?: number;
+  /** Dólares: riesgo en palabras simples. */
+  risk?: "low" | "medium";
 }
 
 export const USDC_MAINNET_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -341,13 +353,27 @@ const PREIPO_ENTRIES: readonly XStock[] = PREIPO_BASE.map((s) => ({
 const DOLLAR_ENTRIES: readonly XStock[] = [
   {
     symbol: "USDY",
-    name: "Dollars that earn",
-    nameEs: "Dólares que rinden",
+    name: "US Treasuries",
+    nameEs: "Bonos del Tesoro",
     mint: "A1KLoBrKBde8Ty9qtNQUtq3C2ortoC3u7twggz7sEto6",
     decimals: DOLLAR_DECIMALS,
-    fallbackPriceUsd: 1.144,
+    fallbackPriceUsd: 1.148,
     kind: "dollars",
     issuer: "Ondo",
+    apyFallback: 3.6,
+    risk: "low",
+  },
+  {
+    symbol: "jlUSDC",
+    name: "Secured loans",
+    nameEs: "Préstamos con garantía",
+    mint: "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D",
+    decimals: DOLLAR_DECIMALS,
+    fallbackPriceUsd: 1.063,
+    kind: "dollars",
+    issuer: "Jupiter Lend",
+    apyFallback: 4,
+    risk: "medium",
   },
 ];
 

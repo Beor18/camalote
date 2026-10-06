@@ -14,6 +14,7 @@ import {
   type XStockSymbol,
 } from "@/lib/invest/catalog";
 import { groupedStocks, popularStocks, searchStocks } from "@/lib/invest/stock-list";
+import { apyOf, formatApy, type YieldMap } from "@/lib/invest/yields";
 import { useLang } from "@/lib/i18n";
 import { AssetIcon } from "@/components/invest/asset-icon";
 
@@ -40,11 +41,14 @@ export function AssetPicker({
   onChange,
   idPrefix,
   disabled,
+  yields = {},
 }: {
   value: XStockSymbol;
   onChange: (asset: XStockSymbol) => void;
   idPrefix: string;
   disabled?: boolean;
+  /** Rendimiento de hoy de los dólares; si falta, el de referencia. */
+  yields?: YieldMap;
 }) {
   const { lang, t } = useLang();
   const group = kindOf(value);
@@ -83,12 +87,26 @@ export function AssetPicker({
         }`}
       >
         {dollars ? (
-          <span className="flex w-full items-center gap-3">
-            <AssetIcon symbol={stock.symbol} className="size-8" />
-            <span className="flex min-w-0 flex-col">
-              <span className="text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
+          <span className="flex w-full items-start gap-3">
+            <AssetIcon symbol={stock.symbol} className="mt-0.5 size-8" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                <span className="text-sm font-semibold">{assetName(stock.symbol, lang)}</span>
+                {stock.risk && (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      stock.risk === "low" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                    }`}
+                  >
+                    {t.invest.dollarsRisk[stock.risk]}
+                  </span>
+                )}
+              </span>
+              <span className="text-xs font-medium text-foreground" data-testid={`${idPrefix}-apy-${stock.symbol}`}>
+                {t.invest.dollarsApy(formatApy(apyOf(stock.symbol, yields) ?? 0, lang))}
+              </span>
               {/* la ficha ocupa todo el ancho: el subtítulo baja de línea si hace falta */}
-              <span className="text-xs leading-snug text-muted-foreground">{t.invest.dollarsChipSub}</span>
+              <span className="text-xs leading-snug text-muted-foreground">{t.invest.dollarsOptionSub[stock.symbol]}</span>
             </span>
           </span>
         ) : (
@@ -210,7 +228,7 @@ export function AssetPicker({
       )}
       {group === "dollars" && (
         <p className="text-xs text-muted-foreground" data-testid={`${idPrefix}-dollars-note`}>
-          {t.invest.dollarsPickerNote}
+          {t.invest.dollarsOptionNote[value]}
         </p>
       )}
     </div>
