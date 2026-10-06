@@ -28,23 +28,30 @@ el agente con permiso acotado y el por qué ahora (2x, 6x, 2026). Sin marcas
 de proveedores, como el deck. Límites del formulario: Brief description 500, What y Why 1000, chains
 500, notas para jurados 600 y 500. Están verificados.
 
-**Brief description** (es el "About the project" público, 492/500 caracteres):
+**2026-10-06, después del informe de Superteam Argentina:** ningún campo
+dice que la IA invierte. Lo que hace cada parte, tal cual está en el código
+(`src/lib/server/agent/brain.ts`): la regla decide qué y cuánto, el código
+decide si se puede comprar (horario, referencia, saldo), la IA solo elige
+comprar ahora o esperar (6 horas como mucho) y escribe el mensaje, y si no
+responde decide la regla. Cada número tiene su fuente en el README.
 
-You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. An AI agent invests your share the moment you get paid, in your own Solana account. It can never withdraw or move your money. Pay yourself first.
+**Brief description** (es el "About the project" público, 494/500 caracteres):
 
-**What are you building, and who is it for?** (727/1000):
+You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it the moment it lands, in your own Solana account. Your rule decides what and how much, never an AI, and nobody else can withdraw. Pay yourself first.
+
+**What are you building, and who is it for?** (840/1000):
 
 Camalote: you set one rule, once, and every payment follows it. What share (say 20%), what for (a goal with a name: the trip, a new laptop) and where (the S&P 500, companies before their IPO, or dollars that earn).
 
-An AI agent does the work: it learns you got paid within seconds, sets your share aside, invests it and tells you what it did. Its permission has limits: it can only invest what your rule says and can never withdraw or move your money. Sign in with Google or Phantom; everything stays in your own Solana account.
+When a payment lands, Camalote sees it within seconds, sets your share aside and buys, signing inside a limited permission: it can only buy what your rule says and can never withdraw or move your money. The rule decides what and how much. AI only chooses buy now or wait (6 hours at most) and tells you what happened; if it doesn't answer, the rule acts alone. Sign in with Google or Phantom; everything stays in your own Solana account.
 
-It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where freelancers working for clients abroad get about 7.8 billion dollars a year in stablecoins.
+It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where 52% of freelancers working for clients abroad already get paid in USDC or USDT.
 
-**Why did you decide to build this, and why build it now?** (716/1000):
+**Why did you decide to build this, and why build it now?** (787/1000):
 
 Because I lived it. I'm a freelancer in Argentina, paid in USDC by clients abroad. A few weeks ago I got paid 400 dollars and thought: if something is left, I'll invest it. Rent on the 5th, the card on the 12th, and at month's end I had invested zero. Like every month. The problem isn't the money, it's the moment: the only time there is always money is when it lands. Monthly plans assume a salary; freelancers get paid when they get paid.
 
-Why now: the three pieces just came together. Real stablecoin payments doubled in 2025. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And in 2026 an AI agent can sign inside a bounded permission, so nobody has to remember to press the button.
+Why now: the three pieces just came together. Real stablecoin payments doubled in 2025, to 390 billion dollars. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And a wallet can now grant a limited signing permission, so a rule can run on its own without anyone holding your money or remembering to press the button.
 
 **How does your product use these chains?** (470/500):
 
@@ -54,9 +61,9 @@ All on Solana mainnet. Each user gets a Solana account where USDC payments land;
 
 No other people: solo founder. Most of the code, tests and docs were written pair-programming with Claude Code (Anthropic); every product decision, the narrative and the business model are mine, and I reviewed and drove each change. Colosseum Copilot was used for market and competitor research. The video voice-over is a synthetic voice (edge-tts).
 
-**Notes for judges: anything else?** (477/500):
+**Notes for judges: anything else?** (485/500):
 
-camalote.vercel.app is the live app on Solana mainnet: sign in with Google and your account is ready; any USDC you send runs through your rule. The AI agent signs inside a policy: it can only buy what your rule says, never withdraw or move funds, and if the AI doesn't answer, the rule decides. Honest limits, stated in the app: tokenized stocks carry the issuer's permanent delegate; pre-IPO tokens carry no shareholder rights and a 1% transfer fee. Fee: 0.45%, max 0.50 USDC.
+camalote.vercel.app is the live app on Solana mainnet: sign in with Google and your account is ready; any USDC you send runs through your rule. The rule decides what and how much; AI only picks now or wait and writes the message. The signer can only buy through the swap programs and pay our fee, and every order is simulated before signing. Honest limits, in the app: stocks carry the issuer's permanent delegate; pre-IPO tokens carry no shareholder rights. Fee: 0.45%, max 0.50 USDC.
 
 **Team, línea de Fernando** (169 caracteres):
 
@@ -254,12 +261,35 @@ YouTube):
   cobrado en la cadena. Vender gratis. Volumen.
 - **¿Es self-custody?** Los USDC sí. Las acciones tokenizadas tienen el
   permanent delegate de Backed: la app lo dice tal cual.
-- **¿Por qué solo mientras la app está abierta?** Porque la regla la firma
-  el usuario con su billetera embebida; no custodiamos ni firmamos por él.
-  Un firmante delegado con límites es el siguiente paso, y lo diremos como
-  tal.
-- **¿Regulación en Argentina?** Backed no restringe Argentina. Camalote no
-  custodia ni intermedia: el usuario firma cada operación. Sin rampas fiat.
+- **¿Cuántos cobros reales procesó el agente?** Hoy, cero de usuarios, y
+  se dice así. `/api/stats` los cuenta en vivo desde la base, con el link de
+  cada compra.
+- **¿Dónde está la IA? Parece una regla.** Es una regla, a propósito: la
+  plata la mueve la regla. La IA elige comprar ahora o esperar (6 horas
+  como mucho) y te escribe qué hizo. No elige monto ni activo, y si no
+  responde decide la regla sola.
+- **¿Qué impide en la cadena que el firmante haga otra cosa?** Hoy, nada
+  en la cadena: lo limita la política del firmante (solo los programas de
+  swap, cerrar cuentas de token y la comisión hasta 0,50; nunca un retiro)
+  y la simulación de cada orden en nuestro servidor antes de firmar. Un
+  approve SPL no alcanza, porque el agente firma como la billetera; lo que
+  lo haría verificable es un programa propio (una bóveda que solo compra
+  activos permitidos para la cuenta del dueño). Va después del hackathon.
+- **¿Cómo manejás las jurisdicciones?** Las acciones no son para
+  residentes de EE. UU., Reino Unido, Canadá y Australia, y la app lo dice
+  antes de comprar. Todavía no lo bloquea: es lo próximo.
+- **¿Es legal en Argentina?** No custodiamos ni recomendamos activos:
+  ejecutamos la regla que arma el usuario sobre protocolos de terceros.
+  Si eso exige registrarse como PSAV en la CNV todavía no lo sabemos; la
+  opinión legal es lo primero que se paga con financiamiento.
+- **Belo o tu billetera pueden sumar "invertí X %". ¿Por qué ganás vos?**
+  Pueden. Lo que no copian fácil: no custodia con permiso acotado, metas
+  como motor del hábito, y ser la capa neutral para las plataformas que ya
+  pagan en USDC.
+- **Con 0,45 % y tope de 0,50, ¿cómo llegás a un negocio grande?** Un
+  usuario que invierte 200 por mes en compras de 50 deja 0,90 por mes. Por
+  usuario es chico: la escala viene de plataformas que pagan en USDC y
+  ofrecen la regla a sus usuarios, con la comisión compartida.
 - **¿Y si Jupiter apaga Ultra?** El flujo es orden, firma, ejecución; se
   cambia el proveedor de la orden sin tocar el producto.
 
@@ -289,8 +319,11 @@ data is what Pyth publishes freely, and it's central to when the rule acts.
 
 ## Evidencia (para el pitch)
 
-- Ningún proyecto de los 5.400 de Colosseum invierte al recibir un pago;
-  los cercanos son SIPs por calendario (siphere, qist-1). myfye-1 (Breakout
+- No decir que "nadie lo hace": hay precedentes cercanos que no ganaron,
+  Rail Money y EarnFlow (Frontier) y Paycheck (Radar), con auto-split o
+  swaps recurrentes y sin uso real. Lo que los separa de Camalote es la
+  meta y el momento del cobro, y eso solo vale con usuarios. Otros
+  cercanos son SIPs por calendario (siphere, qist-1). myfye-1 (Breakout
   2025, ganador) validó "el Robinhood de mercados emergentes" con Privy.
 - La case study oficial de Solana sobre xStocks (solana.com/news/case-study-xstocks,
   datos al 19 de enero de 2026): 3.000 millones de volumen en cadena, 57.000
