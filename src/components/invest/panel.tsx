@@ -374,7 +374,13 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
 
       {agentSheetEl}
 
-      <ActionBar session={session} balances={balances} actions={actions} onBuy={() => setBuying(true)} />
+      <ActionBar
+        session={session}
+        balances={balances}
+        actions={actions}
+        onBuy={() => setBuying(true)}
+        setAsideUnits={BigInt(rule?.pendingUnits || "0")}
+      />
 
       <BuySheet
         open={buying}

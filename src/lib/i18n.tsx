@@ -435,6 +435,7 @@ const es = {
     hint: "Mínimo 0,10 USDC. La red se paga desde tu reserva de SOL: menos de un centavo.",
     hintFuel: (fuel: string) =>
       `Mínimo 0,10 USDC. Primero se cargan ${fuel} USDC de reserva de red, que quedan en tu cuenta como SOL.`,
+    takesSetAside: (amount: string) => `Incluye ${amount} USDC que tenías apartados.`,
     submit: "Retirar",
     submitting: "Enviando",
     stepFuel: "Cargando la reserva de red",
@@ -1207,6 +1208,7 @@ const en: Dictionary = {
     hint: "Minimum 0.10 USDC. The network is paid from your SOL reserve: under a cent.",
     hintFuel: (fuel: string) =>
       `Minimum 0.10 USDC. First ${fuel} USDC go into a network reserve that stays in your account as SOL.`,
+    takesSetAside: (amount: string) => `Includes ${amount} USDC you had set aside.`,
     submit: "Withdraw",
     submitting: "Sending",
     stepFuel: "Loading the network reserve",

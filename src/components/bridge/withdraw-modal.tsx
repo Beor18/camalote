@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatUsdc, parseUsdc } from "@/lib/format";
 import { MIN_WITHDRAW_UNITS, solanaExplorerTx } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
+import { setAsideTakenBy } from "@/lib/invest/rules";
 import type { WithdrawStep } from "@/components/bridge/types";
 
 const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
@@ -22,6 +23,7 @@ export function WithdrawModal({
   fuelUnits,
   ownAddress,
   phantomAddress,
+  setAsideUnits = 0n,
   demo,
   onWithdraw,
 }: {
@@ -33,6 +35,8 @@ export function WithdrawModal({
   ownAddress: string | null;
   /** La Phantom conectada: un toque completa la dirección. */
   phantomAddress?: string | null;
+  /** Lo apartado por la regla: está adentro del saldo y se puede retirar. */
+  setAsideUnits?: bigint;
   demo: boolean;
   onWithdraw: (
     destination: string,
@@ -98,6 +102,12 @@ export function WithdrawModal({
         : t.withdrawModal.amountInsufficient(formatUsdc(availableUnits, 2, lang));
     return null;
   }, [amountText, amountUnits, availableUnits, fuelUnits, t, lang]);
+
+  // Retirar lo apartado se puede; solo se avisa antes de confirmar.
+  const takenUnits =
+    amountUnits !== null && amountError === null && balanceUnits !== null && setAsideUnits > 0n
+      ? setAsideTakenBy({ pendingUnits: setAsideUnits, balanceUnits, fuelUnits, amountUnits })
+      : 0n;
 
   const canSubmit =
     destination.trim() !== "" &&
@@ -248,7 +258,13 @@ export function WithdrawModal({
                 value={amountText}
                 onChange={(e) => setAmountText(e.target.value)}
                 aria-invalid={amountError ? "true" : undefined}
-                aria-describedby={amountError ? "withdraw-amount-error" : "withdraw-amount-hint"}
+                aria-describedby={
+                  amountError
+                    ? "withdraw-amount-error"
+                    : takenUnits > 0n
+                      ? "withdraw-amount-hint withdraw-amount-set-aside"
+                      : "withdraw-amount-hint"
+                }
                 className="h-12 w-full rounded-xl border border-border bg-surface px-4 pr-28 font-mono text-lg tabular-nums text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               />
               <div className="absolute inset-y-0 right-3 flex items-center gap-2">
@@ -281,6 +297,15 @@ export function WithdrawModal({
                 {fuelUnits > 0n
                   ? t.withdrawModal.hintFuel(formatUsdc(fuelUnits, 0, lang))
                   : t.withdrawModal.hint}
+              </p>
+            )}
+            {takenUnits > 0n && (
+              <p
+                id="withdraw-amount-set-aside"
+                className="text-xs font-medium text-foreground"
+                data-testid="withdraw-set-aside"
+              >
+                {t.withdrawModal.takesSetAside(formatUsdc(takenUnits, 2, lang))}
               </p>
             )}
           </div>

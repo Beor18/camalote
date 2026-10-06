@@ -143,6 +143,39 @@ export function planInvestments(
   };
 }
 
+/**
+ * Lo apartado está adentro del saldo, no aparte. Si un retiro deja menos que
+ * lo apartado, lo apartado baja con el saldo (y la meta deja de contarlo):
+ * retirar es decisión tuya y el próximo cobro no lo repone. El aviso "te
+ * llegaron 2,15, 0,21 ya están apartados" deja de ser cierto, así que se va.
+ * Si alcanza, devuelve la misma regla.
+ */
+export function fitPendingToBalance(rule: InvestRule, balanceUnits: bigint): InvestRule {
+  const pending = BigInt(rule.pendingUnits || "0");
+  const left = balanceUnits > 0n ? balanceUnits : 0n;
+  if (pending <= left) return rule;
+  const dropped = pending - left;
+  const contributed = BigInt(rule.goal?.contributedUnits || "0") - dropped;
+  return {
+    ...rule,
+    pendingUnits: left.toString(),
+    goal: rule.goal && { ...rule.goal, contributedUnits: (contributed > 0n ? contributed : 0n).toString() },
+    lastIncoming: undefined,
+  };
+}
+
+/** Cuánto de lo apartado se lleva un retiro, para avisarlo antes de confirmar. */
+export function setAsideTakenBy(opts: {
+  pendingUnits: bigint;
+  balanceUnits: bigint;
+  fuelUnits: bigint;
+  amountUnits: bigint;
+}): bigint {
+  const left = opts.balanceUnits - opts.fuelUnits - opts.amountUnits;
+  if (left >= opts.pendingUnits) return 0n;
+  return opts.pendingUnits - (left > 0n ? left : 0n);
+}
+
 /** Precio en USD → entero en millonésimas (redondeado). */
 export function priceToMicro(priceUsd: number): bigint {
   if (!Number.isFinite(priceUsd) || priceUsd <= 0) return 0n;

@@ -10,6 +10,7 @@ import { effectiveMultiplier } from "@/lib/invest/multiplier";
 import {
   defaultRule,
   dividendsSummary,
+  fitPendingToBalance,
   formatTokens,
   formatTokensPrecise,
   fromDisplayUnits,
@@ -17,6 +18,7 @@ import {
   parseTokens,
   planInvestments,
   portfolioSummary,
+  setAsideTakenBy,
   suggestedBuyUnits,
   toDisplayUnits,
   tokensForUsdc,
@@ -351,5 +353,47 @@ describe("investFee: la comisión de Camalote por compra", () => {
   it("formatTokens muestra 4 decimales por debajo de 1 y 2 desde 1", () => {
     expect(formatTokens(1_293_441n, "es")).toBe("0,0129");
     expect(formatTokens(150_000_000n, "en")).toBe("1.50");
+  });
+});
+
+describe("retirar lo apartado", () => {
+  const goal = { name: "El viaje", startedAt: 1000, targetUnits: "500000000", contributedUnits: "5000000" };
+
+  it("si el retiro deja menos que lo apartado, lo apartado baja con el saldo", () => {
+    const lastIncoming = { amountUnits: "2150000", setAsideUnits: "210000", count: 1, at: 2000 };
+    const fitted = fitPendingToBalance(rule({ pendingUnits: "210000", lastIncoming }), 0n);
+    expect(fitted.pendingUnits).toBe("0");
+    // "0,21 ya están apartados" ya no es cierto.
+    expect(fitted.lastIncoming).toBeUndefined();
+  });
+
+  it("si queda saldo, lo apartado baja solo hasta ese saldo", () => {
+    const fitted = fitPendingToBalance(rule({ pendingUnits: "4000000" }), 1_500_000n);
+    expect(fitted.pendingUnits).toBe("1500000");
+  });
+
+  it("la meta tampoco cuenta lo que se retiró", () => {
+    const fitted = fitPendingToBalance(rule({ pendingUnits: "4000000", goal }), 1_500_000n);
+    expect(fitted.goal?.contributedUnits).toBe("2500000");
+  });
+
+  it("si alcanza, la regla queda igual", () => {
+    const original = rule({ pendingUnits: "210000" });
+    expect(fitPendingToBalance(original, 2_150_000n)).toBe(original);
+  });
+
+  it("el próximo cobro aparta solo su parte, no lo que ya se retiró", () => {
+    const fitted = fitPendingToBalance(rule({ percent: 10, pendingUnits: "210000" }), 0n);
+    const plan = planInvestments(fitted, [{ signature: "s1", amountUnits: "10000000", createdAt: 2000 }], MIN);
+    expect(plan.rule.pendingUnits).toBe("1000000");
+  });
+
+  it("avisa cuánto de lo apartado se lleva el retiro", () => {
+    // 2,15 en la cuenta, 1 para la reserva, retira 1,15: se lleva los 0,21.
+    expect(setAsideTakenBy({ pendingUnits: 210_000n, balanceUnits: 2_150_000n, fuelUnits: 1_000_000n, amountUnits: 1_150_000n })).toBe(210_000n);
+    // Retira 1: quedan 0,15, se lleva 0,06.
+    expect(setAsideTakenBy({ pendingUnits: 210_000n, balanceUnits: 2_150_000n, fuelUnits: 1_000_000n, amountUnits: 1_000_000n })).toBe(60_000n);
+    // Retira 0,50 sin reserva: lo apartado queda entero.
+    expect(setAsideTakenBy({ pendingUnits: 210_000n, balanceUnits: 2_150_000n, fuelUnits: 0n, amountUnits: 500_000n })).toBe(0n);
   });
 });

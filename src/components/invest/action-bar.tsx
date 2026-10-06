@@ -7,6 +7,8 @@ import { SolanaDepositModal } from "@/components/invest/deposit-solana-modal";
 import { saveTransfer } from "@/lib/history";
 import { useLang } from "@/lib/i18n";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
+import { fitPendingToBalance } from "@/lib/invest/rules";
+import { loadRule, notifyInvest, saveRule } from "@/lib/invest/storage";
 import type { Engine } from "@/components/bridge/types";
 
 const side =
@@ -16,7 +18,13 @@ const side =
  * Barra fija abajo, a mano con el pulgar: recibir (cómo entra la plata, al
  * centro), comprar una vez y retirar. Son las únicas entradas a esas acciones.
  */
-export function ActionBar({ session, balances, actions, onBuy }: Omit<Engine, "agent"> & { onBuy: () => void }) {
+export function ActionBar({
+  session,
+  balances,
+  actions,
+  onBuy,
+  setAsideUnits,
+}: Omit<Engine, "agent"> & { onBuy: () => void; setAsideUnits: bigint }) {
   const { t } = useLang();
   const [modal, setModal] = useState<"deposit" | "withdraw" | null>(null);
   // La ventana de Phantom no puede quedar arriba de un <dialog> abierto: se
@@ -99,9 +107,22 @@ export function ActionBar({ session, balances, actions, onBuy }: Omit<Engine, "a
         fuelUnits={fuelUnitsFor(balances.solanaLamports)}
         ownAddress={address}
         phantomAddress={session.externalWallet?.address ?? null}
+        setAsideUnits={setAsideUnits}
         demo={session.demo}
         onWithdraw={async (destination, amountUnits, onStep) => {
+          const balanceUnits = balances.solanaUnits;
+          const fuelUnits = fuelUnitsFor(balances.solanaLamports);
           const sig = await actions.withdrawSolana(destination, amountUnits, onStep);
+          // Si el retiro se llevó parte de lo apartado, lo apartado baja con el
+          // saldo: el próximo cobro no repone lo que retiraste.
+          const rule = address ? loadRule(address) : null;
+          if (address && rule && balanceUnits !== null) {
+            const fitted = fitPendingToBalance(rule, balanceUnits - fuelUnits - amountUnits);
+            if (fitted !== rule) {
+              saveRule(address, fitted);
+              notifyInvest();
+            }
+          }
           saveTransfer({
             id: `w-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             createdAt: Date.now(),
