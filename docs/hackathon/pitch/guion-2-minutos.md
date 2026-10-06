@@ -1,5 +1,7 @@
 # Guion del pitch: 2 minutos
 
+En castellano. Para Colosseum va en inglés: `pitch-script-en.md` (pitch, demo, slide regulatoria y convocatoria).
+
 Es el mismo texto que las notas del deck (`index.html`). Abrí el deck, tocá **P** para ver las notas en otra ventana y **T** para arrancar el cronómetro; pasa a rojo después de 2:00.
 
 | Slide | Tramo | Qué decís |
