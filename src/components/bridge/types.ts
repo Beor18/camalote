@@ -30,6 +30,11 @@ export interface BridgeSession {
   externalWallet: { name: string; address: string } | null;
   /** Pide conectar Phantom (abre la ventana de la billetera). */
   connectExternal: () => void;
+  /**
+   * Corta la conexión con Phantom. No la desvincula ni cierra la sesión:
+   * quien entró con Phantom sigue teniendo su cuenta de Camalote.
+   */
+  disconnectExternal: () => Promise<void>;
 }
 
 export interface BridgeBalances {

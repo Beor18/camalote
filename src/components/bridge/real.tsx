@@ -181,6 +181,9 @@ export function useRealEngine(): Engine {
       ? { name: phantomWallet.standardWallet.name, address: phantomWallet.address }
       : null,
     connectExternal: () => connectWallet({ walletChainType: "solana-only", walletList: ["phantom"] }),
+    disconnectExternal: async () => {
+      await phantomWallet?.disconnect();
+    },
   };
 
   const balances: BridgeBalances = {

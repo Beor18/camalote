@@ -35,6 +35,7 @@ export function PhantomFund({
   const [phase, setPhase] = useState<Phase>("idle");
   const [sent, setSent] = useState<bigint | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
     if (!wallet) return;
@@ -69,6 +70,21 @@ export function PhantomFund({
   const busy = phase === "signing" || phase === "sending";
   const canSubmit = !busy && amountUnits !== null && amountUnits >= MIN_WITHDRAW_UNITS && amountError === null;
 
+  const disconnect = async () => {
+    setDisconnecting(true);
+    setError(null);
+    try {
+      await session.disconnectExternal();
+      setPhase("idle");
+      setSent(null);
+      setAmountText("");
+    } catch {
+      setError(t.invest.phantomDisconnectError);
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
   const submit = async () => {
     if (!canSubmit || amountUnits === null) return;
     setError(null);
@@ -90,11 +106,25 @@ export function PhantomFund({
         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Ghost className="size-4" aria-hidden="true" />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 id="phantom-fund-title" className="text-sm font-semibold">
-            {t.invest.phantomTitle}{" "}
-            <span className="font-mono text-xs font-normal text-muted-foreground">{shortAddress(wallet.address)}</span>
+            {t.invest.phantomTitle}
           </h3>
+          {/* La dirección y, al lado, desconectar: sutil, sin sacarle ancho al título. */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="font-mono">{shortAddress(wallet.address)}</span>
+            <span aria-hidden="true">·</span>
+            <button
+              type="button"
+              onClick={disconnect}
+              disabled={busy || disconnecting}
+              aria-label={t.invest.phantomDisconnectLabel}
+              className="-my-3 inline-flex min-h-10 items-center rounded-md px-1 font-medium underline-offset-2 transition-colors duration-100 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 cursor-pointer"
+              data-testid="phantom-disconnect"
+            >
+              {t.invest.phantomDisconnect}
+            </button>
+          </div>
           <p className="text-xs text-muted-foreground" data-testid="phantom-balance">
             {balance === null ? "…" : balance === 0n ? t.invest.phantomEmpty : t.invest.phantomBalance(formatUsdc(balance, 2, lang))}
           </p>

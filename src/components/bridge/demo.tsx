@@ -42,6 +42,8 @@ const phantomKey = (email: string) => `camalote.demo.phantom:${email}`;
 interface DemoPhantom {
   address: string;
   units: string;
+  /** false si el usuario la desconectó: al volver a entrar no se reconecta sola. */
+  connected?: boolean;
 }
 
 function loadDemoPhantom(email: string): DemoPhantom | null {
@@ -64,7 +66,11 @@ function saveDemoPhantom(email: string, phantom: DemoPhantom): void {
 /** Conecta (o recupera) la Phantom de muestra de esa cuenta. */
 function connectDemoPhantom(email: string): DemoPhantom {
   const existing = loadDemoPhantom(email);
-  if (existing) return existing;
+  if (existing) {
+    const again = { ...existing, connected: true };
+    saveDemoPhantom(email, again);
+    return again;
+  }
   const phantom = {
     // Otra semilla: que no empiece igual que la cuenta de Camalote.
     address: demoSolanaAddress(`wallet-${[...email].reverse().join("")}`),
@@ -125,7 +131,8 @@ export function useDemoEngine(): Engine {
       if (stored) registerDemoAccount(stored, demoSolanaAddress(stored), demoBaseAddress(stored));
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEmail(stored);
-      if (stored) setPhantom(loadDemoPhantom(stored));
+      const storedPhantom = stored ? loadDemoPhantom(stored) : null;
+      if (storedPhantom?.connected !== false) setPhantom(storedPhantom);
     } catch {
       // sin almacenamiento seguimos sin sesión
     }
@@ -180,6 +187,10 @@ export function useDemoEngine(): Engine {
     externalWallet: phantom ? { name: "Phantom", address: phantom.address } : null,
     connectExternal: () => {
       if (email) setPhantom(connectDemoPhantom(email));
+    },
+    disconnectExternal: async () => {
+      if (email && phantom) saveDemoPhantom(email, { ...phantom, connected: false });
+      setPhantom(null);
     },
     logout: () => {
       try {
