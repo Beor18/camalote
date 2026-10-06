@@ -5,6 +5,7 @@ import { ChevronDown, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountCard } from "@/components/invest/account-card";
 import { AgentCard } from "@/components/invest/agent-card";
+import { AgentChatSheet, type AgentChatHandlers } from "@/components/invest/agent-chat";
 import { AgentSheet } from "@/components/invest/agent-sheet";
 import { Onboarding, type OnboardingStep } from "@/components/invest/onboarding";
 import { BuySheet } from "@/components/invest/buy-sheet";
@@ -17,6 +18,7 @@ import { RuleSheet, type RuleDraft, type RuleSheetMode, type RuleStep } from "@/
 import { SellModal } from "@/components/invest/sell-modal";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
+import { buildAgentContext, rulePatchFor } from "@/lib/invest/agent-chat";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
@@ -51,7 +53,9 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [prices, setPrices] = useState<PricesResult | null>(null);
   const [editing, setEditing] = useState<{ mode: RuleSheetMode; step?: RuleStep } | null>(null);
-  const [buying, setBuying] = useState(false);
+  // La hoja de comprar; el agente puede abrirla con el activo y el monto ya puestos.
+  const [buying, setBuying] = useState<{ asset?: XStockSymbol; units?: bigint } | null>(null);
+  const [talking, setTalking] = useState(false);
   const [selling, setSelling] = useState<XStockSymbol | null>(null);
   const [agentSheet, setAgentSheet] = useState(false);
   const [agentSkipped, setAgentSkipped] = useState(false);
@@ -230,6 +234,38 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
     [address, session.demo, balances, refreshHoldings]
   );
 
+  // Hablarle al agente: el estado real de la cuenta y lo que puede hacer en la app.
+  const chatHandlers = useMemo<AgentChatHandlers>(
+    () => ({
+      context: () =>
+        buildAgentContext({
+          lang,
+          now: Date.now(),
+          rule: rule ?? defaultRule(),
+          goal,
+          summary,
+          balanceUnits: balances.solanaUnits,
+          purchases,
+          agent,
+          prices: priceMap,
+          multipliers,
+          market: prices?.market ?? {},
+          yields: prices?.yields ?? {},
+        }),
+      onRuleChange: (change) => {
+        if (!rule) return null;
+        const { patch, before } = rulePatchFor(rule, change, Date.now());
+        updateRule(patch);
+        return before;
+      },
+      onUndo: (before) => updateRule(before),
+      onBuy: (asset, units) => setBuying({ asset, units }),
+      onSell: (asset) => setSelling(asset),
+      onAgentOn: () => setAgentSheet(true),
+    }),
+    [lang, rule, goal, summary, balances.solanaUnits, purchases, agent, priceMap, multipliers, prices, updateRule]
+  );
+
   const sellingUnits =
     selling !== null ? (holdings?.find((h) => h.asset === selling)?.tokenUnits ?? 0n) : 0n;
 
@@ -309,7 +345,12 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
         </div>
 
         <div className="order-3 min-w-0 empty:hidden">
-          <AgentCard agent={agent} hasRule={Boolean(rule?.configuredAt)} onEnable={() => setAgentSheet(true)} />
+          <AgentCard
+            agent={agent}
+            hasRule={Boolean(rule?.configuredAt)}
+            onEnable={() => setAgentSheet(true)}
+            onTalk={() => setTalking(true)}
+          />
         </div>
 
         <details className="group order-6 min-w-0 rounded-2xl border border-border bg-surface">
@@ -377,20 +418,33 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
 
       {agentSheetEl}
 
+      {address && (
+        <AgentChatSheet
+          open={talking}
+          onClose={() => setTalking(false)}
+          address={address}
+          agent={agent}
+          goalName={rule?.goal?.name ?? null}
+          ruleEnabled={Boolean(rule?.enabled)}
+          handlers={chatHandlers}
+        />
+      )}
+
       <ActionBar
         session={session}
         balances={balances}
         actions={actions}
-        onBuy={() => setBuying(true)}
+        onBuy={() => setBuying({})}
         setAsideUnits={BigInt(rule?.pendingUnits || "0")}
       />
 
       <BuySheet
-        open={buying}
-        onClose={() => setBuying(false)}
+        open={buying !== null}
+        onClose={() => setBuying(null)}
         balanceUnits={balances.solanaUnits}
         fuelUnits={fuelUnitsFor(balances.solanaLamports)}
-        defaultAsset={rule?.asset ?? "SPYx"}
+        defaultAsset={buying?.asset ?? rule?.asset ?? "SPYx"}
+        defaultAmountUnits={buying?.units}
         demo={session.demo}
         prices={prices}
         onQuote={(asset, units) => actionsRef.current.quoteStock(asset, units)}

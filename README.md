@@ -64,6 +64,31 @@ The model is gpt-oss-120b, with other models as fallback. If no model
 answers, the rule keeps running on its own: your money never depends on the
 model being up ([`brain.ts`](src/lib/server/agent/brain.ts)).
 
+### Talk to your agent
+
+"Talk to your agent" opens a chat in the app. The agent answers with the
+real state of your account (rule, goal, balance, portfolio, today's prices
+and yields, recent operations, what it did) and acts with tools when you
+ask:
+
+| You say | The agent |
+| --- | --- |
+| "How much is left for the trip?" | Answers from your goal's real numbers |
+| "Raise my rule to 30% and switch it to Nvidia", "Pause my rule" | Changes the rule right away, with **Undo** |
+| "New goal: the bike, 1,500 by March" | Sets the goal (same name keeps what you saved) |
+| "Buy 20 of Apple", "Sell my S&P 500" | Leaves the buy or sale ready in the usual sheet: **you review and confirm** |
+| "Check if I got paid", "Turn off my agent" | Runs now, or shows the button to turn it off |
+| "Send everything to my Phantom" | Says no: it can't withdraw; that's the Withdraw button |
+
+Every tool argument is validated on the server against your account
+(allowed percents, catalog assets, balance, holdings) before anything
+reaches the app ([`agent-chat.ts`](src/lib/invest/agent-chat.ts)). Rule
+changes are saved through the same path as the rule sheet. If the model
+returns something unusable, the server asks it to write the reply again;
+the actions it already took are not repeated
+([`chat.ts`](src/lib/server/agent/chat.ts)). The chat needs your Privy
+session and is rate limited.
+
 ## How it uses Solana
 
 ```
@@ -115,6 +140,9 @@ Tokens in your own account · portfolio read from the chain
   The policy can't see inside a Jupiter route; the simulation can.
 - **One lock per account** in the database prevents double buys when two
   notifications arrive together.
+- **The chat never moves money.** Buys and sales from the chat open the
+  same ticket as a manual buy, with the fee shown, and the user confirms
+  with their own wallet.
 - **Known limit, stated plainly:** the permission is enforced by Privy's
   policy engine and our simulation, not by a Solana program. An SPL
   `approve` wouldn't help here, because the signer acts as the wallet
@@ -140,8 +168,8 @@ Tokens in your own account · portfolio read from the chain
   Solscan link for every recent buy.
 - **Not yet on video:** a real payment triggering the automatic buy on
   mainnet. It needs 20 USDC (10 USDC minimum buy at a 50% rule).
-- **155 unit tests** (Vitest) on the rule, goals, fees, guards, yields,
-  merges, withdrawals and the stats.
+- **175 unit tests** (Vitest) on the rule, goals, fees, guards, yields,
+  merges, withdrawals, the stats and the agent's chat tools.
 
 ## Business model
 
@@ -183,7 +211,8 @@ During:
   signing, AI with fallbacks); mobile-first app; sign in with Google or
   Phantom, load from and withdraw to Phantom.
 - **Oct 6** 21 stocks with search, two "dollars that earn" options with
-  live rates, a live traction counter.
+  live rates, a live traction counter, and "Talk to your agent": a chat
+  where the AI agent answers with your real numbers and acts with tools.
 - Pitch deck (`docs/hackathon/pitch/`), landing and demo videos.
 
 ## Run it

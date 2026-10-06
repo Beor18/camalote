@@ -7,6 +7,7 @@ import type {
   SellResult,
   StockQuote,
 } from "@/lib/invest/types";
+import type { AgentChatReply, AgentChatRequest } from "@/lib/invest/agent-chat";
 import type { IncomingPayment } from "@/lib/paylink";
 
 export interface BridgeSession {
@@ -164,6 +165,8 @@ export interface AgentControls {
   disable: () => Promise<void>;
   /** "Revisar ahora": el agente corre ya. */
   runNow: () => Promise<void>;
+  /** Un mensaje al agente: responde con los datos de la cuenta y las acciones para la app. */
+  ask: (request: AgentChatRequest) => Promise<AgentChatReply>;
 }
 
 export interface Engine {

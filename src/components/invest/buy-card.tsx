@@ -31,11 +31,15 @@ import type { Purchase, StockQuote } from "@/lib/invest/types";
 import type { BuyStep } from "@/components/bridge/types";
 
 
-/** El monto sugerido como texto editable ("10", "4,97"). */
-function suggestedAmount(balanceUnits: bigint | null, lang: Lang): string {
-  const units = suggestedBuyUnits(balanceUnits);
+/** Un monto como texto editable ("10", "4,97"). */
+function amountInput(units: bigint, lang: Lang): string {
   const text = (Number(units) / 1_000_000).toFixed(units % 1_000_000n === 0n ? 0 : 2);
   return lang === "es" ? text.replace(".", ",") : text;
+}
+
+/** El monto sugerido como texto editable. */
+function suggestedAmount(balanceUnits: bigint | null, lang: Lang): string {
+  return amountInput(suggestedBuyUnits(balanceUnits), lang);
 }
 
 type State =
@@ -54,6 +58,7 @@ export function BuyCard({
   balanceUnits,
   fuelUnits,
   defaultAsset,
+  defaultAmountUnits,
   demo,
   prices,
   bare,
@@ -64,6 +69,8 @@ export function BuyCard({
   /** Reserva de red que se carga antes de la compra (0 si la cuenta ya tiene SOL). */
   fuelUnits: bigint;
   defaultAsset: XStockSymbol;
+  /** El monto con el que abre (por ejemplo, la compra que dejó lista el agente). */
+  defaultAmountUnits?: bigint;
   demo: boolean;
   /** Horario de Wall Street y referencia de PreStocks, para avisar antes de comprar. */
   prices: PricesResult | null;
@@ -84,7 +91,9 @@ export function BuyCard({
   const spendableUnits =
     balanceUnits === null ? null : balanceUnits > fuelUnits ? balanceUnits - fuelUnits : 0n;
   // null = el usuario todavía no escribió: se muestra el monto sugerido.
-  const [typed, setTyped] = useState<string | null>(null);
+  const [typed, setTyped] = useState<string | null>(() =>
+    defaultAmountUnits && defaultAmountUnits > 0n ? amountInput(defaultAmountUnits, lang) : null
+  );
   const amountText = typed ?? suggestedAmount(spendableUnits, lang);
   const [state, setState] = useState<State>({ phase: "idle" });
 

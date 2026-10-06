@@ -5,6 +5,7 @@ import { useSigners } from "@privy-io/react-auth";
 import { AGENT_POLICY_ID, AGENT_SIGNER_ID } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
 import { disabledMessage, enabledMessage } from "@/lib/invest/agent-messages";
+import { AgentChatError, postAgentChat } from "@/lib/invest/agent-chat";
 import { requestCloudPull } from "@/lib/invest/cloud-sync";
 import { AGENT_EVENT, loadDemoAgent, setDemoAgentEnabled } from "@/lib/invest/demo-agent";
 import { notifyIncoming } from "@/lib/invest/storage";
@@ -48,6 +49,10 @@ export function useDemoAgent(address: string | null): AgentControls {
     },
     runNow: async () => {
       notifyIncoming();
+    },
+    ask: async (request) => {
+      if (!address) throw new AgentChatError(400);
+      return postAgentChat(address, request, null);
     },
   };
 }
@@ -154,6 +159,12 @@ export function useRealAgent(
       await call("POST", "/api/agent/run", { address });
       requestCloudPull();
       await refresh();
+    },
+    ask: async (request) => {
+      if (!address) throw new AgentChatError(400);
+      const token = await tokenRef.current();
+      if (!token) throw new AgentChatError(401);
+      return postAgentChat(address, request, token);
     },
   };
 }

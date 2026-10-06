@@ -31,9 +31,10 @@ en la cuenta y la transacción). Nada de pantallas de configuración.
 | 0:00–0:10 | La app abierta, la regla como titular | "This is Ana, a freelancer paid in USDC. Her rule: 30% of every payment goes to the trip, in the S&P 500." |
 | 0:10–0:35 | Entra el cobro | "A client pays her. Within seconds, her AI agent sees the payment and sets her share aside." |
 | 0:35–1:05 | "Tu agente" cuenta la compra | "It invests her share on its own, and tells her what it did, in plain words." |
-| 1:05–1:30 | Cartera y meta | "It's in her own account, toward the trip: how much is in, how many payments to go, today's value." |
-| 1:30–1:55 | El comprobante en Solscan | "Every buy has its receipt on Solana. The fee was shown before: never more than 50 cents." |
-| 1:55–2:10 | El permiso del agente | "And she can turn the agent off anytime. It can only buy what her rule says, never withdraw." |
+| 1:05–1:25 | Cartera y meta | "It's in her own account, toward the trip: how much is in, how many payments to go, today's value." |
+| 1:25–2:05 | "Hablale a tu agente": pregunta cuánto falta, pide subir la regla a 30 %, pide comprar 20 de Nvidia | "She can also just talk to her agent. It answers with her real numbers, changes her rule when she asks, and leaves a buy ready for her to confirm." |
+| 2:05–2:25 | El comprobante en Solscan | "Every buy has its receipt on Solana. The fee was shown before: never more than 50 cents." |
+| 2:25–2:40 | El permiso del agente | "It can only buy what her rule says, never withdraw. And she can turn it off anytime." |
 
 **Si el cobro no es real** (sin plata para la compra en mainnet), la parte
 simulada lleva un rótulo fijo en pantalla: "Demo mode: simulated payment.

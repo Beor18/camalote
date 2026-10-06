@@ -19,7 +19,7 @@ import { getVercelOidcToken } from "@vercel/oidc";
  * modelo.
  */
 
-type Provider = "groq" | "gateway";
+export type Provider = "groq" | "gateway";
 
 const URLS: Record<Provider, string> = {
   groq: "https://api.groq.com/openai/v1/chat/completions",
@@ -73,11 +73,18 @@ export interface BrainResult {
   message: string | null;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
   tool_calls?: { id: string; type: "function"; function: { name: string; arguments: string } }[];
   tool_call_id?: string;
+}
+
+/** Cuánto puede tardar y escribir el modelo en una llamada. */
+export interface AskOptions {
+  maxTokens?: number;
+  /** Por proveedor; si falta, el de siempre. */
+  timeoutMs?: Partial<Record<Provider, number>>;
 }
 
 function systemPrompt(lang: "es" | "en"): string {
@@ -121,9 +128,14 @@ const WAIT_TOOL = {
 
 const LABEL: Record<Provider, string> = { groq: "Groq", gateway: "AI Gateway" };
 
-async function ask(provider: Provider, messages: ChatMessage[], tools: unknown[] | undefined): Promise<ChatMessage> {
+async function ask(
+  provider: Provider,
+  messages: ChatMessage[],
+  tools: unknown[] | undefined,
+  opts: AskOptions = {}
+): Promise<ChatMessage> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS[provider]);
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs?.[provider] ?? TIMEOUT_MS[provider]);
   try {
     const res = await fetch(URLS[provider], {
       method: "POST",
@@ -136,7 +148,7 @@ async function ask(provider: Provider, messages: ChatMessage[], tools: unknown[]
         messages,
         ...(tools ? { tools, tool_choice: "auto" } : {}),
         temperature: 0.3,
-        max_tokens: 400,
+        max_tokens: opts.maxTokens ?? 400,
         ...(provider === "gateway" ? { providerOptions: { gateway: { models: GATEWAY_FALLBACKS } } } : {}),
       }),
       signal: controller.signal,
@@ -156,11 +168,16 @@ async function ask(provider: Provider, messages: ChatMessage[], tools: unknown[]
  * Prueba los proveedores en orden. El que falla queda afuera del resto del
  * turno, así el segundo mensaje no vuelve a esperar al que ya no respondió.
  */
-async function chat(messages: ChatMessage[], tools: unknown[] | undefined, providers: Provider[]): Promise<ChatMessage> {
+export async function chat(
+  messages: ChatMessage[],
+  tools: unknown[] | undefined,
+  providers: Provider[],
+  opts?: AskOptions
+): Promise<ChatMessage> {
   let lastError: unknown = new Error("sin proveedor de IA");
   while (providers.length > 0) {
     try {
-      return await ask(providers[0], messages, tools);
+      return await ask(providers[0], messages, tools, opts);
     } catch (err) {
       lastError = err;
       console.warn(`[agent] ${LABEL[providers[0]]} no respondió:`, err instanceof Error ? err.message : err);

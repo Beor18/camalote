@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Bot, CheckCircle2, Clock, PiggyBank, Power, RefreshCw, X } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, MessageCircle, PiggyBank, Power, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,23 +137,62 @@ function HistorySheet({
   );
 }
 
+/** Si el agente puede hablar (hay IA en el servidor). Mientras no se sabe, no se ofrece. */
+function useCanTalk(): boolean {
+  const [canTalk, setCanTalk] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/agent/chat", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { available: false }))
+      .then((data: { available?: boolean }) => alive && setCanTalk(Boolean(data.available)))
+      .catch(() => alive && setCanTalk(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return canTalk;
+}
+
+/** La entrada a la charla: parece un campo de texto, abre la hoja. */
+function TalkButton({ onTalk }: { onTalk: () => void }) {
+  const { t } = useLang();
+  return (
+    <button
+      type="button"
+      onClick={onTalk}
+      className="mt-3 flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-left transition-colors duration-100 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer"
+      data-testid="agent-talk"
+    >
+      <MessageCircle className="size-4 shrink-0 text-primary" aria-hidden="true" />
+      <span className="flex min-w-0 flex-col">
+        <span className="text-sm font-medium text-foreground">{t.agentChat.open}</span>
+        <span className="truncate text-xs text-muted-foreground">{t.agentChat.openHint}</span>
+      </span>
+    </button>
+  );
+}
+
 /**
  * Tu agente, activo: un interruptor (como el de la regla) y las últimas
  * tres cosas que hizo, cada una en una línea con su ícono. "Ver todo" abre
  * el historial completo. Apagado: una línea de qué hace y un solo botón
- * para activarlo (abre el permiso).
+ * para activarlo (abre el permiso). En los dos casos, abajo, la entrada
+ * para hablarle.
  */
 export function AgentCard({
   agent,
   hasRule,
   onEnable,
+  onTalk,
 }: {
   agent: AgentControls;
   hasRule: boolean;
   onEnable: () => void;
+  onTalk: () => void;
 }) {
   const { t } = useLang();
   const now = useNow();
+  const canTalk = useCanTalk();
   const [running, setRunning] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [history, setHistory] = useState(false);
@@ -246,6 +285,7 @@ export function AgentCard({
             )}
           </div>
           <HistorySheet open={history} events={agent.events} onClose={() => setHistory(false)} />
+          {canTalk && <TalkButton onTalk={onTalk} />}
         </>
       ) : (
         <>
@@ -258,6 +298,7 @@ export function AgentCard({
           ) : (
             <p className="mt-3 text-xs text-muted-foreground">{t.agent.needsRule}</p>
           )}
+          {canTalk && hasRule && <TalkButton onTalk={onTalk} />}
         </>
       )}
     </Card>
