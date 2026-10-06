@@ -23,6 +23,7 @@ const STATE: ToolState = {
   holdings: ["SPYx", "NVDAx"],
   agentAvailable: true,
   agentOn: true,
+  eligible: true,
   currentMonth: "2026-10",
 };
 
@@ -53,6 +54,14 @@ describe("herramientas del agente en el chat", () => {
 
   it("pausar y prender la regla", () => {
     expect(runChatTool("cambiar_regla", { prendida: false }, STATE).action).toEqual({ type: "rule", change: { enabled: false } });
+  });
+
+  it("sin la confirmación de dónde vive, prenderla queda esperando y el modelo lo sabe", () => {
+    const paused = { ...STATE, enabled: false, eligible: false };
+    const out = runChatTool("cambiar_regla", { prendida: true, porcentaje: 30 }, paused);
+    expect(out.action).toEqual({ type: "rule", change: { percent: 30, enabled: true } });
+    expect(out.state).toMatchObject({ enabled: false, percent: 30 });
+    expect(out.result.ok && out.result.done).toMatch(/NOT on yet/);
   });
 
   it("la meta: nombre, monto en unidades de USDC y mes que no pasó", () => {
@@ -147,6 +156,7 @@ describe("el estado que manda la app", () => {
       holdings: ["QQQx"],
       agentAvailable: true,
       agentOn: false,
+      eligible: false,
       currentMonth: "2026-10",
     });
   });

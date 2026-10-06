@@ -7,6 +7,7 @@ import { AccountCard } from "@/components/invest/account-card";
 import { AgentCard } from "@/components/invest/agent-card";
 import { AgentChatSheet, type AgentChatHandlers } from "@/components/invest/agent-chat";
 import { AgentSheet } from "@/components/invest/agent-sheet";
+import { EligibilitySheet } from "@/components/invest/eligibility-sheet";
 import { Onboarding, type OnboardingStep } from "@/components/invest/onboarding";
 import { BuySheet } from "@/components/invest/buy-sheet";
 import { GoalReachedSheet } from "@/components/invest/goal-reached-sheet";
@@ -18,7 +19,9 @@ import { RuleSheet, type RuleDraft, type RuleSheetMode, type RuleStep } from "@/
 import { SellModal } from "@/components/invest/sell-modal";
 import { formatUsdc } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
-import { buildAgentContext, rulePatchFor } from "@/lib/invest/agent-chat";
+import { buildAgentContext, rulePatchFor, type RuleChange } from "@/lib/invest/agent-chat";
+import { requestCloudPush } from "@/lib/invest/cloud-sync";
+import { attestation, isEligible } from "@/lib/invest/eligibility";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
 import { fuelUnitsFor } from "@/lib/invest/fuel";
@@ -29,6 +32,7 @@ import {
   INVEST_EVENT,
   loadPurchases,
   loadRule,
+  notifyIncoming,
   notifyInvest,
   saveRule,
 } from "@/lib/invest/storage";
@@ -56,6 +60,8 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
   // La hoja de comprar; el agente puede abrirla con el activo y el monto ya puestos.
   const [buying, setBuying] = useState<{ asset?: XStockSymbol; units?: bigint } | null>(null);
   const [talking, setTalking] = useState(false);
+  // Lo que se iba a hacer cuando apareció la confirmación de dónde vive.
+  const [eligibilityNext, setEligibilityNext] = useState<{ run: () => void } | null>(null);
   const [selling, setSelling] = useState<XStockSymbol | null>(null);
   const [agentSheet, setAgentSheet] = useState(false);
   const [agentSkipped, setAgentSkipped] = useState(false);
@@ -156,7 +162,9 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
   const updateRule = useCallback(
     (patch: Partial<InvestRule>) => {
       if (!address) return;
-      const current = rule ?? defaultRule();
+      // Lo último guardado, no el estado de React: dos cambios seguidos
+      // (confirmar y prender) no se pisan.
+      const current = loadRule(address) ?? rule ?? defaultRule();
       const next: InvestRule = { ...current, ...patch };
       if (patch.enabled && !current.enabled) {
         // Al prender, solo cuentan los USDC que llegan de acá en adelante.
@@ -171,22 +179,55 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
     [address, rule]
   );
 
-  // Pausar y reanudar desde el interruptor de la regla.
-  const toggleRule = useCallback(() => {
-    updateRule({ enabled: !(rule?.enabled ?? false) });
-  }, [rule, updateRule]);
+  // Antes de invertir por primera vez: confirmar que puede invertir desde
+  // donde vive. Si ya lo confirmó, sigue de largo.
+  const requireEligibility = useCallback(
+    (run: () => void) => {
+      if (isEligible(address ? loadRule(address) : rule)) run();
+      else setEligibilityNext({ run });
+    },
+    [address, rule]
+  );
 
-  // El asistente terminó: se guarda lo elegido y, la primera vez, se prende.
+  const confirmEligibility = useCallback(() => {
+    updateRule({ eligibility: attestation(Date.now()) });
+    const next = eligibilityNext;
+    setEligibilityNext(null);
+    next?.run();
+  }, [updateRule, eligibilityNext]);
+
+  // Confirmó con lo apartado esperando: la regla revisa ya. El agente del
+  // servidor lee la regla de la base, así que primero se manda.
+  const investWaiting = useCallback(() => {
+    void (async () => {
+      await requestCloudPush();
+      if (agent.enabled && !session.demo) await agent.runNow().catch(() => undefined);
+      else notifyIncoming();
+    })();
+  }, [agent, session.demo]);
+
+  // Pausar y reanudar desde el interruptor de la regla. Prenderla pide la confirmación.
+  const toggleRule = useCallback(() => {
+    if (rule?.enabled) updateRule({ enabled: false });
+    else requireEligibility(() => updateRule({ enabled: true }));
+  }, [rule, updateRule, requireEligibility]);
+
+  // El asistente terminó: se guarda lo elegido y, la primera vez, se prende
+  // (después de confirmar que puede invertir).
   const saveDraft = useCallback(
     (draft: RuleDraft, turnOn: boolean) => {
-      updateRule({
-        ...draft,
-        configuredAt: rule?.configuredAt ?? Date.now(),
-        ...(turnOn ? { enabled: true } : {}),
-      });
-      setEditing(null);
+      const save = () => {
+        updateRule({
+          ...draft,
+          configuredAt: rule?.configuredAt ?? Date.now(),
+          ...(turnOn ? { enabled: true } : {}),
+        });
+        setEditing(null);
+      };
+      if (turnOn) requireEligibility(save);
+      else save();
     },
-    [rule, updateRule]
+    [rule, updateRule, requireEligibility]
   );
 
   const finishOnboarding = useCallback(() => {
@@ -217,6 +258,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
   const buyNow = useCallback(
     async (quote: StockQuote, onStep: (step: BuyStep) => void) => {
       if (!address) throw new Error("Entrá con tu email para continuar.");
+      if (!isEligible(loadRule(address))) throw new Error(t.eligibility.buyBlocked);
       const purchase = await executePurchase({
         address,
         asset: quote.asset,
@@ -231,7 +273,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
       void refreshHoldings();
       return purchase;
     },
-    [address, session.demo, balances, refreshHoldings]
+    [address, session.demo, balances, refreshHoldings, t]
   );
 
   // Hablarle al agente: el estado real de la cuenta y lo que puede hacer en la app.
@@ -253,21 +295,35 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           yields: prices?.yields ?? {},
         }),
       onRuleChange: (change) => {
-        if (!rule) return null;
-        const { patch, before } = rulePatchFor(rule, change, Date.now());
-        updateRule(patch);
-        return before;
+        if (!rule || !address) return null;
+        // Prender la regla pide la confirmación: lo demás se aplica ya, y
+        // prenderla, cuando confirme.
+        const needsEligibility = change.enabled === true && !isEligible(loadRule(address));
+        const applied: RuleChange = { ...change };
+        if (needsEligibility) delete applied.enabled;
+        const { patch, before } = rulePatchFor(rule, applied, Date.now());
+        if (Object.keys(patch).length > 0) updateRule(patch);
+        if (needsEligibility) requireEligibility(() => updateRule({ enabled: true }));
+        return { before, applied, needsEligibility };
       },
       onUndo: (before) => updateRule(before),
-      onBuy: (asset, units) => setBuying({ asset, units }),
+      onBuy: (asset, units) => requireEligibility(() => setBuying({ asset, units })),
       onSell: (asset) => setSelling(asset),
       onAgentOn: () => setAgentSheet(true),
     }),
-    [lang, rule, goal, summary, balances.solanaUnits, purchases, agent, priceMap, multipliers, prices, updateRule]
+    [lang, address, rule, goal, summary, balances.solanaUnits, purchases, agent, priceMap, multipliers, prices, updateRule, requireEligibility]
   );
 
   const sellingUnits =
     selling !== null ? (holdings?.find((h) => h.asset === selling)?.tokenUnits ?? 0n) : 0n;
+
+  const eligibilitySheetEl = (
+    <EligibilitySheet
+      open={eligibilityNext !== null}
+      onConfirm={confirmEligibility}
+      onClose={() => setEligibilityNext(null)}
+    />
+  );
 
   const agentSheetEl = (
     <AgentSheet
@@ -308,6 +364,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           yields={prices?.yields}
         />
         {agentSheetEl}
+        {eligibilitySheetEl}
       </div>
     );
   }
@@ -334,6 +391,8 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
             purchases={purchases}
             onToggle={toggleRule}
             onEdit={() => setEditing({ mode: "edit" })}
+            eligible={isEligible(rule)}
+            onConfirmEligibility={() => setEligibilityNext({ run: investWaiting })}
           />
         )}
       </div>
@@ -417,6 +476,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
       )}
 
       {agentSheetEl}
+      {eligibilitySheetEl}
 
       {address && (
         <AgentChatSheet
@@ -434,7 +494,7 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
         session={session}
         balances={balances}
         actions={actions}
-        onBuy={() => setBuying({})}
+        onBuy={() => requireEligibility(() => setBuying({}))}
         setAsideUnits={BigInt(rule?.pendingUnits || "0")}
       />
 

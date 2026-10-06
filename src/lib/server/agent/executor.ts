@@ -13,9 +13,11 @@ import {
   errorMessage,
   setAsideMessage,
   waitingBalanceMessage,
+  waitingEligibilityMessage,
   waitingMarketMessage,
   waitingPremiumMessage,
 } from "@/lib/invest/agent-messages";
+import { isEligible } from "@/lib/invest/eligibility";
 import { syncSolanaHistory } from "@/lib/solana/historySync";
 import { readState, writeState } from "@/lib/server/account-store";
 import { ultraExecute, ultraOrder } from "@/lib/server/jupiter";
@@ -52,6 +54,7 @@ export type RunOutcome =
   | "no_rule"
   | "paused"
   | "nothing_new"
+  | "not_eligible"
   | "set_aside"
   | "waiting"
   | "bought"
@@ -243,6 +246,22 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
       return "set_aside";
     }
     if (plan.buyUnits === null) return "nothing_new";
+
+    // Sin la confirmación de que puede invertir desde donde vive, lo apartado
+    // espera entero y se avisa una vez (no una por vuelta).
+    if (!isEligible(current)) {
+      await saveRule(address, { ...current, pendingUnits: plan.buyUnits.toString() });
+      const last = (await listEvents(address, 1))[0];
+      if (last?.kind !== "waiting") {
+        await addEvent(address, {
+          kind: "waiting",
+          decidedBy: "rule",
+          message: waitingEligibilityMessage(lang),
+          data: { blocked: { reason: "eligibility" }, trigger },
+        });
+      }
+      return "not_eligible";
+    }
 
     // Lo apartado llegó al mínimo. Primero, lo que no depende de nadie:
     // horario de Wall Street, referencia de PreStocks y saldo.

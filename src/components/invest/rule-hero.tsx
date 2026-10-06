@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Info, Pencil, Sparkles } from "lucide-react";
+import { Globe2, Info, Pencil, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +44,8 @@ export function RuleHero({
   purchases,
   onToggle,
   onEdit,
+  eligible,
+  onConfirmEligibility,
 }: Engine & {
   rule: InvestRule;
   /** Avance de la meta de la regla, o null si no hay meta. */
@@ -52,6 +54,9 @@ export function RuleHero({
   purchases: Purchase[];
   onToggle: () => void;
   onEdit: () => void;
+  /** Confirmó que puede invertir desde donde vive. Sin eso, la regla aparta pero no invierte. */
+  eligible: boolean;
+  onConfirmEligibility: () => void;
 }) {
   const { lang, t } = useLang();
   const address = session.solanaAddress;
@@ -260,6 +265,22 @@ export function RuleHero({
             </Button>
           )}
         </div>
+
+        {rule.enabled && !eligible && (
+          <div
+            role="status"
+            className="mt-3 flex flex-col gap-3 rounded-xl bg-warning/10 p-3 text-sm text-foreground min-[420px]:flex-row min-[420px]:items-center"
+            data-testid="rule-eligibility"
+          >
+            <span className="flex flex-1 items-start gap-2">
+              <Globe2 className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+              {t.eligibility.heroNotice}
+            </span>
+            <Button size="sm" onClick={onConfirmEligibility} className="shrink-0" data-testid="rule-eligibility-confirm">
+              {t.eligibility.heroCta}
+            </Button>
+          </div>
+        )}
 
         {moment && (
           <p

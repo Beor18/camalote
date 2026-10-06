@@ -77,6 +77,19 @@ export interface InvestRule {
    * navegador con la de la base, gana la más nueva.
    */
   updatedAt?: number;
+  /**
+   * El usuario confirmó que puede invertir desde donde vive (no es persona de
+   * EE. UU. ni vive en un país que excluyan los emisores). Sin esto, la regla
+   * aparta pero no invierte. Vive en la regla porque la regla ya viaja a la
+   * base: el agente del servidor la lee de ahí.
+   */
+  eligibility?: Eligibility;
+}
+
+export interface Eligibility {
+  attestedAt: number;
+  /** Si cambian las listas de países, se sube y se vuelve a pedir. */
+  version: number;
 }
 
 export type OperationKind = "buy" | "sell";

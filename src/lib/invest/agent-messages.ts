@@ -62,6 +62,12 @@ export function waitingPremiumMessage(o: { asset: string; premium: string }, lan
     : `${name} is ${o.premium} above its reference. I'll wait for it to come down.`;
 }
 
+export function waitingEligibilityMessage(lang: Lang): string {
+  return lang === "es"
+    ? "Tu parte está lista para invertir. Antes, confirmá en la app que podés invertir desde donde vivís."
+    : "Your share is ready to invest. First, confirm in the app that you can invest from where you live.";
+}
+
 export function waitingBalanceMessage(lang: Lang): string {
   return lang === "es"
     ? "Lo apartado está listo, pero el saldo no alcanza todavía. Compro con el próximo cobro."

@@ -171,11 +171,16 @@ each issuer excludes some countries (checked on 2026-10-06):
 | US Treasuries (USDY) | Ondo | United States, Canada and sanctioned jurisdictions; only qualified investors in Brazil, the EEA, the UK, Switzerland, Hong Kong, Singapore and Malaysia ([eligibility](https://docs.ondo.finance/general-access-products/usdy/eligibility)) |
 | Secured loans (jlUSDC) | Jupiter Lend | United States, China, Singapore and sanctioned jurisdictions ([terms](https://station.jup.ag/docs/legal/terms-of-use)) |
 
-**Argentina is not excluded by any of them.** The app states each issuer's
-restrictions before buying. Not built yet: blocking excluded countries at
-sign-up. Open question: whether automatically executing the user's own rule
-requires registration with Argentina's CNV (as a PSAV); a legal opinion is
-the first thing we would fund.
+**Argentina is not excluded by any of them.** Before the first investment,
+the user confirms they're not a US citizen or resident and don't live in a
+country excluded for what they choose (turning the rule on, or opening a
+buy). Without that confirmation nothing is invested: the rule keeps setting
+the share aside, the server agent doesn't buy and says why, and manual buys
+don't open ([`eligibility.ts`](src/lib/invest/eligibility.ts)). It's an
+attestation, not an IP block, so judges abroad can still try the app. Open
+question: whether automatically executing the user's own rule requires
+registration with Argentina's CNV (as a PSAV); a legal opinion is the first
+thing we would fund.
 
 ## Status (2026-10-06)
 

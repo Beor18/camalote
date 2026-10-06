@@ -2,6 +2,7 @@ import { BUY_MIN_UNITS, INVEST_MIN_UNITS } from "@/lib/config";
 import { XSTOCKS, assetName, findXStock, isXStockSymbol, kindOf, type AssetKind, type XStockSymbol } from "@/lib/invest/catalog";
 import { neededPerMonth, paymentsToGo, type GoalProgress } from "@/lib/invest/goals";
 import type { MarketMap } from "@/lib/invest/guards";
+import { isEligible } from "@/lib/invest/eligibility";
 import { PERCENT_OPTIONS, type PortfolioSummary } from "@/lib/invest/rules";
 import type { InvestGoal, InvestRule, Purchase } from "@/lib/invest/types";
 import type { YieldMap } from "@/lib/invest/yields";
@@ -43,6 +44,8 @@ export interface AgentChatContext {
   now: string;
   rule: {
     enabled: boolean;
+    /** Confirmó que puede invertir desde donde vive. Sin eso, aparta pero no invierte. */
+    eligible: boolean;
     percent: number;
     asset: AssetRef;
     /** Solo acciones: si esperan a que abra Wall Street. null en dólares y privadas. */
@@ -131,6 +134,7 @@ export function buildAgentContext(input: {
     now: iso(now),
     rule: {
       enabled: rule.enabled,
+      eligible: isEligible(rule),
       percent: rule.percent,
       asset: ref(rule.asset, lang),
       waitForMarketOpen: kindOf(rule.asset) === "stock" ? (rule.waitForMarketOpen ?? true) : null,
@@ -266,6 +270,8 @@ export interface ToolState {
   holdings: XStockSymbol[];
   agentAvailable: boolean;
   agentOn: boolean;
+  /** Confirmó que puede invertir desde donde vive; si no, prender la regla espera esa confirmación. */
+  eligible: boolean;
   /** "2026-10": para no aceptar metas en meses que ya pasaron. */
   currentMonth: string;
 }
@@ -300,6 +306,7 @@ export function toolStateFrom(ctx: unknown): ToolState | null {
       .filter((s): s is XStockSymbol => isXStockSymbol(s)),
     agentAvailable: ctx.agent.available === true,
     agentOn: ctx.agent.on === true,
+    eligible: ctx.rule.eligible === true,
     currentMonth: `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`,
   };
 }
@@ -379,6 +386,20 @@ export function runChatTool(name: string, args: unknown, state: ToolState): Tool
         }
       }
       if (Object.keys(change).length === 0) return fail(state, "the rule was already like that: nothing changed");
+      if (change.enabled === true && !state.eligible) {
+        // La app pide la confirmación antes de prenderla: todavía no está prendida.
+        next.enabled = false;
+        const rest = { ...change };
+        delete rest.enabled;
+        return {
+          result: {
+            ok: true,
+            done: `${Object.keys(rest).length > 0 ? `rule updated: ${JSON.stringify(rest)}. ` : ""}The rule is NOT on yet, it is still paused. The app is now showing the user a confirmation that they can invest from where they live; the rule turns on only after they confirm it. Don't say it's on.`,
+          },
+          action: { type: "rule", change },
+          state: next,
+        };
+      }
       return { result: { ok: true, done: `rule updated: ${JSON.stringify(change)}` }, action: { type: "rule", change }, state: next };
     }
     case "cambiar_meta": {

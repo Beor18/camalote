@@ -57,15 +57,16 @@ jurisdictions".
 3. Each issuer sets its countries: stocks aren't available in the US, UK,
    Canada or Australia; pre-IPO companies, US Treasuries and secured loans
    aren't available in the US either. Argentina isn't excluded by any of
-   them, and the app states the restrictions before every buy.
+   them. Before the first investment, every user confirms they don't live
+   in an excluded country; without that, nothing is invested.
 
-What's missing, said plainly: blocking excluded countries at sign-up, and a
-legal opinion on whether executing the rule requires registering as a PSAV
-with Argentina's CNV. That's the first thing we fund.
+What's missing, said plainly: a legal opinion on whether executing the rule
+requires registering as a PSAV with Argentina's CNV. That's the first thing
+we fund.
 
 Respuesta hablada: "We're non-custodial and the agent executes the user's
 own rule; we don't advise. Each issuer excludes its countries, Argentina
-isn't on any list, and the app says so before buying. Whether that needs a
+isn't on any list, and every user confirms where they live before investing. Whether that needs a
 PSAV registration in Argentina, we don't know yet: a legal opinion is the
 first thing we'd pay for."
 

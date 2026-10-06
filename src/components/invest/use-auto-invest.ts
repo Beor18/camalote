@@ -7,9 +7,11 @@ import {
   errorMessage,
   setAsideMessage,
   waitingBalanceMessage,
+  waitingEligibilityMessage,
   waitingMarketMessage,
   waitingPremiumMessage,
 } from "@/lib/invest/agent-messages";
+import { isEligible } from "@/lib/invest/eligibility";
 import { findXStock } from "@/lib/invest/catalog";
 import { recordDemoAgentEvent } from "@/lib/invest/demo-agent";
 import { formatNextOpen, formatPremium } from "@/lib/invest/guards";
@@ -120,6 +122,15 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
             langRef.current
           )
         );
+      }
+      if (plan.buyUnits !== null && !isEligible(plan.rule)) {
+        // Sin la confirmación de que puede invertir desde donde vive, lo
+        // apartado espera entero. La regla muestra cómo confirmarlo.
+        saveRule(address, { ...plan.rule, pendingUnits: plan.buyUnits.toString() });
+        notifyInvest();
+        // Se avisa cuando entra plata nueva, no en cada revisión.
+        if (plan.setAsideUnits > 0n) say("waiting", waitingEligibilityMessage(langRef.current));
+        return;
       }
       if (plan.buyUnits !== null) {
         // Datos de mercado antes de comprar: fuera de horario de Wall Street

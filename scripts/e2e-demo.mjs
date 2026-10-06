@@ -71,6 +71,11 @@ await page.click("[data-testid=rule-asset-SPYx]");
 console.log("SUMMARY:", await text("[data-testid=rule-summary]"));
 await shot("03c-regla-paso3");
 await page.click("[data-testid=rule-done]");
+// 3c'. Antes de prender la regla, confirma que puede invertir desde donde vive.
+await page.waitForSelector("[data-testid=eligibility-sheet][open]", { timeout: 10000 });
+await shot("03c2-confirmacion");
+await page.click("[data-testid=eligibility-check]");
+await page.click("[data-testid=eligibility-confirm]");
 // 3d. Onboarding: activa su agente (el permiso dice qué puede y qué no) y ve dónde le pagan.
 await page.waitForSelector("[data-testid=onboarding][data-step=agent]", { timeout: 10000 });
 await shot("03d-onboarding-agente");

@@ -26,7 +26,12 @@ export function mergeRule(a: InvestRule | null, b: InvestRule | null): InvestRul
     seen.push(sig);
     if (seen.length >= MAX_SEEN_SIGNATURES) break;
   }
-  return { ...newer, seenSignatures: seen };
+  // La confirmación de que puede invertir no se pierde porque otro
+  // dispositivo guardó una regla vieja: gana la más reciente de las dos.
+  const eligibility = [newer.eligibility, older.eligibility]
+    .filter((e): e is NonNullable<InvestRule["eligibility"]> => Boolean(e))
+    .sort((x, y) => y.attestedAt - x.attestedAt)[0];
+  return { ...newer, seenSignatures: seen, ...(eligibility ? { eligibility } : {}) };
 }
 
 function settled(p: Purchase): number {

@@ -178,6 +178,12 @@ await hold(500);
 await page.click("[data-testid=rule-asset-SPYx]");
 await endScene(4200);
 await page.click("[data-testid=rule-done]");
+// Antes de prender la regla, confirma que puede invertir desde donde vive.
+await page.waitForSelector("[data-testid=eligibility-sheet][open]", { timeout: 10000 });
+await hold(700);
+await page.click("[data-testid=eligibility-check]");
+await hold(500);
+await page.click("[data-testid=eligibility-confirm]");
 await hold(1000);
 
 // Escena 4: le llegan 40 USDC y el 30 % se compra solo (el camalote cruza)

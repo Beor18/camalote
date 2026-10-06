@@ -274,9 +274,13 @@ YouTube):
   approve SPL no alcanza, porque el agente firma como la billetera; lo que
   lo haría verificable es un programa propio (una bóveda que solo compra
   activos permitidos para la cuenta del dueño). Va después del hackathon.
-- **¿Cómo manejás las jurisdicciones?** Las acciones no son para
-  residentes de EE. UU., Reino Unido, Canadá y Australia, y la app lo dice
-  antes de comprar. Todavía no lo bloquea: es lo próximo.
+- **¿Cómo manejás las jurisdicciones?** Cada emisor excluye sus países
+  (tabla con links en el README) y Argentina no está en ninguna lista.
+  Antes de la primera inversión el usuario confirma que no es persona de
+  EE. UU. ni vive en un país excluido; sin eso la regla aparta pero no
+  invierte, el agente no compra y la compra a mano no se abre. Es una
+  declaración, no un bloqueo por IP: así un jurado en EE. UU. puede ver la
+  app.
 - **¿Es legal en Argentina?** No custodiamos ni recomendamos activos:
   ejecutamos la regla que arma el usuario sobre protocolos de terceros.
   Si eso exige registrarse como PSAV en la CNV todavía no lo sabemos; la

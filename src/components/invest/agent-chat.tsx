@@ -27,6 +27,9 @@ interface ActionView {
   status: ActionStatus;
   /** Para deshacer un cambio de regla: lo que había antes. */
   before?: Partial<InvestRule> | null;
+  /** Lo que de verdad se aplicó (prenderla puede esperar la confirmación). */
+  applied?: RuleChange;
+  needsEligibility?: boolean;
 }
 
 interface Message {
@@ -67,8 +70,13 @@ function store(address: string, messages: Message[]): void {
 export interface AgentChatHandlers {
   /** El estado de la cuenta ahora, para que el agente responda con datos reales. */
   context: () => AgentChatContext;
-  /** Aplica un cambio de regla; devuelve lo de antes para deshacerlo. */
-  onRuleChange: (change: RuleChange) => Partial<InvestRule> | null;
+  /**
+   * Aplica un cambio de regla. Devuelve lo de antes para deshacerlo, lo que
+   * se aplicó, y si prenderla quedó esperando la confirmación de dónde vive.
+   */
+  onRuleChange: (
+    change: RuleChange
+  ) => { before: Partial<InvestRule>; applied: RuleChange; needsEligibility: boolean } | null;
   onUndo: (before: Partial<InvestRule>) => void;
   onBuy: (asset: XStockSymbol, usdcUnits: bigint) => void;
   onSell: (asset: XStockSymbol) => void;
@@ -127,8 +135,9 @@ export function AgentChatSheet({
     (actions: AgentAction[]): ActionView[] =>
       actions.map((action) => {
         if (action.type === "rule") {
-          const before = handlers.onRuleChange(action.change);
-          return { action, status: before ? "done" : "error", before };
+          const result = handlers.onRuleChange(action.change);
+          if (!result) return { action, status: "error" };
+          return { action, status: "done", ...result };
         }
         if (action.type === "check") {
           void agent.runNow().catch(() => undefined);
@@ -214,22 +223,35 @@ export function AgentChatSheet({
     const { action, status } = view;
     const key = `${message.id}-${index}`;
     if (action.type === "rule") {
+      const summary = ruleSummary(view.applied ?? action.change);
+      const canUndo = status === "done" && view.before && Object.keys(view.before).length > 0;
       return (
-        <div key={key} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" data-testid="agent-chat-rule">
-          <Check className="size-3.5 shrink-0 text-success" aria-hidden="true" />
-          <span className="text-foreground">{status === "undone" ? t.agentChat.undone : t.agentChat.ruleDone(ruleSummary(action.change))}</span>
-          {status === "done" && view.before && (
-            <button
-              type="button"
-              onClick={() => {
-                handlers.onUndo(view.before as Partial<InvestRule>);
-                setStatus(message.id, index, { status: "undone" });
-              }}
-              className="-my-2 inline-flex min-h-10 items-center rounded-md px-1 font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-              data-testid="agent-chat-undo"
-            >
-              {t.agentChat.undo}
-            </button>
+        <div key={key} className="flex flex-col gap-1">
+          {summary && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" data-testid="agent-chat-rule">
+              <Check className="size-3.5 shrink-0 text-success" aria-hidden="true" />
+              <span className="text-foreground">
+                {status === "undone" ? t.agentChat.undone : t.agentChat.ruleDone(summary)}
+              </span>
+              {canUndo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlers.onUndo(view.before as Partial<InvestRule>);
+                    setStatus(message.id, index, { status: "undone" });
+                  }}
+                  className="-my-2 inline-flex min-h-10 items-center rounded-md px-1 font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                  data-testid="agent-chat-undo"
+                >
+                  {t.agentChat.undo}
+                </button>
+              )}
+            </div>
+          )}
+          {view.needsEligibility && (
+            <p className="text-xs text-muted-foreground" data-testid="agent-chat-eligibility">
+              {t.agentChat.needsEligibility}
+            </p>
           )}
         </div>
       );

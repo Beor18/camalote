@@ -33,6 +33,31 @@ export function requestCloudPull(): void {
   }
 }
 
+/** Pide mandar ya lo guardado a la base (por ejemplo, antes de que el agente revise). */
+export const CLOUD_PUSH_EVENT = "camalote:cloud-push";
+
+interface PushRequest {
+  /** La sincronización lo marca al tomar el pedido. */
+  accepted?: boolean;
+  done?: () => void;
+}
+
+/**
+ * Manda ya lo guardado a la base y avisa cuando terminó. Sin sincronización
+ * (demo, o sin sesión) nadie lo toma y termina al toque.
+ */
+export function requestCloudPush(): Promise<void> {
+  return new Promise((resolve) => {
+    const detail: PushRequest = { done: resolve };
+    try {
+      window.dispatchEvent(new CustomEvent<PushRequest>(CLOUD_PUSH_EVENT, { detail }));
+    } catch {
+      // fuera del navegador
+    }
+    if (!detail.accepted) resolve();
+  });
+}
+
 interface RemoteState {
   rule: InvestRule | null;
   purchases: Purchase[];
@@ -130,6 +155,13 @@ export function startCloudSync(address: string, getToken: GetToken): () => void 
   };
   const onPull = () => void pull();
   window.addEventListener(CLOUD_PULL_EVENT, onPull);
+  const onPush = (e: Event) => {
+    const detail = (e as CustomEvent<PushRequest>).detail;
+    if (detail) detail.accepted = true;
+    if (timer) clearTimeout(timer);
+    void push().finally(() => detail?.done?.());
+  };
+  window.addEventListener(CLOUD_PUSH_EVENT, onPush);
 
   void (async () => {
     try {
@@ -151,6 +183,7 @@ export function startCloudSync(address: string, getToken: GetToken): () => void 
     stopped = true;
     if (timer) clearTimeout(timer);
     window.removeEventListener(CLOUD_PULL_EVENT, onPull);
+    window.removeEventListener(CLOUD_PUSH_EVENT, onPush);
     setLocalChangeListener(null);
   };
 }
