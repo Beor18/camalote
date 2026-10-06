@@ -25,12 +25,12 @@ septiembre: sin el agente, sin dólares que rinden, sin metas y con la regla
 que solo corría con la app abierta. Esto la alinea con el pitch deck
 (`pitch/index.html`): la historia de los 400, "el problema es el momento",
 el agente con permiso acotado y el por qué ahora (2x, 6x, 2026). Sin marcas
-de proveedores, como el deck. Los límites de caracteres que se ven en el
-formulario están verificados.
+de proveedores, como el deck. Límites del formulario: Brief description 500, notas para jurados 600 y
+500. Están verificados.
 
-**Brief description** (es el "About the project" público, 598 caracteres):
+**Brief description** (es el "About the project" público, 492/500 caracteres):
 
-You get paid in USDC, but not on a schedule. The plan is always to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's only one moment when there is always money, when it lands. Camalote: you set one rule, once (what share, what for, and where: the S&P 500, companies before their IPO, or dollars that earn) and every payment follows it. An AI agent sets your share aside and invests it the moment you get paid, in your own Solana account. It can only invest what your rule says, and it can never withdraw or move your money. Pay yourself first.
+You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. An AI agent invests your share the moment you get paid, in your own Solana account. It can never withdraw or move your money. Pay yourself first.
 
 **What are you building, and who is it for?** (1111 caracteres):
 
