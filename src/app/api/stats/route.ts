@@ -1,72 +1,55 @@
 import { NextResponse } from "next/server";
-import { Connection } from "@solana/web3.js";
-import { loadRelayerKeypair } from "@/lib/server/relayer";
-import { ADDRESSES, SOLANA_RPC_URL } from "@/lib/config";
+import { db } from "@/lib/server/account-store";
+import { toTraction, type RecentBuyRow, type TractionRow } from "@/lib/invest/traction";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Números honestos: cruces entregados y volumen, contados directo de la
- * cadena. Cada entrega del relayer acuña USDC en la cuenta del usuario,
- * así que alcanza con sumar los deltas positivos de sus transacciones.
+ * Números honestos, en vivo: cuentas, reglas armadas y prendidas, agentes
+ * activos, compras de la regla con plata de verdad (sin demo) y USDC
+ * invertidos, de la vista `traction` de la base. Las últimas compras van con
+ * el link a su transacción para que cualquiera las verifique en la cadena.
  */
-let cache: {
-  at: number;
-  body: { crossings: number; volumeUnits: string };
-} | null = null;
+let cache: { at: number; body: ReturnType<typeof toTraction> } | null = null;
 
-const TTL_MS = 10 * 60_000;
-const SIG_LIMIT = 50;
+const TTL_MS = 60_000;
+const RECENT = 10;
 
 export async function GET() {
   if (cache && Date.now() - cache.at < TTL_MS) {
     return NextResponse.json(cache.body);
   }
+  const base = db();
+  if (!base) {
+    return NextResponse.json({ error: "stats unavailable" }, { status: 503 });
+  }
   try {
-    const relayer = loadRelayerKeypair().publicKey;
-    const connection = new Connection(SOLANA_RPC_URL, "confirmed");
-    const usdcMint = ADDRESSES.solana.usdcMint;
-    const sigs = await connection.getSignaturesForAddress(relayer, {
-      limit: SIG_LIMIT,
-    });
-
-    let crossings = 0;
-    let volume = 0n;
-    for (const s of sigs) {
-      if (s.err) continue;
-      try {
-        const tx = await connection.getParsedTransaction(s.signature, {
-          maxSupportedTransactionVersion: 0,
-          commitment: "confirmed",
-        });
-        if (!tx?.meta) continue;
-        let minted = 0n;
-        for (const post of tx.meta.postTokenBalances ?? []) {
-          if (post.mint !== usdcMint) continue;
-          const pre = tx.meta.preTokenBalances?.find(
-            (p) => p.accountIndex === post.accountIndex
-          );
-          const delta =
-            BigInt(post.uiTokenAmount.amount) -
-            BigInt(pre?.uiTokenAmount.amount ?? "0");
-          if (delta > 0n) minted += delta;
-        }
-        if (minted > 0n) {
-          crossings += 1;
-          volume += minted;
-        }
-      } catch {
-        // una transacción ilegible no frena el conteo
-      }
+    const [traction, agents, recent] = await Promise.all([
+      base.from("traction").select("*").maybeSingle(),
+      base.from("accounts").select("solana_address", { count: "exact", head: true }).eq("agent_enabled", true),
+      base
+        .from("operations")
+        .select("asset, usdc_units, source, signature, created_at")
+        .eq("kind", "buy")
+        .eq("status", "done")
+        .eq("demo", false)
+        .not("signature", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(RECENT),
+    ]);
+    if (traction.error || agents.error || recent.error) {
+      throw new Error(traction.error?.message ?? agents.error?.message ?? recent.error?.message);
     }
-
-    cache = {
-      at: Date.now(),
-      body: { crossings, volumeUnits: volume.toString() },
-    };
-    return NextResponse.json(cache.body);
-  } catch {
-    // sin relayer configurado (demo) o RPC caído: el front tiene su fallback
+    const body = toTraction(
+      traction.data as TractionRow | null,
+      agents.count,
+      (recent.data ?? []) as RecentBuyRow[],
+      new Date()
+    );
+    cache = { at: Date.now(), body };
+    return NextResponse.json(body);
+  } catch (err) {
+    console.error("[stats]", err instanceof Error ? err.message : err);
     return NextResponse.json({ error: "stats unavailable" }, { status: 503 });
   }
 }
