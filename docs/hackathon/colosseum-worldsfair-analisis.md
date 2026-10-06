@@ -40,9 +40,11 @@ hackathon, y la lista de ganadores del Frontier (2026).
 
 ## Dónde está parado, criterio por criterio
 
-**1. Insight: fuerte.** "Invertir en el momento del cobro, con una meta
-con nombre" no aparece en ninguno de los 4.068 proyectos del corpus. Lo
-más cercano, ninguno con premio y ninguno igual:
+**1. Insight: fuerte.** En la búsqueda que hicimos en el corpus de
+Colosseum Copilot (29/09), no encontramos un proyecto igual a "invertir en
+el momento del cobro, con una meta con nombre". Eso no prueba que no
+exista: el informe de Superteam Argentina (5/10) suma precedentes cercanos
+sin premio (Rail Money, EarnFlow, Paycheck). Lo más cercano que vimos:
 - Buybak (Renaissance, marzo 2024): fracciones de acciones como premio por
   cada compra. Misma intuición ("hacé plata mientras gastás"), otro evento.
 - Bitsave (Cypherpunk, sept. 2025): ahorro on-chain para los que cobran en

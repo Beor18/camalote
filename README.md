@@ -157,6 +157,26 @@ Tokens in your own account · portfolio read from the chain
   public key reads nothing); the browser only talks to the database through
   `/api/account/state`, which verifies the Privy token.
 
+## Regulation and jurisdictions
+
+Camalote is non-custodial: each user holds their own wallet and Camalote
+never holds funds. It executes the rule the user sets on third-party
+protocols and doesn't recommend assets. Each asset has its issuer, and
+each issuer excludes some countries (checked on 2026-10-06):
+
+| Asset | Issuer | Not available in |
+| --- | --- | --- |
+| US stocks and ETFs (xStocks) | Backed | United States, United Kingdom, Canada, Australia and prohibited regions ([Kraken support](https://support.kraken.com/gb/articles/xstocks-availability), [xStocks legal overview](https://docs.xstocks.fi/docs/product-legal-overview)) |
+| Pre-IPO companies (PreStocks) | PreStocks | United States, China (mainland), Singapore, Russia, Ukraine, Venezuela, Panama, Nicaragua and the rest of its list, plus sanctioned jurisdictions ([terms, updated 2026-09-08](https://prestocks.notion.site/terms-of-service)) |
+| US Treasuries (USDY) | Ondo | United States, Canada and sanctioned jurisdictions; only qualified investors in Brazil, the EEA, the UK, Switzerland, Hong Kong, Singapore and Malaysia ([eligibility](https://docs.ondo.finance/general-access-products/usdy/eligibility)) |
+| Secured loans (jlUSDC) | Jupiter Lend | United States, China, Singapore and sanctioned jurisdictions ([terms](https://station.jup.ag/docs/legal/terms-of-use)) |
+
+**Argentina is not excluded by any of them.** The app states each issuer's
+restrictions before buying. Not built yet: blocking excluded countries at
+sign-up. Open question: whether automatically executing the user's own rule
+requires registration with Argentina's CNV (as a PSAV); a legal opinion is
+the first thing we would fund.
+
 ## Status (2026-10-06)
 
 - **Live on Solana mainnet**: [camalote.vercel.app](https://camalote.vercel.app);
@@ -192,7 +212,9 @@ their users, with the fee shared. Not validated yet.
 ## Built during the hackathon
 
 The hackathon started on 2026-09-14. More than two thirds of the commits
-are from then on (`git log --since=2026-09-14 --oneline`).
+are from then on: from `ee2ba64` (Sep 15) to today, all of it in
+[one diff](https://github.com/Beor18/camalote/compare/5016666...main)
+(`git log --since=2026-09-14 --oneline`).
 
 Before (Aug 28 to Sep 13): a USDC payment link bridged from Base by CCTP,
 then the pivot to investing on Sep 12 (the rule, xStocks, buys through

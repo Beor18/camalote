@@ -149,7 +149,7 @@ const es = {
     trust: [
       {
         title: "Tu cuenta es tuya",
-        body: "Las acciones y los dólares quedan en tu cuenta. Nadie puede retirarlos ni mandarlos a otra cuenta.",
+        body: "Las acciones y los dólares quedan en tu cuenta. Camalote no puede retirarlos ni mandarlos a otra cuenta.",
       },
       {
         title: "Sin promesas",
@@ -209,7 +209,7 @@ const es = {
     finalCta: "Armar mi regla",
     footerMadeIn: "Hecho en Argentina 🇦🇷",
     footerNote:
-      "Las acciones las emite Backed y no están disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia. Los dólares que rinden (USDY) los emite Ondo, para personas fuera de Estados Unidos. Camalote no da consejos de inversión.",
+      "Las acciones las emite Backed y no están disponibles en Estados Unidos, Reino Unido, Canadá ni Australia. Las empresas privadas (PreStocks), los Bonos del Tesoro (Ondo) y los préstamos con garantía (Jupiter Lend) tampoco están disponibles en Estados Unidos ni en los países que excluye cada emisor. Argentina no está excluida por ninguno. Camalote no da consejos de inversión.",
   },
   app: {
     loginTitle: "Entrá a tu cuenta",
@@ -231,7 +231,7 @@ const es = {
       "Tu cuenta es tuya: nosotros nunca podemos retirar tus fondos.",
     logout: "Cerrar sesión",
     footer:
-      "Tus USDC y tus acciones quedan en tu cuenta de Solana. Nadie más que vos puede retirarlos.",
+      "Tus USDC y tus acciones quedan en tu cuenta de Solana. Camalote no puede retirarlos.",
     baseCard: "En Base",
     baseCardSub: "de acá salen",
     solanaCard: "En Solana",
@@ -733,9 +733,9 @@ const es = {
       "Los dividendos se reinvierten solos: cuando la acción paga, tu cantidad crece un poco. Lo ves en tu cartera.",
       "Backed puede congelarlas o retirarlas si la ley se lo exige. Esa parte no es solo tuya, como sí lo son tus USDC.",
       "No disponibles para residentes de Estados Unidos, Reino Unido, Canadá y Australia.",
-      "Las empresas antes de salir a bolsa son tokens de PreStocks: exposición al valor de empresas privadas, sin derechos ni dividendos, con 1 % por transferencia y un precio que a veces se aleja mucho de su referencia. Más riesgo que una acción que cotiza. Tampoco para residentes de Estados Unidos.",
+      "Las empresas antes de salir a bolsa son tokens de PreStocks: exposición al valor de empresas privadas, sin derechos ni dividendos, con 1 % por transferencia y un precio que a veces se aleja mucho de su referencia. Más riesgo que una acción que cotiza. No están disponibles en Estados Unidos ni en los países de la lista del emisor, entre ellos China, Singapur, Rusia y Venezuela.",
       "Fuera del horario de Wall Street, el token de una acción puede alejarse de su precio; por eso la regla espera a la apertura si vos querés.",
-      "Los dólares que rinden son USDY, emitidos por Ondo y respaldados por letras del Tesoro de Estados Unidos, para personas fuera de Estados Unidos. El rendimiento (3,6 % anual hoy) cambia con la tasa de Estados Unidos y se ve como un precio que sube. No es un depósito bancario: si el emisor falla, el riesgo es tuyo.",
+      "Los dólares que rinden son dos opciones. Bonos del Tesoro: USDY de Ondo, respaldados por letras del Tesoro de Estados Unidos; no disponibles en Estados Unidos ni Canadá, y en Brasil, la Unión Europea y el Reino Unido solo para inversores calificados. Préstamos con garantía: Jupiter Lend presta tus USDC a quien deja garantía; no disponible en Estados Unidos, China ni Singapur. El rendimiento cambia y se ve como un precio que sube. No es un depósito bancario: si el emisor falla, el riesgo es tuyo.",
       "Camalote cobra 0,45 % por compra, nunca más de medio dólar, y nada por vender. No recomienda activos: la regla la armás vos y la apagás cuando quieras.",
       "Tu agente firma por vos con un permiso limitado: solo las compras que dice tu regla y la comisión de Camalote, hasta medio dólar. No puede retirar ni mandar tu plata a otra cuenta. Lo apagás cuando quieras y el permiso se borra.",
     ],
@@ -989,7 +989,7 @@ const en: Dictionary = {
     trust: [
       {
         title: "Your account is yours",
-        body: "The stocks and the dollars stay in your account. No one can withdraw them or send them elsewhere.",
+        body: "The stocks and the dollars stay in your account. Camalote can't withdraw them or send them elsewhere.",
       },
       {
         title: "No promises",
@@ -1049,7 +1049,7 @@ const en: Dictionary = {
     finalCta: "Set my rule",
     footerMadeIn: "Made in Argentina 🇦🇷",
     footerNote:
-      "The stocks are issued by Backed and aren't available to residents of the United States, United Kingdom, Canada and Australia. Dollars that earn (USDY) are issued by Ondo, for people outside the United States. Camalote doesn't give investment advice.",
+      "The stocks are issued by Backed and aren't available in the United States, United Kingdom, Canada or Australia. Pre-IPO companies (PreStocks), US Treasuries (Ondo) and secured loans (Jupiter Lend) aren't available in the United States either, nor in the countries each issuer excludes. Argentina isn't excluded by any of them. Camalote doesn't give investment advice.",
   },
   app: {
     loginTitle: "Sign in to your account",
@@ -1070,7 +1070,7 @@ const en: Dictionary = {
     custodyNote: "Your account is yours: we can never withdraw your funds.",
     logout: "Sign out",
     footer:
-      "Your USDC and your stocks stay in your Solana account. Only you can withdraw them.",
+      "Your USDC and your stocks stay in your Solana account. Camalote can't withdraw them.",
     baseCard: "On Base",
     baseCardSub: "they leave from here",
     solanaCard: "On Solana",
@@ -1568,9 +1568,9 @@ const en: Dictionary = {
       "Dividends reinvest on their own: when the stock pays, your amount grows a little. You see it in your portfolio.",
       "Backed can freeze or claw them back if the law requires it. That part isn't yours alone, the way your USDC are.",
       "Not available to residents of the United States, United Kingdom, Canada and Australia.",
-      "Pre-IPO companies are PreStocks tokens: exposure to the value of private companies, with no rights or dividends, a 1% transfer fee and a price that sometimes drifts far from its reference. Riskier than a listed stock. Also not for US residents.",
+      "Pre-IPO companies are PreStocks tokens: exposure to the value of private companies, with no rights or dividends, a 1% transfer fee and a price that sometimes drifts far from its reference. Riskier than a listed stock. Not available in the United States or in the issuer's listed countries, including China, Singapore, Russia and Venezuela.",
       "Outside Wall Street hours, a stock token can drift from its price; that's why the rule waits for the open if you want it to.",
-      "Dollars that earn are USDY, issued by Ondo and backed by short-term US Treasuries, for people outside the United States. The yield (3.6% a year today) moves with US rates and shows up as a rising price. Not a bank deposit: if the issuer fails, the risk is yours.",
+      "Dollars that earn are two options. US Treasuries: USDY by Ondo, backed by short-term US Treasuries; not available in the United States or Canada, and only for qualified investors in Brazil, the European Union and the United Kingdom. Secured loans: Jupiter Lend lends your USDC to borrowers who post collateral; not available in the United States, China or Singapore. The yield changes and shows up as a rising price. Not a bank deposit: if the issuer fails, the risk is yours.",
       "Camalote charges 0.45% per purchase, never more than half a dollar, and nothing for selling. It doesn't recommend assets: you set the rule and switch it off whenever you like.",
       "Your agent signs for you with a limited permission: only the buys your rule says and Camalote's fee, up to half a dollar. It can't withdraw or send your money to another account. Switch it off anytime and the permission is removed.",
     ],

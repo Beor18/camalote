@@ -45,18 +45,29 @@ producción, armar la regla, prender el agente, `/api/health` y
 
 ## Slide de riesgo regulatorio (para responder en 20 s)
 
+En el deck es el anexo después del cierre (`#regulacion`), fuera de los
+2 minutos. Países verificados el 06/10/2026 en los términos de cada
+emisor; los links están en el README, sección "Regulation and
+jurisdictions".
+
 **Regulation, plainly.**
 
-1. Non-custodial: each user holds their own wallet; Camalote never holds funds.
+1. Non-custodial: each user holds their own account; Camalote never holds or can withdraw the money.
 2. The AI agent executes the user's own rule on third-party protocols; it doesn't recommend assets.
-3. Issuer restrictions are shown before every buy (no US, UK, Canada or
-   Australia residents for stocks); blocking those countries at sign-up is
-   next, and a legal opinion on Argentina's CNV framework is the first
-   thing we fund.
+3. Each issuer sets its countries: stocks aren't available in the US, UK,
+   Canada or Australia; pre-IPO companies, US Treasuries and secured loans
+   aren't available in the US either. Argentina isn't excluded by any of
+   them, and the app states the restrictions before every buy.
 
-Respuesta hablada: "We're non-custodial and we execute the user's own
-rule; we don't advise. Whether that needs a PSAV registration in Argentina,
-we don't know yet. A legal opinion is the first thing we'd pay for."
+What's missing, said plainly: blocking excluded countries at sign-up, and a
+legal opinion on whether executing the rule requires registering as a PSAV
+with Argentina's CNV. That's the first thing we fund.
+
+Respuesta hablada: "We're non-custodial and the agent executes the user's
+own rule; we don't advise. Each issuer excludes its countries, Argentina
+isn't on any list, and the app says so before buying. Whether that needs a
+PSAV registration in Argentina, we don't know yet: a legal opinion is the
+first thing we'd pay for."
 
 ## Convocatoria para t.me/superteamar
 
