@@ -20,23 +20,43 @@ Actualizado el 2026-09-21: Camalote es Invertir. Dos eventos, en este orden:
 
 ## Colosseum, ficha del proyecto (2026-10-05)
 
-La ficha pública (colosseum.com/arena/projects/camalote) tenía el texto de
+La ficha (colosseum.com/arena/projects/camalote) tenía el texto de
 septiembre: sin el agente, sin dólares que rinden, sin metas y con la regla
-que solo corría con la app abierta. Esto va en su lugar, sin marcas de
-proveedores (como el pitch).
+que solo corría con la app abierta. Esto la alinea con el pitch deck
+(`pitch/index.html`): la historia de los 400, "el problema es el momento",
+el agente con permiso acotado y el por qué ahora (2x, 6x, 2026). Sin marcas
+de proveedores, como el deck. Los límites de caracteres que se ven en el
+formulario están verificados.
 
-**About the project**:
+**Brief description** (es el "About the project" público, 598 caracteres):
 
-You get paid in USDC, but not on a schedule: you get paid when you get
-paid. Investing "whatever is left" never happens, because nothing is left.
-Camalote flips it. You decide once: what share of every payment is yours,
-what it's for (the trip, a new laptop, three months of cushion) and where it
-goes: US stocks, companies before their IPO, or dollars that earn. Each time
-a payment lands, your AI agent sets that share aside and invests it for you.
-It can only buy what your rule says, and everything stays in your own Solana
-account. Sign in with Google or Phantom. Fee shown before you confirm, never
-more than fifty cents. Selling is free. Switch the rule off in one tap. Next
-time you get paid, part of it is already invested.
+You get paid in USDC, but not on a schedule. The plan is always to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's only one moment when there is always money, when it lands. Camalote: you set one rule, once (what share, what for, and where: the S&P 500, companies before their IPO, or dollars that earn) and every payment follows it. An AI agent sets your share aside and invests it the moment you get paid, in your own Solana account. It can only invest what your rule says, and it can never withdraw or move your money. Pay yourself first.
+
+**What are you building, and who is it for?** (1111 caracteres):
+
+Camalote: you set one rule, once, and every payment follows it. What share (for example, 20% of every payment), what for (a goal with a name: the trip, a new laptop, three months of cushion) and where (the S&P 500 and other US stocks, companies before their IPO, or dollars that earn).
+
+An AI agent does the work. It learns you got paid within seconds, at any hour, sets your share aside, invests it and tells you what it did: "Bought 120 USDC of S&P 500 for The trip." You give it a permission with limits: it can only invest what your rule says, it can never withdraw or move your money, and you switch it off whenever you want. You sign in with Google or Phantom, everything stays in your own Solana account, and the app shows your goal's progress, your portfolio at today's value and a receipt for every operation.
+
+It's for anyone who gets paid in USDC without a fixed salary: freelancers and remote workers who get paid when they get paid and never get to invest "whatever is left". We start in Argentina, with freelancers who work for clients abroad: about 7.8 billion dollars a year paid in stablecoins.
+
+**Why did you decide to build this, and why build it now?** (1021 caracteres):
+
+Because I lived it. I'm a freelancer in Corrientes, Argentina, and clients abroad pay me in USDC. A few weeks ago I got paid 400 dollars for a job and thought what I always think: if something is left, I'll invest it. On the 5th I paid rent, on the 12th the card, and at the end of the month I had invested zero. Like every month. The problem isn't the money, it's the moment: the only time there is always money is when it lands. A plan that invests on the same day every month assumes a salary; a freelancer gets paid when they get paid. With Camalote and a 30% rule, 120 of those 400 would have been invested the day I got paid.
+
+Why now: the three pieces only exist together now. Real stablecoin payments (salaries, invoices, remittances) doubled in 2025, so the money already arrives in digital dollars. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in the first half of 2026. And in 2026 an AI agent can sign inside a bounded permission: before, you had to remember and press the button yourself.
+
+**Notes for judges: did anyone not listed do meaningful work?** (349/600, sin cambios):
+
+No other people: solo founder. Most of the code, tests and docs were written pair-programming with Claude Code (Anthropic); every product decision, the narrative and the business model are mine, and I reviewed and drove each change. Colosseum Copilot was used for market and competitor research. The video voice-over is a synthetic voice (edge-tts).
+
+**Notes for judges: anything else?** (477/500):
+
+camalote.vercel.app is the live app on Solana mainnet: sign in with Google and your account is ready; any USDC you send runs through your rule. The AI agent signs inside a policy: it can only buy what your rule says, never withdraw or move funds, and if the AI doesn't answer, the rule decides. Honest limits, stated in the app: tokenized stocks carry the issuer's permanent delegate; pre-IPO tokens carry no shareholder rights and a 1% transfer fee. Fee: 0.45%, max 0.50 USDC.
+
+**Team, línea de Fernando** (169 caracteres):
+
+Founder and fullstack developer. Four years building Smart TV streaming for Claro Video at Global Hitss. Founded Tuneport, music where fans earn by curating new artists.
 
 **Update** (Progress from the team):
 
