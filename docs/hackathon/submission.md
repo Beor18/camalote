@@ -51,6 +51,13 @@ Because I lived it. I'm a freelancer in Argentina, paid in USDC by clients abroa
 
 Why now: the three pieces just came together. Real stablecoin payments doubled in 2025. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And in 2026 an AI agent can sign inside a bounded permission, so nobody has to remember to press the button.
 
+**What technologies are you using?** (2026-10-06, 396/500; el de septiembre
+estaba cortado y decía que el usuario firma todo):
+
+Solana mainnet and USDC. Destinations: xStocks (tokenized US stocks, Token-2022), PreStocks (pre-IPO tokens) and Ondo USDY (dollars that earn). Jupiter for swaps and prices. Privy for sign-in with Google or Phantom, embedded wallets and the agent's limited session signer. Helius for RPC and the webhooks that detect each payment. Groq for the AI agent. Supabase, Next.js 16, React 19 and Vercel.
+
+**Which chains**: solo Solana. Base se sacó el 2026-10-06: era del puente de agosto.
+
 **How does your product use these chains?** (470/500):
 
 All on Solana mainnet. Each user gets a Solana account where USDC payments land; we detect each incoming transfer within seconds and the rule sets its share aside. Buys are swaps from USDC into Token-2022 tokenized stocks and pre-IPO tokens, or yield-bearing dollars, signed by the agent's limited session signer. We read each stock token's Scaled UI Amount multiplier to show reinvested dividends. Our fee is a USDC transfer; network fees come from a small SOL reserve.
@@ -66,6 +73,24 @@ camalote.vercel.app is the live app on Solana mainnet: sign in with Google and y
 **Team, línea de Fernando** (169 caracteres):
 
 Founder and fullstack developer. Four years building Smart TV streaming for Claro Video at Global Hitss. Founded Tuneport, music where fans earn by curating new artists.
+
+## Superteam Argentina, ficha del proyecto (2026-10-06)
+
+La ficha del capítulo (superteam.ar/project/edit; el link con el hash es
+privado y no va acá) dice lo mismo que Colosseum, en castellano. Quedó al
+100 %. Falta: el link al pitch deck, el estado de financiación (en Colosseum
+es una respuesta privada del acelerador) y la entrega en Superteam Earn.
+
+- **One-liner** (15 palabras, de 10 a 15): Un agente de IA invierte parte de cada cobro en USDC apenas entra, en Solana.
+- **Descripción**: Cobrás en USDC, pero sin fecha fija. El plan es invertir lo que sobre, y nunca sobra. El problema no es la plata, es el momento: cuando entra, siempre hay. Con Camalote armás una regla una sola vez (qué parte, para qué y en qué: el S&P 500, empresas antes de salir a bolsa o dólares que rinden) y cada cobro la cumple. Un agente de IA invierte tu parte apenas te pagan, en tu propia cuenta de Solana. Nunca puede retirar ni mover tu plata. Pagate primero.
+- **Principal bloqueo hoy**: Usuarios de afuera: hoy la única cuenta es la mía. Esta semana busco a los primeros 20 que cobran en USDC, uno por uno, empezando por Superteam Argentina.
+- **Próximos hitos**: Al 12/10: 10 reglas armadas, 3 cobros reales y 50 USDC invertidos, verificables en la red. Después: la primera plataforma que paga en USDC y ofrece Camalote a quien cobra, y la opinión legal sobre la CNV.
+- **Cómo usa Solana**: la misma respuesta de "How does your product use these chains?", traducida.
+- **Modelo de negocio**: Una comisión chica solo cuando la regla compra: 0,45 % por compra de acciones, nunca más de 0,50 USDC, y 0,10 % en dólares que rinden. Vender y retirar es gratis. Sin suscripción ni spread escondido; la comisión se cobra en la red con cada compra. Es un negocio de volumen: cada cobro es una compra. La escala viene de las plataformas que pagan en USDC y ofrecen Camalote a quien cobra.
+- **Go-to-market y validación**: los primeros 20 desde Superteam Argentina con la oferta de los diez minutos, después otras comunidades de Latinoamérica, y la escala con plataformas que pagan en USDC. Qué validé: soy el usuario, los pagos en stablecoins se duplicaron en 2025 y el 94 % del volumen cripto en pesos es stablecoin, falta el hábito y no el acceso, y todavía no hay usuarios de afuera. Sin "nadie lo hace" ni los 4.068 proyectos.
+- **Métricas on-chain**: Al 6/10: 1 cuenta (la mía), 1 regla prendida, 1 cobro real que pasó por la regla (2,15 USDC, 0,21 apartados), 0 usuarios de afuera. En vivo: camalote.vercel.app/api/stats
+- **Ingresos**: 0 USDC: la comisión se cobra cuando la regla compra, y todavía no hubo compras.
+- **Página de la entrega**: https://colosseum.com/arena/projects/camalote
 
 **Update 2** (Progress from the team, 2026-10-05; el primero es
 colosseum.com/arena/projects/camalote/updates/604, del 26/9). Mismo tono que
