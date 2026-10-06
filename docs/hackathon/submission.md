@@ -80,6 +80,26 @@ This week I'm looking for the first 20 people who get paid in USDC. Give me ten 
 
 Demo: https://camalote.vercel.app/
 
+## Video de la semana 4 (Colosseum, entrega del 9 al 12 de octubre)
+
+`docs/demo/colosseum-week4/camalote-week4.mp4`: 57 s, 1920x1080, voz de
+Edge en inglés (Andrew). A la izquierda, Built · Learned · Next y el título
+de cada parte; a la derecha, la demo en el teléfono (entra con Phantom, el
+agente compra 120 para The trip, carga 10 desde Phantom y el retiro avisa
+lo apartado). El guion, frase por frase:
+
+1. I'm Fernando, and this is Camalote: a Solana account that invests part of every USDC payment the moment it lands.
+
+2. This week we built an AI agent that follows your rule. A payment lands, it sets your share aside, invests it, and tells you what it did. It can only invest what your rule says, and it can never move your money.
+
+3. We also shipped goals with a name, dollars that earn, and sign-in with Google or Phantom.
+
+4. What we learned, testing with real money: Phantom adds its own safety checks to everything it signs. So now Phantom sends deposits itself.
+
+5. And a withdrawal now takes the money you had set aside with it, so your next payment invests only its share.
+
+6. Next: our first twenty users, one by one, starting with Superteam Argentina. Try it at camalote.vercel.app.
+
 ## Las seis líneas (2026-09-30)
 
 Lo que hay que poder decir en la entrevista de 15 minutos de Colosseum sin
