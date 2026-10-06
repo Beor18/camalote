@@ -1,309 +1,241 @@
-# camalote 🌿
+# Camalote 🌿
 
-**Invertí una parte de cada cobro.** Elegís un porcentaje y una acción.
-Cada vez que te llegan USDC a tu cuenta de Solana, esa parte compra
-acciones tokenizadas, sola. Desde 2 dólares, sin broker, con la comisión
-a la vista.
+**Every time you get paid in USDC, Camalote invests your share before you
+spend it: one rule, set once, in your own non-custodial Solana account.**
 
-- **Una regla, una sola vez**: «el 20 % de lo que me llega, al S&P 500».
-  Cinco acciones para empezar: SPYx, QQQx, AAPLx, NVDAx y TSLAx (xStocks,
-  de las 60+ que existen en Solana). Ocho empresas antes de salir a bolsa
-  (PreStocks): SpaceX, OpenAI, Anthropic, Kalshi, Neuralink, Anduril,
-  Figure AI y Polymarket, con su riesgo dicho en la app. Y para el que no
-  quiere el sube y baja, **dólares que rinden**: USDY de Ondo, respaldados
-  por letras del Tesoro de Estados Unidos (3,6 % anual al 2026-09-29, varía),
-  con comisión de 0,10 %. El colchón de tres meses va ahí por defecto.
-- **Se compra sola cuando te pagan**: la app mira tu cuenta y, cuando lo
-  apartado junta 10 USDC, compra por **Jupiter Ultra**. La red la pagás vos
-  desde una reserva de SOL que la app carga sola con 1 USDC la primera vez.
-  Los cobros chicos se van juntando.
-- **Una meta con nombre**: «la compu nueva, 1.500», «el viaje», «tres meses
-  de colchón». La regla la va llenando sola cada vez que te pagan, y la app
-  te dice cuánto falta en cobros («faltan unos 6 cobros como el último») o
-  cuándo llegás a este ritmo. Al llegar, festejás y decidís: seguir, la
-  próxima meta, o vender y retirar.
-- **Cartera y comprobantes**: valor de hoy con precios de Jupiter,
-  rendimiento sobre lo que pusiste, los dividendos que xStocks reinvirtió
-  por vos (leídos del multiplicador del token en la cadena), cada operación
-  con su link a Solscan.
-- **Una sola cosa que hacer al entrar**: «Armar mi regla», tres preguntas
-  (qué parte, para qué, en qué) de a una por pantalla, y la regla queda
-  prendida. Después, la regla es el titular de la app: «El 30 % de cada
-  cobro va a El viaje», con su interruptor («Prendida» / «En pausa») y
-  «Editar». Dos columnas en pantallas anchas, una en el teléfono.
-- **Comprar una vez y vender a mano**: fuera de la regla, con precio,
-  comisión y costo de red a la vista antes de confirmar. Vender no tiene
-  comisión de Camalote.
-- **Tu cuenta es tuya**: entrás con tu email (Privy) y tenés una billetera
-  embebida de Solana. Nadie más que vos puede retirar tus USDC o tus
-  acciones; el agente, si lo activás, solo compra lo que dice tu regla.
-- **Sin humo**: son tokens de Backed que siguen el precio de la acción y
-  tienen *permanent delegate*; no disponibles para residentes de EE. UU.,
-  Reino Unido, Canadá y Australia; suben y bajan; la regla corre mientras
-  la app está abierta. Todo eso lo dice la app.
+- Live app, Solana mainnet: [camalote.vercel.app](https://camalote.vercel.app)
+- Colosseum Crypto World's Fair, Superteam Argentina track:
+  [colosseum.com/arena/projects/camalote](https://colosseum.com/arena/projects/camalote)
+- Live numbers: [camalote.vercel.app/api/stats](https://camalote.vercel.app/api/stats)
 
-## Modelo de negocio
+## The problem
 
-**0,45 % por compra, nunca más de medio dólar, piso un centavo.** Se
-descuenta de lo que se invierte y se muestra antes de confirmar. Vender es
-gratis. No hay suscripción ni spread escondido.
+You get paid in USDC, but not on a schedule. The plan is to invest whatever
+is left at the end of the month, and nothing is ever left: rent on the 5th,
+the card on the 12th, zero invested on the 30th.
 
-| Compra | Comisión | % efectivo |
-|---|---|---|
-| $10 | $0,045 | 0,45 % |
-| $50 | $0,225 | 0,45 % |
-| $120 | $0,50 (tope) | 0,42 % |
-| $500 | $0,50 (tope) | 0,10 % |
+The problem isn't the money, it's the moment. The only time there is always
+money is when it lands. Investing apps wait for you to remember; monthly
+plans assume a salary. Freelancers get paid when they get paid.
 
-Aparte, Jupiter cobra 0,10 % y la red la paga el usuario desde su reserva
-de SOL: menos de un centavo por operación, más unos 0,0025 SOL la primera
-vez que compra cada acción (abre la cuenta del token). La reserva se carga
-sola: 1 USDC cambiado a SOL por Ultra, sin gas, la primera vez y cada vez
-que baja de 0,004 SOL. Todo se muestra en el ticket.
+In Argentina, 52% of freelancers working for clients abroad already get
+paid in USDC (30%) or USDT (22%) ([sources](#sources)). We start there.
 
-**Cómo se cobra.** Después de que la compra salió bien, una transferencia
-de USDC a la cuenta de comisiones (`NEXT_PUBLIC_FEE_RECIPIENT_SOLANA`) que
-el usuario firma y paga desde su reserva: `/api/withdraw` con
-`purpose: "fee"` arma la transferencia y, ya firmada, la valida y la
-reenvía (el servidor no firma nada). Si falla, la pierde Camalote, no el
-usuario, y la app lo dice en el comprobante. Si la cuenta de comisiones no
-tiene abierta su cuenta de USDC, no se cobra: esa cuenta la abre Camalote,
-no el usuario. La comisión no se apaga por configuración.
+## What Camalote does
 
-**Números honestos.** Un usuario que invierte 200 dólares por mes en
-compras de 50 paga 0,90 por mes. Mil usuarios así son 900 dólares por mes.
-El negocio es volumen. Las palancas siguientes (más activos, canastas, la
-tarifa de referido de Jupiter) no están construidas.
+1. **One rule, set once.** Three questions, one per screen: what share
+   (5 to 50%), what for (a goal with a name: "the trip, 300") and where:
+   - 21 US stocks and ETFs, tokenized (xStocks): S&P 500, Nasdaq 100,
+     Apple, Nvidia, Microsoft, gold and more.
+   - 8 companies before their IPO (PreStocks): SpaceX, OpenAI, Anthropic
+     and others, with their risks stated in the app.
+   - Dollars that earn: US Treasuries (USDY) or secured loans (Jupiter
+     Lend), with today's rate.
+2. **Every payment follows it.** USDC lands, your share is set aside, and
+   once it adds up to 10 USDC it is bought and lands in your own account.
+   Small payments add up.
+3. **You see where it is.** The goal fills with every payment ("about 6
+   more payments like the last one"), the portfolio shows today's value,
+   the dividends xStocks reinvested for you, and a Solscan receipt for
+   every operation. Buy and sell by hand too; selling is free.
 
-## Cómo funciona por dentro
+Sign in with Google or email (embedded Solana wallet), or with Phantom.
+Load USDC from Phantom and withdraw back to it.
+
+## Who decides what
+
+Camalote is a rule, on purpose: money is moved by the rule, never by a
+model. "Agent" means the server-side signer that carries out your rule.
+
+| Decision | Who makes it |
+| --- | --- |
+| What to buy and how much | **Your rule** |
+| Whether a buy is allowed now (Wall Street hours, pre-IPO premium, balance) | **Code** |
+| Buy now or wait (6 hours at most), and the message to you | **AI** (gpt-oss-120b; other models as fallback) |
+| What happens if the AI fails, times out or answers badly | **The rule decides alone** |
+
+The AI is offered only two tools, "buy per the rule" and "wait", and the
+buy tool isn't even offered when the code says no. It can't pick an amount
+or an asset ([`brain.ts`](src/lib/server/agent/brain.ts)).
+
+## How it uses Solana
 
 ```
- Usuario (email → Privy → billetera de Solana)
-   │
-   ├─ le llegan USDC (cobro, depósito)  ──►  useAutoInvest mira la cuenta
-   │                                          planInvestments: aparta el %
-   │                                          junta hasta 10 USDC
-   │                                                 │
-   ▼                                                 ▼
- /api/invest/order side=fuel ── sin SOL en la cuenta: 1 USDC → SOL (Ultra, sin gas)
- /api/invest/order  ◄── quoteStock ── Jupiter Ultra arma la orden
- firma con la billetera embebida
- /api/invest/execute ── Jupiter ejecuta (la red sale de la reserva del usuario)
- /api/withdraw purpose=fee ── comisión a la cuenta de Camalote (el usuario paga la red)
-   │
-   ▼
- xStocks (Token-2022) en la cuenta del usuario · cartera desde la cadena
+You get paid (USDC lands in your wallet)
+  │
+  ├─ Helius webhook (seconds) ── backup: /api/agent/tick, from any cron
+  ▼
+runAgent(): new payments → set your % aside → at 10 USDC:
+  code checks market hours / premium / balance
+  AI: buy now or wait          (no answer → the rule decides)
+  SOL reserve if missing       (1 USDC → SOL, gasless)
+  Jupiter Ultra order: USDC → xStocks / PreStocks / USDY / jlUSDC
+  verify: allowed programs only + simulation (spends ≤ set-aside, lands in your account)
+  Privy session signer signs, inside the user's policy
+  0.45% fee: USDC transfer to Camalote, capped at 0.50
+  log to agent_events → "Your agent" in the app tells you what it did
+  ▼
+Tokens in your own account · portfolio read from the chain
 ```
 
-- **Motor único** (`useEngine`): demo o real, misma interfaz
-  (`BridgeActions`): `listIncoming`, `listHoldings`, `quoteStock`,
-  `buyStock`, `quoteSell`, `sellStock`, `withdrawSolana`.
-- **La regla** (`src/lib/invest/rules.ts`, puro y testeado):
-  `planInvestments` cruza los ingresos de la cuenta con la regla. Solo
-  cuentan los posteriores a prenderla, cada uno una sola vez, y lo que
-  vuelve de una venta propia no cuenta.
-- **La meta** (`src/lib/invest/goals.ts`, puro y testeado): lo comprado
-  desde que arrancó la meta menos lo vendido, nunca más de lo que hay en la
-  cuenta, a precio de hoy, más lo apartado. El ritmo sale de lo que la
-  regla apartó desde entonces; los cobros que faltan, del último cobro.
-- **La comisión** (`investFee`): FEE_BPS con piso y tope, descontada antes
-  de ir al mercado. En dólares que rinden es `FEE_BPS_DOLLARS` (10, o sea
-  0,10 %): sobre un 3,6 % anual, el 0,45 % se comía un mes y medio de
-  rendimiento por compra.
-- **Dólares que rinden** (USDY): token clásico (SPL) de 6 decimales, se
-  compra y se vende por Jupiter como las acciones (0,14 % de costo total
-  en una compra de 10, probado el 2026-09-29). Sin horario ni referencia:
-  la regla nunca espera. Las tenencias se leen de los dos programas de
-  tokens (Token-2022 para acciones y pre-IPO, clásico para USDY).
-- **Compra**: `quoteStock` pide la orden a Ultra por `usdc − comisión`;
-  el usuario ve el ticket; `buyStock` firma, ejecuta y después cobra la
-  comisión. **Venta**: lado `sell`, sin comisión.
-- **Tenencias** desde la cadena: cuentas Token-2022 del usuario filtradas
-  por el catálogo (`src/lib/invest/catalog.ts`, mints verificados contra
-  la API de tokens de Jupiter). **Precios**: `/api/invest/prices` (cache
-  30 s). Jupiter cotiza por unidad visible; el precio por unidad cruda es
-  ese × multiplicador (o `usdPricePrescaled` cuando Jupiter lo manda, que
-  desde septiembre de 2026 no lo hace). SpaceX, por ejemplo, va ×5.
-- **Empresas antes de salir a bolsa** (PreStocks, 9 decimales, 1 % de
-  transferencia del emisor): mismo camino de compra y venta por Ultra. El
-  mismo endpoint lee de `prestocks.com/api/prestocks` el valor de referencia
-  de cada empresa y a cuánto cotiza el token; la app muestra la distancia
-  ("el token está +14 %") y la regla no compra si está más de 5 % arriba
-  (`src/lib/invest/guards.ts`, `MAX_PREMIUM_BPS`). Sin dividendos.
-- **Horario de Wall Street** (Pyth): de los metadatos públicos del feed de
-  cada acción (`hermes.pyth.network/v2/price_feeds`, `market_hours`), que
-  no piden clave. La regla espera a la apertura si el usuario lo pide (por
-  defecto sí), y comprar y vender avisan si el mercado está cerrado. El
-  precio del feed necesita Pyth Pro, así que no se usa.
-- **Dividendos** (`src/lib/invest/multiplier.ts`): xStocks los reinvierte
-  subiendo el multiplicador "scaled UI amount" del mint. El mismo endpoint
-  de precios lo lee; la app muestra cantidades como cualquier billetera
-  (cruda × multiplicador), guarda el multiplicador en cada operación y la
-  cartera muestra "Dividendos reinvertidos" con la diferencia. En demo la
-  compra se registra como anterior al último dividendo real, etiquetada.
-- **Solo mainnet**: la app corre únicamente en la red principal de Solana,
-  sin interruptor de red (xStocks no existen en devnet). En demo todo se
-  simula con precios reales.
-- **Regla y operaciones** se guardan en Supabase por cuenta, con una copia
-  rápida en el navegador (`camalote.invest.rule.v1:<cuenta>`,
-  `camalote.invest.purchases.v1:<cuenta>`). Al entrar se trae lo de la
-  base y se junta con lo local: gana la regla guardada último y los cobros
-  ya contados se suman, para que ninguno se invierta dos veces. El
-  navegador no le habla a Supabase: pasa por `/api/account/state`, que
-  verifica el token de Privy y que la cuenta de Solana sea de ese usuario.
-  Las tablas tienen RLS sin políticas (la clave pública no lee nada). En
-  demo, o sin las variables de Supabase, todo queda en el navegador.
-  Esquema en `supabase/migrations/`. Una operación interrumpida (pestaña
-  cerrada) se cierra al volver.
+- **USDC** (SPL) payments land in the user's own embedded wallet (Privy).
+- **xStocks** are Token-2022 with the Scaled UI Amount extension: dividends
+  are reinvested by raising the mint's multiplier. Camalote reads it
+  on-chain and shows "dividends reinvested" since you bought.
+- **PreStocks** are Token-2022 with a 1% transfer fee. The rule won't buy
+  while the token trades more than 5% above the issuer's reference value.
+- **Pyth** feed metadata tells whether Wall Street is open; by default the
+  rule waits for the open, when the token tracks the stock best.
+- **Jupiter Ultra** builds every buy and sell; **Jupiter Lend** and Ondo's
+  **USDY** are the two "dollars that earn".
+- **Network fees** come from a small SOL reserve in the user's account,
+  loaded with 1 USDC when it runs low. No relayer, no custody.
 
-## El agente: compra aunque la app esté cerrada
+## Security model
 
-El usuario lo activa una vez (en el onboarding o desde su cuenta) y desde
-ahí la regla se cumple en el servidor:
+- **Non-custodial.** Each user has their own Solana wallet. Camalote never
+  holds user funds.
+- **The agent's permission** is a Privy session signer the user turns on
+  (and off) in the app. Its policy, checked by Privy before every signature
+  ([`agent-setup.mjs`](scripts/agent-setup.mjs)):
+  - only the programs our buys use: Compute Budget, Associated Token
+    Account, Jupiter (JUP6), JupiterZ and DFlow;
+  - from the token program, only closing an account (unwrapping SOL);
+  - a USDC transfer only to Camalote's fee account, at most 0.50 USDC;
+  - nothing else: no withdrawals, no transfers to other accounts.
+- **Before signing**, the server checks the programs again and **simulates**
+  the order: it must spend at most what was set aside and the bought
+  tokens must land in the user's account ([`verify.ts`](src/lib/server/agent/verify.ts)).
+  The policy can't see inside a Jupiter route; the simulation can.
+- **One lock per account** in the database prevents double buys when two
+  notifications arrive together.
+- **Known limit, stated plainly:** the permission is enforced by Privy's
+  policy engine and our simulation, not by a Solana program. An SPL
+  `approve` wouldn't help here, because the signer acts as the wallet
+  itself. Making it verifiable on-chain needs our own program (a vault that
+  can only swap into allowed mints for its owner). That is next, after the
+  hackathon.
+- **Issuer risks**, shown in the app before buying: xStocks carry Backed's
+  permanent delegate and aren't available to residents of the US, UK,
+  Canada and Australia; PreStocks give no shareholder rights; USDY is for
+  people outside the US.
+- No secrets in the repo; Supabase tables have RLS on with no policies (the
+  public key reads nothing); the browser only talks to the database through
+  `/api/account/state`, which verifies the Privy token.
 
-```
-Te pagan → Helius avisa → /api/agent/webhook → runAgent()
-  cobros nuevos → aparta el % → al juntar 10 USDC:
-  la cabeza (Groq, gpt-oss 120B) decide con una sola herramienta, "comprar según la regla"
-  (no elige monto ni destino) → si no responde, decide la regla sola (plan B)
-  → reserva de red si falta → orden de Jupiter → revisión + simulación
-  → Privy firma con el permiso del usuario → comisión → bitácora
-```
+## Status (2026-10-06)
 
-- **El permiso** es un firmante de sesión de Privy con política: solo los
-  programas por los que Jupiter arma nuestras compras (Metis, Jupiter Z,
-  DFlow; vistos en órdenes reales), cerrar cuentas de token, y USDC
-  únicamente a la cuenta de comisiones, hasta 0,50. Privy revisa cada
-  instrucción antes de firmar: aunque el servidor quisiera otra cosa, no
-  la firma. Lo crea `node scripts/agent-setup.mjs` por API (llave P-256,
-  key quorum y política) y deja las variables en `.env.local`.
-- **Antes de firmar**, el servidor revisa los programas de la orden y la
-  **simula**: tiene que sacar como mucho lo apartado y dejar lo comprado en
-  la cuenta del usuario. La política no ve adentro de una ruta de Jupiter;
-  la simulación sí.
-- **La cabeza no toca la plata.** Si elige esperar, a las 6 horas compra
-  igual. El horario de Wall Street, la referencia de PreStocks y el saldo
-  los decide el código antes de preguntarle nada.
-- **Un candado por cuenta** en la base (`agent_try_lock`) evita compras
-  dobles si llegan dos avisos juntos. Con el agente activo, la regla del
-  navegador no corre.
-- **Bitácora** (`agent_events`): lo que hizo y le dijo al usuario, con quién
-  decidió (IA o regla). La app la muestra en "Tu agente".
-- **Avisos**: Helius (`node scripts/helius-setup.mjs https://tu-dominio`)
-  y un reloj de respaldo, `GET /api/agent/tick` con
-  `Authorization: Bearer $CRON_SECRET`, cada 5 minutos desde cualquier cron
-  (Vercel Pro, Supabase pg_cron o cron-job.org). Atrapa lo que el aviso no
-  trajo y las compras que esperaban la apertura.
-- **En demo** todo se simula en el navegador con la misma pantalla.
+- **Live on Solana mainnet**: [camalote.vercel.app](https://camalote.vercel.app);
+  [`/api/health`](https://camalote.vercel.app/api/health) checks every
+  dependency.
+- **Users: none yet.** The first 20 come this week, one by one, from
+  Superteam Argentina. [`/api/stats`](https://camalote.vercel.app/api/stats)
+  counts accounts, rules on, agents on, rule buys and USDC invested, with a
+  Solscan link for every recent buy.
+- **Not yet on video:** a real payment triggering the automatic buy on
+  mainnet. It needs 20 USDC (10 USDC minimum buy at a 50% rule).
+- **155 unit tests** (Vitest) on the rule, goals, fees, guards, yields,
+  merges, withdrawals and the stats.
 
-Variables nuevas (servidor salvo las públicas): `PRIVY_AGENT_AUTH_KEY`,
-`NEXT_PUBLIC_PRIVY_AGENT_SIGNER_ID`, `NEXT_PUBLIC_PRIVY_AGENT_POLICY_ID`,
-`GROQ_API_KEY` (opcional, sin ella decide la regla), `GROQ_MODEL`,
-`HELIUS_API_KEY`, `HELIUS_WEBHOOK_ID`, `HELIUS_WEBHOOK_SECRET`, `CRON_SECRET`.
-Esquema en `supabase/migrations/20261003000000_agent.sql`.
+## Business model
 
-**Si Groq falla**, el mismo modelo va por AI Gateway de Vercel (otros
-proveedores y, si tampoco, otros dos modelos) y recién después decide la
-regla. En Vercel no hace falta configurar nada: usa el token OIDC del
-deploy. Fuera de Vercel, `AI_GATEWAY_API_KEY`. Para ver si las dos IA
-responden: `GET /api/health?probar=ia` con
-`Authorization: Bearer $CRON_SECRET`.
+**0.45% per buy, never more than 50 cents, minimum one cent.** Taken from
+what is invested and shown before you confirm. 0.10% for dollars that earn.
+Selling is free. No subscription, no hidden spread.
 
-## Correr el proyecto
+| Buy | Fee | Effective |
+| --- | --- | --- |
+| $10 | $0.045 | 0.45% |
+| $50 | $0.225 | 0.45% |
+| $120 | $0.50 (cap) | 0.42% |
+| $500 | $0.50 (cap) | 0.10% |
+
+Honest numbers: a user investing 200 dollars a month in buys of 50 pays
+0.90 a month. Per user that's small; scale comes from platforms that
+already pay in USDC (bounties, payroll, marketplaces) offering the rule to
+their users, with the fee shared. Not validated yet.
+
+## Built during the hackathon
+
+The hackathon started on 2026-09-14. More than two thirds of the commits
+are from then on (`git log --since=2026-09-14 --oneline`).
+
+Before (Aug 28 to Sep 13): a USDC payment link bridged from Base by CCTP,
+then the pivot to investing on Sep 12 (the rule, xStocks, buys through
+Jupiter Ultra, dividends from the multiplier).
+
+During:
+
+- **Sep 15** Mainnet only; the user pays the network from a SOL reserve,
+  no relayer.
+- **Sep 21** Pre-IPO companies (PreStocks) with the premium guard, and Wall
+  Street hours from Pyth.
+- **Sep 26 to 29** Goals with a name; English by default; dollars that earn;
+  one clear action on screen (welcome, the rule in three steps).
+- **Oct 2 to 5** Rule and operations in Supabase; the server-side agent
+  (Helius webhook, Privy session signer with policy, simulation before
+  signing, AI with fallbacks); mobile-first app; sign in with Google or
+  Phantom, load from and withdraw to Phantom.
+- **Oct 6** 21 stocks with search, two "dollars that earn" options with
+  live rates, a live traction counter.
+- Pitch deck (`docs/hackathon/pitch/`), landing and demo videos.
+
+## Run it
 
 ```bash
 pnpm install
 pnpm dev          # http://localhost:3000
 ```
 
-**Sin configurar nada corre en MODO DEMO**: misma UX, todo simulado con
-precios reales de Jupiter, un botón para simular que te llegan USDC. Para
-forzarlo aunque haya claves: `NEXT_PUBLIC_DEMO_MODE=true`.
+**With no keys it runs in demo mode**: same screens, real Jupiter prices,
+everything else simulated, and a button to simulate a payment. To force it
+even with keys: `NEXT_PUBLIC_DEMO_MODE=true`. Production is not in demo
+mode.
 
 ```bash
-pnpm test              # unit tests (regla, comisión, cartera, retiros, CCTP)
-pnpm build             # build de producción
-node scripts/e2e-demo.mjs <carpeta>   # recorre todo en demo con Playwright y saca capturas
-node scripts/demo-video.mjs <carpeta> # graba el video de demo (requiere ffmpeg)
+pnpm test         # unit tests
+pnpm build        # production build
+node scripts/e2e-demo.mjs <folder>     # walks the demo with Playwright and takes screenshots
 ```
 
-## Pasar a real
+To run it for real you need, at minimum: `NEXT_PUBLIC_PRIVY_APP_ID` and
+`PRIVY_APP_SECRET` (Solana embedded wallets), `SUPABASE_URL` and
+`SUPABASE_SECRET_KEY` (schema in `supabase/migrations/`), and for the
+agent `PRIVY_AGENT_AUTH_KEY`, `NEXT_PUBLIC_PRIVY_AGENT_SIGNER_ID`,
+`NEXT_PUBLIC_PRIVY_AGENT_POLICY_ID` (created by
+`node scripts/agent-setup.mjs`), `HELIUS_API_KEY`, `HELIUS_WEBHOOK_ID`,
+`HELIUS_WEBHOOK_SECRET` (`node scripts/helius-setup.mjs https://your-domain`)
+and `CRON_SECRET`. `GROQ_API_KEY` is optional: without it, the rule decides.
+A dedicated `SOLANA_RPC_URL` is recommended.
 
-1. **Privy** ([dashboard.privy.io](https://dashboard.privy.io)): app con
-   login por email y embedded wallets de **Solana** ("create on login").
-   `NEXT_PUBLIC_PRIVY_APP_ID`.
-2. **Nada para la red**: no hay relayer. El usuario paga la red desde su
-   reserva de SOL, que la app carga sola. (`pnpm relayer` y
-   `RELAYER_SOLANA_SECRET` quedan solo para el módulo oculto de cobros.)
-3. **Comisión**: `NEXT_PUBLIC_FEE_RECIPIENT_SOLANA=<tu cuenta>` (si falta,
-   usa la cuenta por defecto de `src/lib/config.ts`). Siempre se cobra.
-   Esa cuenta tiene que tener abierta su cuenta de USDC (recibir USDC una
-   vez alcanza); mientras no la tenga, la compra sale igual y la comisión
-   se marca como no cobrada.
-4. **Jupiter** (opcional): `JUPITER_API_KEY` de portal.jup.ag para
-   `api.jup.ag`; sin clave usa `lite-api.jup.ag`.
-5. RPC dedicado (`SOLANA_RPC_URL`) en vez del público.
+Minimums: buying by hand from 2 USDC; the rule buys at 10 USDC
+(`NEXT_PUBLIC_INVEST_MIN_UNITS`); the SOL reserve takes 1 USDC the first
+time (it stays in the account as SOL).
 
-Prueba: entrá con tu email, mandá USDC a tu cuenta de Solana, armá la
-regla o comprá a mano. Verificá el comprobante en Solscan y la
-transferencia de la comisión a tu cuenta.
+## Sources
 
-**Mínimos.** La compra a mano acepta desde 2 USDC (`NEXT_PUBLIC_BUY_MIN_UNITS`).
-La reserva de red lleva 1 USDC más la primera vez (queda en la cuenta como
-SOL). Con la reserva cargada, Jupiter cobra 0,10 % y la red menos de un
-centavo, así que el costo ya no depende del monto; el ticket lo muestra
-antes de confirmar. (Referencia: sin reserva, en modo sin gas, Jupiter
-descontaba de la compra 7,65 % en 2 USDC y 1,61 % en 10, medido el
-2026-09-12; por eso la reserva.) La regla junta hasta 10 USDC
-(`NEXT_PUBLIC_INVEST_MIN_UNITS`).
+| Number | Source |
+| --- | --- |
+| 390 billion dollars in real stablecoin payments in 2025, more than double 2024 | McKinsey and Artemis Analytics, [Stablecoins find their niche](https://www.mckinsey.com/featured-insights/charts/stablecoins-find-their-niche) and [Stablecoins in payments: what the raw transaction numbers miss](https://www.mckinsey.com/industries/financial-services/our-insights/stablecoins-in-payments-what-the-raw-transaction-numbers-miss) |
+| Tokenized stocks on Solana: 4.9 billion dollars in H1 2026, 6x the 775 million of H2 2025 | [Crypto Briefing](https://cryptobriefing.com/solana-tokenized-stocks-volume-surges-h1-2026/) |
+| Latin America is about 10% of global crypto volume | Chainalysis, 2025 Geography of Cryptocurrency, via [Crowdfund Insider](https://www.crowdfundinsider.com/?p=254132) |
+| 30% of Argentine freelancers are paid in USDC and 22% in USDT; 2,500 dollars a month on average | [iProUP](https://www.iproup.com/empleo/71195-cuantos-freelancers-argentinos-cobran-en-usdc-y-usdt) |
+| More than half a million people work from Argentina for clients abroad | [iProfesional](https://www.iprofesional.com/economia/430510-gobierno-javier-milei-busca-captar-dolares-de-profesionales-argentinos-que-trabajan-para-exterior) |
 
-**Prueba mínima, con 3 USDC.** Opcional, un RPC dedicado en vez del público:
+Market sizing in the deck: 390 billion worldwide (TAM); about 39 billion in
+Latin America at its ~10% share (SAM, an estimate); Argentina, 500,000
+freelancers × 52% paid in stablecoins × 2,500 dollars × 12 months ≈ 7.8
+billion dollars a year (SOM).
 
-```bash
-NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
-```
+## Hidden modules
 
-Con 3 USDC probás comprar a mano y vender (el mismo camino que usa la
-regla): 1 va a la reserva de red y 2 a la compra. Para ver la regla hacen
-falta 22 USDC al 50 %, o bajar `NEXT_PUBLIC_INVEST_MIN_UNITS`.
-
-## Seguridad y límites conocidos
-
-- Cada compra y venta la firma el usuario con su billetera embebida y paga
-  la red desde su reserva de SOL. `/api/withdraw` arma y reenvía
-  transferencias de USDC del firmante (retiros) o hacia la cuenta de
-  comisiones (fee), validadas estructuralmente (`withdrawTx.ts`); el
-  servidor no firma nada. No hay relayer en invertir.
-- `/api/invest/order` solo arma órdenes entre USDC y el catálogo, más el
-  cambio fijo de 1 USDC a SOL de la reserva: no es un proxy genérico. Rate
-  limit simple por IP en memoria.
-- Sin agente, la regla corre en el navegador: si la app está cerrada, no
-  compra. Con el agente activo, el servidor firma con el permiso limitado
-  de Privy (ver "El agente"). Lo apartado vive en la base.
-- El agente firma desde el servidor: si alguien robara la llave del
-  agente, lo máximo que puede firmar es lo que permite la política
-  (compras por Jupiter y la comisión). La política no ve el destino dentro
-  de una ruta de Jupiter: eso lo cubre la simulación en nuestro servidor.
-  Es un límite real y está dicho.
-- xStocks: *permanent delegate* de Backed (puede congelar o retirar),
-  restricción por países, liquidez más fina en fin de semana, spread del
-  RFQ en montos chicos (2 % en 10 USDC).
-- El rendimiento se calcula sobre lo comprado y vendido desde Camalote;
-  acciones compradas en otro lado aparecen en la cartera pero no en lo
-  "puesto".
-
-## Módulos ocultos: cobrar con links y cruce desde Base
-
-Antes de este pivot (2026-09-12), Camalote era un link de cobro en USDC
-(te pagaban desde Coinbase o Base y llegaba a Solana por CCTP v2). Ese
-código sigue en el repo pero no se muestra: pestañas Cobrar y Llevar a
-Solana, rutas `/app/cobrar` y `/p`, contratos de Circle, Paymaster de
-Coinbase. Vuelve con `NEXT_PUBLIC_SHOW_HIDDEN_VIEWS=true`. La
-documentación de esa versión está en el historial (commit `1421d41`).
+Before the pivot (2026-09-12), Camalote was a USDC payment link bridged
+from Base by CCTP v2. That code is still in the repo but hidden; it comes
+back with `NEXT_PUBLIC_SHOW_HIDDEN_VIEWS=true`.
 
 ## Stack
 
-Next.js 16 (App Router) · Tailwind v4 · Privy (auth + embedded wallets) ·
-@solana/web3.js + spl-token (Token-2022) · Jupiter Ultra y Price API
-(xStocks) · PWA (manifest + service worker) · Vitest · Playwright para el
-recorrido de demo.
+Next.js 16 (App Router) · React 19 · Tailwind v4 · Privy (auth, embedded
+wallets, session signers) · @solana/web3.js and spl-token (Token-2022) ·
+Jupiter Ultra, Price and Lend APIs · Pyth Hermes (market hours) · Helius
+webhooks · Supabase · Groq and Vercel AI Gateway · Vitest · Playwright.
