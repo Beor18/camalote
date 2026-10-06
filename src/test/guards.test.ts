@@ -22,12 +22,12 @@ import { dividendsSummary, feeBpsFor, investFee, portfolioSummary } from "@/lib/
 import type { Purchase } from "@/lib/invest/types";
 
 describe("catálogo", () => {
-  it("tiene cinco acciones, ocho pre-IPO y los dólares que rinden, sin repetir", () => {
-    expect(STOCKS).toHaveLength(5);
+  it("tiene veintiuna acciones, ocho pre-IPO y los dólares que rinden, sin repetir", () => {
+    expect(STOCKS).toHaveLength(21);
     expect(PREIPO).toHaveLength(8);
     expect(DOLLARS).toHaveLength(1);
-    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(14);
-    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(14);
+    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(30);
+    expect(new Set(XSTOCKS.map((s) => s.symbol)).size).toBe(30);
   });
 
   it("los dólares que rinden son un token clásico de 6 decimales, con nombre en cada idioma", () => {

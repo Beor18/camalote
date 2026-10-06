@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { PublicKey } from "@solana/web3.js";
 import {
+  POPULAR_STOCKS,
+  STOCKS,
   XSTOCKS,
   findXStock,
   isXStockSymbol,
@@ -40,15 +42,28 @@ function rule(partial: Partial<InvestRule> = {}): InvestRule {
 }
 
 describe("catálogo de acciones tokenizadas", () => {
-  it("catorce activos con mints válidos y únicos: xStocks de 8 decimales, PreStocks de 9, dólares de 6", () => {
-    expect(XSTOCKS).toHaveLength(14);
-    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(14);
+  it("treinta activos con mints válidos y únicos: xStocks de 8 decimales, PreStocks de 9, dólares de 6", () => {
+    expect(XSTOCKS).toHaveLength(30);
+    expect(new Set(XSTOCKS.map((s) => s.mint)).size).toBe(30);
     const decimalsByKind = { stock: 8, preipo: 9, dollars: 6 } as const;
     for (const stock of XSTOCKS) {
       expect(() => new PublicKey(stock.mint)).not.toThrow();
       expect(stock.decimals).toBe(decimalsByKind[stock.kind]);
       expect(stock.fallbackPriceUsd).toBeGreaterThan(0);
     }
+  });
+
+  it("veintiuna acciones, cada una con su horario de Wall Street y su grupo", () => {
+    expect(STOCKS).toHaveLength(21);
+    for (const stock of STOCKS) {
+      expect(stock.pyth, stock.symbol).toBeTruthy();
+      expect(stock.group, stock.symbol).toBeTruthy();
+    }
+  });
+
+  it("las seis populares van primero y son acciones del catálogo", () => {
+    expect(POPULAR_STOCKS).toEqual(["SPYx", "QQQx", "AAPLx", "NVDAx", "TSLAx", "MSFTx"]);
+    for (const symbol of POPULAR_STOCKS) expect(findXStock(symbol)?.kind).toBe("stock");
   });
 
   it("se busca por símbolo y por mint; lo desconocido no pasa", () => {
