@@ -25,26 +25,30 @@ septiembre: sin el agente, sin dólares que rinden, sin metas y con la regla
 que solo corría con la app abierta. Esto la alinea con el pitch deck
 (`pitch/index.html`): la historia de los 400, "el problema es el momento",
 el agente con permiso acotado y el por qué ahora (2x, 6x, 2026). Sin marcas
-de proveedores, como el deck. Límites del formulario: Brief description 500, notas para jurados 600 y
-500. Están verificados.
+de proveedores, como el deck. Límites del formulario: Brief description 500, What y Why 1000, chains
+500, notas para jurados 600 y 500. Están verificados.
 
 **Brief description** (es el "About the project" público, 492/500 caracteres):
 
 You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. An AI agent invests your share the moment you get paid, in your own Solana account. It can never withdraw or move your money. Pay yourself first.
 
-**What are you building, and who is it for?** (1111 caracteres):
+**What are you building, and who is it for?** (727/1000):
 
-Camalote: you set one rule, once, and every payment follows it. What share (for example, 20% of every payment), what for (a goal with a name: the trip, a new laptop, three months of cushion) and where (the S&P 500 and other US stocks, companies before their IPO, or dollars that earn).
+Camalote: you set one rule, once, and every payment follows it. What share (say 20%), what for (a goal with a name: the trip, a new laptop) and where (the S&P 500, companies before their IPO, or dollars that earn).
 
-An AI agent does the work. It learns you got paid within seconds, at any hour, sets your share aside, invests it and tells you what it did: "Bought 120 USDC of S&P 500 for The trip." You give it a permission with limits: it can only invest what your rule says, it can never withdraw or move your money, and you switch it off whenever you want. You sign in with Google or Phantom, everything stays in your own Solana account, and the app shows your goal's progress, your portfolio at today's value and a receipt for every operation.
+An AI agent does the work: it learns you got paid within seconds, sets your share aside, invests it and tells you what it did. Its permission has limits: it can only invest what your rule says and can never withdraw or move your money. Sign in with Google or Phantom; everything stays in your own Solana account.
 
-It's for anyone who gets paid in USDC without a fixed salary: freelancers and remote workers who get paid when they get paid and never get to invest "whatever is left". We start in Argentina, with freelancers who work for clients abroad: about 7.8 billion dollars a year paid in stablecoins.
+It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where freelancers working for clients abroad get about 7.8 billion dollars a year in stablecoins.
 
-**Why did you decide to build this, and why build it now?** (1021 caracteres):
+**Why did you decide to build this, and why build it now?** (716/1000):
 
-Because I lived it. I'm a freelancer in Corrientes, Argentina, and clients abroad pay me in USDC. A few weeks ago I got paid 400 dollars for a job and thought what I always think: if something is left, I'll invest it. On the 5th I paid rent, on the 12th the card, and at the end of the month I had invested zero. Like every month. The problem isn't the money, it's the moment: the only time there is always money is when it lands. A plan that invests on the same day every month assumes a salary; a freelancer gets paid when they get paid. With Camalote and a 30% rule, 120 of those 400 would have been invested the day I got paid.
+Because I lived it. I'm a freelancer in Argentina, paid in USDC by clients abroad. A few weeks ago I got paid 400 dollars and thought: if something is left, I'll invest it. Rent on the 5th, the card on the 12th, and at month's end I had invested zero. Like every month. The problem isn't the money, it's the moment: the only time there is always money is when it lands. Monthly plans assume a salary; freelancers get paid when they get paid.
 
-Why now: the three pieces only exist together now. Real stablecoin payments (salaries, invoices, remittances) doubled in 2025, so the money already arrives in digital dollars. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in the first half of 2026. And in 2026 an AI agent can sign inside a bounded permission: before, you had to remember and press the button yourself.
+Why now: the three pieces just came together. Real stablecoin payments doubled in 2025. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And in 2026 an AI agent can sign inside a bounded permission, so nobody has to remember to press the button.
+
+**How does your product use these chains?** (470/500):
+
+All on Solana mainnet. Each user gets a Solana account where USDC payments land; we detect each incoming transfer within seconds and the rule sets its share aside. Buys are swaps from USDC into Token-2022 tokenized stocks and pre-IPO tokens, or yield-bearing dollars, signed by the agent's limited session signer. We read each stock token's Scaled UI Amount multiplier to show reinvested dividends. Our fee is a USDC transfer; network fees come from a small SOL reserve.
 
 **Notes for judges: did anyone not listed do meaningful work?** (349/600, sin cambios):
 
