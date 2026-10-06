@@ -78,8 +78,10 @@ Founder and fullstack developer. Four years building Smart TV streaming for Clar
 
 La ficha del capítulo (superteam.ar/project/edit; el link con el hash es
 privado y no va acá) dice lo mismo que Colosseum, en castellano. Quedó al
-100 %. Falta: el link al pitch deck, el estado de financiación (en Colosseum
-es una respuesta privada del acelerador) y la entrega en Superteam Earn.
+100 %. Falta: el estado de financiación (en Colosseum es una respuesta
+privada del acelerador) y la entrega en Superteam Earn.
+
+- **Pitch deck** (el PDF de `pitch/camalote-pitch.pdf`, en Drive con permiso de lector): https://drive.google.com/file/d/1bnfxH8DmxbamUc41s9tLuIDXn1GbZdCq/view?usp=sharing
 
 - **One-liner** (15 palabras, de 10 a 15): Un agente de IA invierte parte de cada cobro en USDC apenas entra, en Solana.
 - **Descripción**: Cobrás en USDC, pero sin fecha fija. El plan es invertir lo que sobre, y nunca sobra. El problema no es la plata, es el momento: cuando entra, siempre hay. Con Camalote armás una regla una sola vez (qué parte, para qué y en qué: el S&P 500, empresas antes de salir a bolsa o dólares que rinden) y cada cobro la cumple. Un agente de IA invierte tu parte apenas te pagan, en tu propia cuenta de Solana. Nunca puede retirar ni mover tu plata. Pagate primero.
