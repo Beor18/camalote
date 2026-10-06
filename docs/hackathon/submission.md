@@ -18,6 +18,46 @@ Actualizado el 2026-09-21: Camalote es Invertir. Dos eventos, en este orden:
    septiembre al 12 de octubre de 2026. Tracks y premios se publican el 14.
    Camalote va a la pista de Solana.
 
+## Colosseum, ficha del proyecto (2026-10-05)
+
+La ficha pública (colosseum.com/arena/projects/camalote) tenía el texto de
+septiembre: sin el agente, sin dólares que rinden, sin metas y con la regla
+que solo corría con la app abierta. Esto va en su lugar, sin marcas de
+proveedores (como el pitch).
+
+**About the project**:
+
+You get paid in USDC, but not on a schedule: you get paid when you get
+paid. Investing "whatever is left" never happens, because nothing is left.
+Camalote flips it. You decide once: what share of every payment is yours,
+what it's for (the trip, a new laptop, three months of cushion) and where it
+goes: US stocks, companies before their IPO, or dollars that earn. Each time
+a payment lands, your AI agent sets that share aside and invests it for you.
+It can only buy what your rule says, and everything stays in your own Solana
+account. Sign in with Google or Phantom. Fee shown before you confirm, never
+more than fifty cents. Selling is free. Switch the rule off in one tap. Next
+time you get paid, part of it is already invested.
+
+**Update** (Progress from the team):
+
+Two weeks of building since the last update. What's new in Camalote:
+
+- Your AI agent. Turn it on once and it follows your rule for you: when a
+  payment lands, it sets your share aside and invests it. It can only buy
+  what your rule says, and if the AI doesn't answer, the rule still runs.
+- Dollars that earn. For people who don't want the ups and downs of stocks:
+  the same rule, into dollars backed by US Treasury bills, with a 0.10% fee.
+- Goals with a name. "The trip, 300." Every payment fills it, and Camalote
+  tells you how many payments like the last one are left.
+- Sign in with Google in one tap, or with Phantom. Load USDC from your
+  Phantom and withdraw back to it.
+- Your rule and your history live in your account, so they follow you to
+  any device.
+- Mobile first: one column, with Buy, Receive and Withdraw under your thumb.
+
+Live on Solana mainnet: https://camalote.vercel.app. This week: the first
+20 users, starting with Superteam Argentina.
+
 ## Las seis líneas (2026-09-30)
 
 Lo que hay que poder decir en la entrevista de 15 minutos de Colosseum sin
