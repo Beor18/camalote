@@ -7,6 +7,7 @@ import {
   runChatTool,
   toolStateFrom,
   trimHistory,
+  usd,
   type ToolState,
 } from "@/lib/invest/agent-chat";
 import { defaultRule } from "@/lib/invest/rules";
@@ -116,6 +117,15 @@ describe("herramientas del agente en el chat", () => {
 });
 
 describe("el estado que manda la app", () => {
+  it("los montos cortan en el centavo, como la pantalla (0,215 apartados son 0,21)", () => {
+    expect(usd("215000")).toBe(0.21);
+    expect(usd(2_150_000n)).toBe(2.15);
+    expect(usd(10_999_999n)).toBe(10.99);
+    expect(usd(-170_000n)).toBe(-0.17);
+    expect(usd(null)).toBe(0);
+    expect(usd("no")).toBe(0);
+  });
+
   it("lee lo necesario y rechaza lo que no tiene forma", () => {
     expect(toolStateFrom(null)).toBeNull();
     expect(toolStateFrom({ rule: { asset: { symbol: "NOPE" }, percent: 20 }, agent: {}, portfolio: {} })).toBeNull();

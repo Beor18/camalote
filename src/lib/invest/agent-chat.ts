@@ -45,7 +45,9 @@ export interface AgentChatContext {
     enabled: boolean;
     percent: number;
     asset: AssetRef;
-    waitForMarketOpen: boolean;
+    /** Solo acciones: si esperan a que abra Wall Street. null en dólares y privadas. */
+    waitForMarketOpen: boolean | null;
+    /** Apartado y todavía sin invertir. */
     setAsideUsdc: number;
     buysAtUsdc: number;
     /** Por qué lo apartado no se compró todavía, si está esperando. */
@@ -80,9 +82,18 @@ export interface AgentChatContext {
   prices: Partial<Record<XStockSymbol, number>>;
 }
 
-const usd = (units: bigint | string | number | null | undefined): number => {
-  const n = Number(units ?? 0) / USDC;
-  return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+/**
+ * Unidades de USDC → dólares con dos decimales, cortando en el centavo como
+ * la app (formatUsdc): si la pantalla dice 0,21, el agente también.
+ */
+export const usd = (units: bigint | string | number | null | undefined): number => {
+  let value: bigint;
+  try {
+    value = BigInt(units ?? 0);
+  } catch {
+    return 0;
+  }
+  return Number(value / BigInt(USDC / 100)) / 100;
 };
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -122,7 +133,7 @@ export function buildAgentContext(input: {
       enabled: rule.enabled,
       percent: rule.percent,
       asset: ref(rule.asset, lang),
-      waitForMarketOpen: rule.waitForMarketOpen ?? true,
+      waitForMarketOpen: kindOf(rule.asset) === "stock" ? (rule.waitForMarketOpen ?? true) : null,
       setAsideUsdc: usd(rule.pendingUnits),
       buysAtUsdc: usd(INVEST_MIN_UNITS),
       waiting,
