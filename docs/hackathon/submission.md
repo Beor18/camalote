@@ -62,25 +62,23 @@ camalote.vercel.app is the live app on Solana mainnet: sign in with Google and y
 
 Founder and fullstack developer. Four years building Smart TV streaming for Claro Video at Global Hitss. Founded Tuneport, music where fans earn by curating new artists.
 
-**Update** (Progress from the team):
+**Update 2** (Progress from the team, 2026-10-05; el primero es
+colosseum.com/arena/projects/camalote/updates/604, del 26/9). Mismo tono que
+el primero: corto, en primera persona y con invitación a probar:
 
-Two weeks of building since the last update. What's new in Camalote:
+Last time I told you about the rule: you decide once what share of every payment is yours. This time the news is who follows it for you.
 
-- Your AI agent. Turn it on once and it follows your rule for you: when a
-  payment lands, it sets your share aside and invests it. It can only buy
-  what your rule says, and if the AI doesn't answer, the rule still runs.
-- Dollars that earn. For people who don't want the ups and downs of stocks:
-  the same rule, into dollars backed by US Treasury bills, with a 0.10% fee.
-- Goals with a name. "The trip, 300." Every payment fills it, and Camalote
-  tells you how many payments like the last one are left.
-- Sign in with Google in one tap, or with Phantom. Load USDC from your
-  Phantom and withdraw back to it.
-- Your rule and your history live in your account, so they follow you to
-  any device.
-- Mobile first: one column, with Buy, Receive and Withdraw under your thumb.
+What's new in Camalote:
 
-Live on Solana mainnet: https://camalote.vercel.app. This week: the first
-20 users, starting with Superteam Argentina.
+- An AI agent. When a payment lands, it sets your share aside, invests it and tells you what it did. Its permission has limits: it can only invest what your rule says, and it can never withdraw or move your money.
+- Goals with a name. "The trip, 300." Every payment fills it, and Camalote tells you how many payments are left.
+- Dollars that earn, for those who don't want the ups and downs of stocks. Same rule, 0.10% fee.
+- Sign in with Google in one tap, or with Phantom. Load USDC from your Phantom and withdraw back to it.
+- Mobile first: Buy, Receive and Withdraw, always under your thumb.
+
+This week I'm looking for the first 20 people who get paid in USDC. Give me ten minutes and your next payment invests on its own. Try it and tell me honestly what's missing.
+
+Demo: https://camalote.vercel.app/
 
 ## Las seis líneas (2026-09-30)
 
