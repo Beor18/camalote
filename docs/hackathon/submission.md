@@ -28,30 +28,28 @@ el agente con permiso acotado y el por qué ahora (2x, 6x, 2026). Sin marcas
 de proveedores, como el deck. Límites del formulario: Brief description 500, What y Why 1000, chains
 500, notas para jurados 600 y 500. Están verificados.
 
-**2026-10-06, después del informe de Superteam Argentina:** ningún campo
-dice que la IA invierte. Lo que hace cada parte, tal cual está en el código
-(`src/lib/server/agent/brain.ts`): la regla decide qué y cuánto, el código
-decide si se puede comprar (horario, referencia, saldo), la IA solo elige
-comprar ahora o esperar (6 horas como mucho) y escribe el mensaje, y si no
-responde decide la regla. Cada número tiene su fuente en el README.
+**2026-10-06:** el informe de Superteam Argentina pidió sacar "agente de
+IA". Decisión de Fernando: se queda, Camalote es un agente de IA. Estos
+campos son los publicados; no hay que volver a pegarlos. Cada número tiene
+su fuente en el README.
 
-**Brief description** (es el "About the project" público, 494/500 caracteres):
+**Brief description** (es el "About the project" público, 492/500 caracteres):
 
-You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it the moment it lands, in your own Solana account. Your rule decides what and how much, never an AI, and nobody else can withdraw. Pay yourself first.
+You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. An AI agent invests your share the moment you get paid, in your own Solana account. It can never withdraw or move your money. Pay yourself first.
 
-**What are you building, and who is it for?** (840/1000):
+**What are you building, and who is it for?** (727/1000):
 
 Camalote: you set one rule, once, and every payment follows it. What share (say 20%), what for (a goal with a name: the trip, a new laptop) and where (the S&P 500, companies before their IPO, or dollars that earn).
 
-When a payment lands, Camalote sees it within seconds, sets your share aside and buys, signing inside a limited permission: it can only buy what your rule says and can never withdraw or move your money. The rule decides what and how much. AI only chooses buy now or wait (6 hours at most) and tells you what happened; if it doesn't answer, the rule acts alone. Sign in with Google or Phantom; everything stays in your own Solana account.
+An AI agent does the work: it learns you got paid within seconds, sets your share aside, invests it and tells you what it did. Its permission has limits: it can only invest what your rule says and can never withdraw or move your money. Sign in with Google or Phantom; everything stays in your own Solana account.
 
-It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where 52% of freelancers working for clients abroad already get paid in USDC or USDT.
+It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where freelancers working for clients abroad get about 7.8 billion dollars a year in stablecoins.
 
-**Why did you decide to build this, and why build it now?** (787/1000):
+**Why did you decide to build this, and why build it now?** (716/1000):
 
 Because I lived it. I'm a freelancer in Argentina, paid in USDC by clients abroad. A few weeks ago I got paid 400 dollars and thought: if something is left, I'll invest it. Rent on the 5th, the card on the 12th, and at month's end I had invested zero. Like every month. The problem isn't the money, it's the moment: the only time there is always money is when it lands. Monthly plans assume a salary; freelancers get paid when they get paid.
 
-Why now: the three pieces just came together. Real stablecoin payments doubled in 2025, to 390 billion dollars. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And a wallet can now grant a limited signing permission, so a rule can run on its own without anyone holding your money or remembering to press the button.
+Why now: the three pieces just came together. Real stablecoin payments doubled in 2025. Tokenized stock volume on Solana grew 6x, to 4.9 billion dollars in H1 2026. And in 2026 an AI agent can sign inside a bounded permission, so nobody has to remember to press the button.
 
 **How does your product use these chains?** (470/500):
 
@@ -61,9 +59,9 @@ All on Solana mainnet. Each user gets a Solana account where USDC payments land;
 
 No other people: solo founder. Most of the code, tests and docs were written pair-programming with Claude Code (Anthropic); every product decision, the narrative and the business model are mine, and I reviewed and drove each change. Colosseum Copilot was used for market and competitor research. The video voice-over is a synthetic voice (edge-tts).
 
-**Notes for judges: anything else?** (485/500):
+**Notes for judges: anything else?** (477/500):
 
-camalote.vercel.app is the live app on Solana mainnet: sign in with Google and your account is ready; any USDC you send runs through your rule. The rule decides what and how much; AI only picks now or wait and writes the message. The signer can only buy through the swap programs and pay our fee, and every order is simulated before signing. Honest limits, in the app: stocks carry the issuer's permanent delegate; pre-IPO tokens carry no shareholder rights. Fee: 0.45%, max 0.50 USDC.
+camalote.vercel.app is the live app on Solana mainnet: sign in with Google and your account is ready; any USDC you send runs through your rule. The AI agent signs inside a policy: it can only buy what your rule says, never withdraw or move funds, and if the AI doesn't answer, the rule decides. Honest limits, stated in the app: tokenized stocks carry the issuer's permanent delegate; pre-IPO tokens carry no shareholder rights and a 1% transfer fee. Fee: 0.45%, max 0.50 USDC.
 
 **Team, línea de Fernando** (169 caracteres):
 
@@ -264,10 +262,11 @@ YouTube):
 - **¿Cuántos cobros reales procesó el agente?** Hoy, cero de usuarios, y
   se dice así. `/api/stats` los cuenta en vivo desde la base, con el link de
   cada compra.
-- **¿Dónde está la IA? Parece una regla.** Es una regla, a propósito: la
-  plata la mueve la regla. La IA elige comprar ahora o esperar (6 horas
-  como mucho) y te escribe qué hizo. No elige monto ni activo, y si no
-  responde decide la regla sola.
+- **¿Dónde está la IA? Parece una regla.** La regla es el límite que
+  ponés vos; el agente de IA es el que trabaja adentro de ese límite: se
+  entera del cobro, decide si compra ahora o espera, compra y te cuenta qué
+  hizo. Qué y cuánto no los cambia nunca, y si la IA no responde, la regla
+  sigue sola: la plata no depende de que el modelo ande.
 - **¿Qué impide en la cadena que el firmante haga otra cosa?** Hoy, nada
   en la cadena: lo limita la política del firmante (solo los programas de
   swap, cerrar cuentas de token y la comisión hasta 0,50; nunca un retiro)

@@ -1,7 +1,8 @@
 # Camalote 🌿
 
-**Every time you get paid in USDC, Camalote invests your share before you
-spend it: one rule, set once, in your own non-custodial Solana account.**
+**Camalote is an AI agent that invests your share of every USDC payment
+the moment it lands, before you spend it. You set one rule, once; it works
+for you inside that limit, in your own non-custodial Solana account.**
 
 - Live app, Solana mainnet: [camalote.vercel.app](https://camalote.vercel.app)
 - Colosseum Crypto World's Fair, Superteam Argentina track:
@@ -31,9 +32,9 @@ paid in USDC (30%) or USDT (22%) ([sources](#sources)). We start there.
      and others, with their risks stated in the app.
    - Dollars that earn: US Treasuries (USDY) or secured loans (Jupiter
      Lend), with today's rate.
-2. **Every payment follows it.** USDC lands, your share is set aside, and
-   once it adds up to 10 USDC it is bought and lands in your own account.
-   Small payments add up.
+2. **Your AI agent does the rest.** USDC lands, the agent sets your share
+   aside, and once it adds up to 10 USDC it invests it in your own account
+   and tells you what it did. Small payments add up.
 3. **You see where it is.** The goal fills with every payment ("about 6
    more payments like the last one"), the portfolio shows today's value,
    the dividends xStocks reinvested for you, and a Solscan receipt for
@@ -42,21 +43,26 @@ paid in USDC (30%) or USDT (22%) ([sources](#sources)). We start there.
 Sign in with Google or email (embedded Solana wallet), or with Phantom.
 Load USDC from Phantom and withdraw back to it.
 
-## Who decides what
+## The AI agent
 
-Camalote is a rule, on purpose: money is moved by the rule, never by a
-model. "Agent" means the server-side signer that carries out your rule.
+You turn it on once and it works for you: it learns you got paid within
+seconds, sets your share aside, decides whether to invest now or wait,
+invests, and tells you in plain words what it did ("I bought 120 USDC of
+the S&P 500 for The trip"). "Your agent" in the app shows everything it
+did and who decided each step.
 
-| Decision | Who makes it |
+Your rule is the limit it works inside:
+
+| The agent does | The limit |
 | --- | --- |
-| What to buy and how much | **Your rule** |
-| Whether a buy is allowed now (Wall Street hours, pre-IPO premium, balance) | **Code** |
-| Buy now or wait (6 hours at most), and the message to you | **AI** (gpt-oss-120b; other models as fallback) |
-| What happens if the AI fails, times out or answers badly | **The rule decides alone** |
+| Notices every payment and sets your share aside | The share is the one in your rule |
+| Decides whether to invest now or wait (Wall Street closed, a pre-IPO premium too high) | It waits 6 hours at most; code checks market hours, premium and balance first |
+| Invests | Only in the asset of your rule, only what was set aside, signed inside a limited permission |
+| Tells you what it did | It never gives investment advice or changes your rule |
 
-The AI is offered only two tools, "buy per the rule" and "wait", and the
-buy tool isn't even offered when the code says no. It can't pick an amount
-or an asset ([`brain.ts`](src/lib/server/agent/brain.ts)).
+The model is gpt-oss-120b, with other models as fallback. If no model
+answers, the rule keeps running on its own: your money never depends on the
+model being up ([`brain.ts`](src/lib/server/agent/brain.ts)).
 
 ## How it uses Solana
 
@@ -67,7 +73,7 @@ You get paid (USDC lands in your wallet)
   ▼
 runAgent(): new payments → set your % aside → at 10 USDC:
   code checks market hours / premium / balance
-  AI: buy now or wait          (no answer → the rule decides)
+  AI agent: invest now or wait (no answer → the rule runs alone)
   SOL reserve if missing       (1 USDC → SOL, gasless)
   Jupiter Ultra order: USDC → xStocks / PreStocks / USDY / jlUSDC
   verify: allowed programs only + simulation (spends ≤ set-aside, lands in your account)
