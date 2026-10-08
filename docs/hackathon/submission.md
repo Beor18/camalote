@@ -360,6 +360,15 @@ data is what Pyth publishes freely, and it's central to when the rule acts.
   - La comisión de Camalote, 0,01 USDC:
     solscan.io/tx/4djnhb4wgW9W7h3BH3ReN8ChWriwUuXBckYybbQLZeovXm5QoeqzyMJBBziQSWd5mX5yuPfjgdoBwksfFhM8mKtd
   Sin abrir la cuenta antes, Jupiter cobraba 788 bps por la misma compra.
+- **Venta y recompra reales, en inglés (2026-10-08, 15:43 y 15:48 ART)**:
+  - Venta de todo el S&P 500, 0,0027705 SPYx por 2,141456 USDC:
+    solscan.io/tx/WmuiANc68rreDNkkJHUHJ6EyLPKu4zt6VJnft2AZ36bsp2ySz68SbE4nJMYpqdQECQeERZ1VsUPoQWnv7oeEin2
+  - Compra de nuevo, 2,117244 USDC por 0,0027391 SPYx (cuenta ya abierta, sin reserva):
+    solscan.io/tx/4RiD4QcTy8cABBF7uAvp3fPCfYbezFkZhLBhoeFacFuSM2yEUrM2WDFYSFRdMGmpdx6yj5Q4yqMZtASjAWSSivYo
+  El primer intento de venta falló sin mover nada ("Order not found": la
+  orden cotizada venció antes de confirmar). Desde 112e0a5 la orden se pide
+  de nuevo al confirmar. Video editado (90 s, inglés, sin voz):
+  `docs/demo/video-real/camalote-sell-buy-en.mp4`.
   Quedaron 0,000915 SOL, lo calculado. El video editado de esa sesión (39 s,
   sin voz) está en `docs/demo/video-real/`, que no se sube al repo.
 
