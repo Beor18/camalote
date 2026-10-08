@@ -358,8 +358,8 @@ export function useRealEngine(): Engine {
 
         // Primero la red: la reserva si el SOL de la cuenta no alcanza, y la
         // cuenta de la inversión si es la primera compra. Después se vuelve a
-        // pedir la orden: la cotizada cobraba en el precio esa apertura (y
-        // con más SOL en la cuenta, Jupiter puede armarla de otro modo).
+        // pedir la orden, siempre: Jupiter vence la cotizada en menos de un
+        // minuto, y si se abrió la cuenta, la cotizada cobraba esa apertura.
         let order = quote.order;
         let feeBps = quote.jupiterFeeBps;
         const fuelUnits =
@@ -367,24 +367,22 @@ export function useRealEngine(): Engine {
             ? await ensureFuel(owner, sign, onStep, buyLamportsNeeded(quote.openLamports))
             : 0n;
         const opened = quote.openLamports > 0n && (await openAccount(owner, quote.asset, sign, onStep));
-        if (fuelUnits > 0n || quote.openLamports > 0n) {
-          try {
-            const fresh = await fetchUltraOrder({
-              side: "buy",
-              asset: quote.asset,
-              units: quote.swapUnits,
-              taker: owner,
-            });
-            order = { transaction: fresh.transaction, requestId: fresh.requestId, expiresAt: null };
-            feeBps = fresh.feeBps;
-          } catch (err) {
-            // Con la cuenta ya abierta, la orden cotizada cobraría la apertura otra vez.
-            if (quote.openLamports > 0n) {
-              throw new Error("El precio cambió mientras abríamos tu cuenta. Pedilo de nuevo.");
-            }
-            // Si solo se cargó la reserva, la cotizada sigue valiendo hasta que venza.
-            console.warn("[invest] no se pudo recotizar tras cargar la reserva", err);
+        try {
+          const fresh = await fetchUltraOrder({
+            side: "buy",
+            asset: quote.asset,
+            units: quote.swapUnits,
+            taker: owner,
+          });
+          order = { transaction: fresh.transaction, requestId: fresh.requestId, expiresAt: null };
+          feeBps = fresh.feeBps;
+        } catch (err) {
+          // Con la cuenta ya abierta, la orden cotizada cobraría la apertura otra vez.
+          if (quote.openLamports > 0n) {
+            throw new Error("El precio cambió mientras abríamos tu cuenta. Pedilo de nuevo.");
           }
+          // Si no, se prueba con la cotizada: si venció, Jupiter la rechaza sin mover nada.
+          console.warn("[invest] no se pudo pedir la orden de nuevo", err);
         }
         const result = await signAndExecute(order, sign, onStep);
 
@@ -433,19 +431,35 @@ export function useRealEngine(): Engine {
       },
       sellStock: async (quote, onStep) => {
         const wallet = embeddedWallet;
-        requireAccount(solanaAddress);
+        const owner = requireAccount(solanaAddress);
         if (!wallet) throw new Error(ACCOUNT_PENDING);
         if (!quote.order) throw new Error("El precio venció. Pedilo de nuevo.");
         const sign = (transaction: Uint8Array) =>
           signTransaction({ transaction, wallet, chain: "solana:mainnet" }).then(
             (r) => r.signedTransaction
           );
-        const result = await signAndExecute(quote.order, sign, onStep);
+        // La cotizada es para mirar: Jupiter la vence en menos de un minuto.
+        // Al confirmar se pide la orden de nuevo, por la misma cantidad.
+        let order = quote.order;
+        let feeBps = quote.jupiterFeeBps;
+        try {
+          const fresh = await fetchUltraOrder({
+            side: "sell",
+            asset: quote.asset,
+            units: quote.tokenUnits,
+            taker: owner,
+          });
+          order = { transaction: fresh.transaction, requestId: fresh.requestId, expiresAt: null };
+          feeBps = fresh.feeBps;
+        } catch (err) {
+          console.warn("[invest] no se pudo pedir la venta de nuevo", err);
+        }
+        const result = await signAndExecute(order, sign, onStep);
         return {
           signature: result.signature,
           usdcUnits: BigInt(result.outputAmountResult ?? quote.expectedUsdcUnits.toString()),
           tokenUnits: quote.tokenUnits,
-          feeBps: quote.jupiterFeeBps,
+          feeBps,
           multiplier: quote.multiplier,
         };
       },

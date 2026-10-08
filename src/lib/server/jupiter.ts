@@ -43,7 +43,36 @@ export interface UltraOrder {
   error?: string;
 }
 
+/**
+ * Con montos chicos Ultra a veces contesta "Minimum $10 for gasless" o
+ * "Failed to get quotes" y a los segundos arma la misma orden (visto el
+ * 2026-10-08 con 2 USDC de SPYx, comprando y vendiendo). Esos se reintentan.
+ */
+const TRANSIENT_ORDER_ERROR = /minimum \$\d+ for gasless|failed to get quotes|too many requests|respondió (429|5\d\d)/i;
+const ORDER_ATTEMPTS = 3;
+
+export function isTransientOrderError(message: string): boolean {
+  return TRANSIENT_ORDER_ERROR.test(message);
+}
+
 export async function ultraOrder(params: {
+  inputMint: string;
+  outputMint: string;
+  amount: bigint;
+  taker: string;
+}): Promise<UltraOrder> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await ultraOrderOnce(params);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (attempt >= ORDER_ATTEMPTS || !isTransientOrderError(message)) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
+    }
+  }
+}
+
+async function ultraOrderOnce(params: {
   inputMint: string;
   outputMint: string;
   amount: bigint;
