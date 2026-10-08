@@ -56,7 +56,7 @@ export function Receipt({ data }: { data: Traction }) {
     <div className="mx-auto w-full max-w-sm drop-shadow-xl motion-safe:transition-transform motion-safe:duration-300 lg:rotate-[1.5deg] lg:hover:rotate-0">
       <section
         aria-labelledby="receipt-title"
-        className="receipt-edge bg-surface px-6 pb-9 pt-10 font-mono text-sm"
+        className="receipt-edge bg-surface px-5 sm:px-6 pb-9 pt-10 font-mono text-sm"
       >
         <header className="flex flex-col items-center gap-2 text-center">
           <span className="inline-flex items-center gap-2">
@@ -91,7 +91,7 @@ export function Receipt({ data }: { data: Traction }) {
                     <AssetIcon symbol={buy.asset} className="row-span-2 size-8" />
                     <span className="truncate font-sans font-medium">{name}</span>
                     <span className="text-right font-semibold tabular-nums">{usdc} USDC</span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="min-w-0 text-xs text-muted-foreground">
                       {when.date} · {when.time} · {buy.source === "rule" ? t.stats.sourceRule : t.stats.sourceManual}
                     </span>
                     <span className="inline-flex items-center justify-end gap-0.5 text-xs font-medium">

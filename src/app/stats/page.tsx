@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Live numbers",
   description:
-    "Real money, no demo: accounts, rules, AI agents and USDC invested in Camalote, live. Every purchase links to its transaction.",
+    "Accounts, rules, AI agents and USDC invested in Camalote, live. Every purchase links to its transaction.",
 };
 
 /** Los números de /api/stats para mirar. Viene con los datos del servidor y se actualiza sola. */

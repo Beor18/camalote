@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Braces, CircleDollarSign, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowRight, Braces, CircleDollarSign, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { CamaloteLogo } from "@/components/logo";
 import { Card } from "@/components/ui/card";
@@ -90,7 +90,6 @@ export function StatsView({ initial }: { initial: Traction | null }) {
           <>
             <Hero data={data} failed={status === "failed"} />
             <Path data={data} />
-            <HowWeCount />
             <Closing />
           </>
         ) : (
@@ -199,7 +198,10 @@ function Hero({ data, failed }: { data: Traction; failed: boolean }) {
 
 const STEP_KEYS = ["accounts", "rulesConfigured", "rulesOn", "agentsOn", "ruleBuys"] as const;
 
-/** Del email a la compra: cuántos llegan a cada paso, sin inflar ninguno. */
+/**
+ * Del email a la compra: cuántos llegan a cada paso. Los números ruedan como
+ * el grande y los une la correntada de puntos.
+ */
 function Path({ data }: { data: Traction }) {
   const { t } = useLang();
   return (
@@ -208,80 +210,42 @@ function Path({ data }: { data: Traction }) {
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {t.stats.pathTitle}
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-muted-foreground">{t.stats.pathSub}</p>
 
-        <ol className="mx-auto mt-10 grid max-w-sm gap-6 sm:mt-14 lg:max-w-none lg:grid-cols-5 lg:gap-0">
-          {STEP_KEYS.map((key, i) => {
-            const value = data[key];
-            const step = t.stats.steps[key];
-            const last = i === STEP_KEYS.length - 1;
-            return (
-              <li key={key} className="relative flex items-start gap-4 lg:flex-col lg:items-center lg:px-3 lg:text-center">
-                {!last && (
-                  <span
-                    aria-hidden="true"
-                    className="path-flow-vertical absolute -bottom-6 left-[23px] top-12 w-0.5 lg:hidden"
-                  />
-                )}
-                {!last && (
-                  <span
-                    aria-hidden="true"
-                    className="path-flow absolute left-[calc(50%+2rem)] right-[calc(-50%+2rem)] top-[23px] hidden h-0.5 lg:block"
-                  />
-                )}
-                {value > 0 ? (
-                  <span className="relative z-10 shrink-0 rounded-full bg-brand-gradient p-0.5">
-                    <span className="flex size-11 items-center justify-center rounded-full bg-surface font-display text-lg font-semibold tabular-nums">
-                      {value}
-                    </span>
+        <div className="mx-auto mt-10 max-w-5xl rounded-3xl border border-border bg-surface px-6 py-10 sm:mt-14 sm:px-10 lg:py-14">
+          <ol className="mx-auto grid max-w-xs gap-10 lg:max-w-none lg:grid-cols-5 lg:gap-0">
+            {STEP_KEYS.map((key, i) => {
+              const value = data[key];
+              const label = t.stats.steps[key];
+              const last = i === STEP_KEYS.length - 1;
+              return (
+                <li key={key} className="relative flex items-center gap-5 lg:flex-col lg:gap-4 lg:text-center">
+                  {!last && (
+                    <span
+                      aria-hidden="true"
+                      className="path-flow-vertical absolute -bottom-8 left-[39px] top-14 w-0.5 lg:hidden"
+                    />
+                  )}
+                  {!last && (
+                    <span
+                      aria-hidden="true"
+                      className="path-flow absolute left-[calc(50%+3rem)] right-[calc(-50%+3rem)] top-[29px] hidden h-0.5 lg:block"
+                    />
+                  )}
+                  <span className="flex w-20 shrink-0 justify-center lg:w-auto">
+                    <Odometer
+                      value={String(value)}
+                      label={String(value)}
+                      className="font-display text-5xl font-semibold tracking-tight lg:text-6xl"
+                    />
                   </span>
-                ) : (
-                  <span className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-border bg-background font-display text-lg font-semibold tabular-nums text-muted-foreground">
-                    {value}
-                  </span>
-                )}
-                <div className="pt-1 lg:pt-4">
-                  <h3 className="font-medium">{step.label}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                    {key === "ruleBuys" && value === 0 ? t.stats.ruleBuysZero : step.hint}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-const HOW_ICONS = [ShieldCheck, CircleDollarSign, BadgeCheck];
-
-function HowWeCount() {
-  const { t } = useLang();
-  return (
-    <section className="py-12 sm:py-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t.stats.howTitle}
-        </h2>
-        <div className="mx-auto mt-10 grid max-w-4xl gap-5 sm:mt-12 sm:grid-cols-3 sm:gap-6">
-          {t.stats.how.map((point, i) => {
-            const Icon = HOW_ICONS[i];
-            return (
-              <div key={point.title} className="flex items-start gap-4 sm:block">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="size-5" aria-hidden="true" />
-                </span>
-                <div>
-                  <h3 className="font-medium sm:mt-4">{point.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{point.body}</p>
-                </div>
-              </div>
-            );
-          })}
+                  <span className="text-base font-medium text-muted-foreground">{label}</span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
-        <p className="mt-10 text-center">
+
+        <p className="mt-8 text-center">
           <a
             href="/api/stats"
             className="inline-flex h-10 items-center gap-2 rounded-lg px-3 font-mono text-sm text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
