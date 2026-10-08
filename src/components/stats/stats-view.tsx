@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Braces, CircleDollarSign, RefreshCw } from "lucide-react";
+import { ArrowRight, CircleDollarSign, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { CamaloteLogo } from "@/components/logo";
 import { Card } from "@/components/ui/card";
@@ -196,11 +196,12 @@ function Hero({ data, failed }: { data: Traction; failed: boolean }) {
   );
 }
 
-const STEP_KEYS = ["accounts", "rulesConfigured", "rulesOn", "agentsOn", "ruleBuys"] as const;
+const STEP_KEYS = ["accounts", "rulesOn", "agentsOn"] as const;
 
 /**
- * Del email a la compra: cuántos llegan a cada paso. Los números ruedan como
- * el grande y los une la correntada de puntos.
+ * Del email al agente: tres números grandes que ruedan como el principal,
+ * unidos por la correntada de puntos. Debajo de cada paso, qué parte de las
+ * cuentas llegó hasta ahí (se calcula en vivo, como todo lo demás).
  */
 function Path({ data }: { data: Traction }) {
   const { t } = useLang();
@@ -211,49 +212,41 @@ function Path({ data }: { data: Traction }) {
           {t.stats.pathTitle}
         </h2>
 
-        <div className="mx-auto mt-10 max-w-5xl rounded-3xl border border-border bg-surface px-6 py-10 sm:mt-14 sm:px-10 lg:py-14">
-          <ol className="mx-auto grid max-w-xs gap-10 lg:max-w-none lg:grid-cols-5 lg:gap-0">
+        <div className="mx-auto mt-10 max-w-4xl rounded-3xl border border-border bg-surface px-3 py-10 sm:mt-14 sm:px-10 sm:py-14">
+          <ol className="grid grid-cols-3">
             {STEP_KEYS.map((key, i) => {
               const value = data[key];
-              const label = t.stats.steps[key];
-              const last = i === STEP_KEYS.length - 1;
+              const pct = i > 0 && data.accounts > 0 ? Math.round((value / data.accounts) * 100) : null;
               return (
-                <li key={key} className="relative flex items-center gap-5 lg:flex-col lg:gap-4 lg:text-center">
-                  {!last && (
+                <li key={key} className="relative flex flex-col items-center gap-3 px-1 text-center">
+                  {i < STEP_KEYS.length - 1 && (
                     <span
                       aria-hidden="true"
-                      className="path-flow-vertical absolute -bottom-8 left-[39px] top-14 w-0.5 lg:hidden"
+                      className="path-flow absolute left-[calc(50%+2rem)] right-[calc(-50%+2rem)] top-[23px] h-0.5 sm:left-[calc(50%+3.5rem)] sm:right-[calc(-50%+3.5rem)] sm:top-[35px]"
                     />
                   )}
-                  {!last && (
-                    <span
-                      aria-hidden="true"
-                      className="path-flow absolute left-[calc(50%+3rem)] right-[calc(-50%+3rem)] top-[29px] hidden h-0.5 lg:block"
-                    />
-                  )}
-                  <span className="flex w-20 shrink-0 justify-center lg:w-auto">
-                    <Odometer
-                      value={String(value)}
-                      label={String(value)}
-                      className="font-display text-5xl font-semibold tracking-tight lg:text-6xl"
-                    />
+                  <Odometer
+                    value={String(value)}
+                    label={String(value)}
+                    className="font-display text-5xl font-semibold tracking-tight sm:text-7xl"
+                  />
+                  {/* en el celular los nombres ocupan dos renglones, así las fichas quedan a la misma altura */}
+                  <span className="flex min-h-10 items-start text-sm font-medium text-muted-foreground sm:min-h-0 sm:text-base">
+                    {t.stats.steps[key]}
                   </span>
-                  <span className="text-base font-medium text-muted-foreground">{label}</span>
+                  {pct !== null && (
+                    <span className="whitespace-nowrap rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-success">
+                      <span className="sm:hidden" aria-hidden="true">
+                        {pct} %
+                      </span>
+                      <span className="sr-only sm:not-sr-only">{t.stats.ofAccounts(pct)}</span>
+                    </span>
+                  )}
                 </li>
               );
             })}
           </ol>
         </div>
-
-        <p className="mt-8 text-center">
-          <a
-            href="/api/stats"
-            className="inline-flex h-10 items-center gap-2 rounded-lg px-3 font-mono text-sm text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Braces className="size-4" aria-hidden="true" />
-            {t.stats.rawData}
-          </a>
-        </p>
       </div>
     </section>
   );

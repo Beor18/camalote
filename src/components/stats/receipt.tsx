@@ -109,7 +109,6 @@ export function Receipt({ data }: { data: Traction }) {
 
         <dl className="flex flex-col gap-2">
           <TotalLine label={t.stats.receiptTotal} value={`${usdcText(data.usdcInvested, lang)} USDC`} />
-          <TotalLine label={t.stats.receiptRuleBuys} value={String(data.ruleBuys)} />
         </dl>
 
         {latest && (
