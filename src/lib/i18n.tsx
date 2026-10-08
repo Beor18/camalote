@@ -682,12 +682,16 @@ const es = {
     rowFuel: "Reserva de red (una vez)",
     fuelNote:
       "Queda en tu cuenta como SOL y con eso pagás la red de todas tus operaciones. Se recarga sola cuando se gasta.",
+    rowOpen: (asset: string) => `Abrir tu cuenta de ${asset} (una vez)`,
+    openNote:
+      "La primera compra de cada inversión abre su cuenta. Se paga una sola vez, con tu reserva de SOL.",
     rowReceive: "Recibís",
     quoteValid: "El precio vale un minuto.",
     quoteNotGasless: "La red se paga desde tu reserva de SOL: menos de un centavo.",
     confirmBuy: "Confirmar compra",
     changeAmount: "Cambiar",
     stepFuel: "Cargando la reserva de red",
+    stepOpen: (asset: string) => `Abriendo tu cuenta de ${asset}`,
     stepSigning: "Firmando con tu cuenta",
     stepSending: "Comprando en Solana",
     stepSellSending: "Vendiendo en Solana",
@@ -700,6 +704,8 @@ const es = {
     feeLine: (pct: string) => `Mercado y red: ${pct} %, ya en el precio.`,
     fuelDoneLine: (fuel: string) =>
       `Reserva de red: ${fuel} USDC quedaron en tu cuenta como SOL.`,
+    openDoneLine: (asset: string, sol: string) =>
+      `Abriste tu cuenta de ${asset} con ${sol} SOL de tu reserva.`,
     viewOnSolana: "Ver en Solana",
     buyAgain: "Comprar otra vez",
     genericError: "No pudimos completar la compra. Tus USDC no se movieron.",
@@ -1537,12 +1543,16 @@ const en: Dictionary = {
     rowFuel: "Network reserve (once)",
     fuelNote:
       "It stays in your account as SOL and pays the network for all your operations. It tops up on its own when it runs out.",
+    rowOpen: (asset: string) => `Open your ${asset} account (once)`,
+    openNote:
+      "The first purchase of each investment opens its account. You pay it once, from your SOL reserve.",
     rowReceive: "You receive",
     quoteValid: "The price is good for a minute.",
     quoteNotGasless: "The network is paid from your SOL reserve: under a cent.",
     confirmBuy: "Confirm purchase",
     changeAmount: "Change",
     stepFuel: "Loading the network reserve",
+    stepOpen: (asset: string) => `Opening your ${asset} account`,
     stepSigning: "Signing with your account",
     stepSending: "Buying on Solana",
     stepSellSending: "Selling on Solana",
@@ -1555,6 +1565,8 @@ const en: Dictionary = {
     feeLine: (pct: string) => `Market and network: ${pct}%, already in the price.`,
     fuelDoneLine: (fuel: string) =>
       `Network reserve: ${fuel} USDC stayed in your account as SOL.`,
+    openDoneLine: (asset: string, sol: string) =>
+      `You opened your ${asset} account with ${sol} SOL from your reserve.`,
     viewOnSolana: "View on Solana",
     buyAgain: "Buy again",
     genericError: "We couldn't complete the purchase. Your USDC didn't move.",

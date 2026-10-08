@@ -111,6 +111,8 @@ export interface Purchase {
   camaloteFeeUnits?: string;
   /** Reserva de red cargada en esta operación (6 decimales de USDC), si hizo falta. */
   fuelUnits?: string;
+  /** SOL de la reserva con el que se abrió la cuenta de la inversión (lamports), si hizo falta. */
+  openLamports?: string;
   signature?: string;
   /** Firma de la transferencia de la comisión, si se cobró. */
   feeSignature?: string;
@@ -146,6 +148,11 @@ export interface StockQuote {
    * SOL): sale del saldo aparte de `usdcUnits` y queda en la cuenta.
    */
   fuelUnits: bigint;
+  /**
+   * SOL de la reserva para abrir la cuenta de la inversión antes de comprar
+   * (lamports; 0 si ya está abierta). No sale de los USDC.
+   */
+  openLamports: bigint;
   /** Real: la orden de Jupiter lista para firmar. Vence en alrededor de un minuto. */
   order?: { transaction: string; requestId: string; expiresAt: number | null };
 }
@@ -172,6 +179,8 @@ export interface BuyResult {
   multiplier?: number;
   /** Reserva de red cargada en esta compra (0 si no hizo falta). */
   fuelUnits?: bigint;
+  /** SOL con el que se abrió la cuenta de la inversión (0 si ya estaba abierta). */
+  openLamports?: bigint;
 }
 
 export interface SellResult {

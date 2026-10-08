@@ -29,7 +29,7 @@ import { quoteFromJson, type Quote } from "@/lib/cctp/quote";
 import { xStockByMint, type XStockSymbol } from "@/lib/invest/catalog";
 import { startCloudSync } from "@/lib/invest/cloud-sync";
 import { useRealAgent } from "@/components/bridge/use-agent";
-import { FUEL_UNITS, fuelUnitsFor, needsFuel } from "@/lib/invest/fuel";
+import { FUEL_UNITS, buyLamportsNeeded, needsFuel, orderWithoutOpening } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { feeBpsFor, investFee } from "@/lib/invest/rules";
 import type { Holding } from "@/lib/invest/types";
@@ -309,21 +309,35 @@ export function useRealEngine(): Engine {
         const taker = requireAccount(solanaAddress);
         const camaloteFeeUnits = investFee(usdcUnits, { feeBps: feeBpsFor(asset) });
         const swapUnits = usdcUnits - camaloteFeeUnits;
-        const [order, { multipliers }, lamports] = await Promise.all([
+        const [order, { multipliers }, network] = await Promise.all([
           fetchUltraOrder({ side: "buy", asset, units: swapUnits, taker }),
           fetchPrices(),
-          fetchSolLamports(taker),
+          fetchBuyNetwork(asset, taker),
         ]);
+        // Si es la primera compra de esta inversión, la cuenta se abre antes
+        // con la reserva: Jupiter ya no cobra esa apertura en el precio.
+        const priced =
+          network.openLamports > 0n
+            ? orderWithoutOpening({
+                outAmount: BigInt(order.outAmount),
+                feeBps: order.feeBps,
+                platformFeeBps: order.platformFeeBps ?? 0,
+                rentFeeLamports: BigInt(order.rentFeeLamports ?? "0"),
+                signatureFeeLamports: BigInt(order.signatureFeeLamports ?? "0"),
+                prioritizationFeeLamports: BigInt(order.prioritizationFeeLamports ?? "0"),
+              })
+            : { outAmount: BigInt(order.outAmount), feeBps: order.feeBps };
         return {
           asset,
           usdcUnits,
           camaloteFeeUnits,
           swapUnits,
-          expectedTokenUnits: BigInt(order.outAmount),
-          jupiterFeeBps: order.feeBps,
+          expectedTokenUnits: priced.outAmount,
+          jupiterFeeBps: priced.feeBps,
           gasless: order.gasless,
           multiplier: multipliers[asset] ?? 1,
-          fuelUnits: fuelUnitsFor(lamports),
+          fuelUnits: network.fuelUnits,
+          openLamports: network.openLamports,
           order: {
             transaction: order.transaction,
             requestId: order.requestId,
@@ -342,13 +356,18 @@ export function useRealEngine(): Engine {
             (r) => r.signedTransaction
           );
 
-        // Primero la reserva de red, si falta. Con SOL en la cuenta Jupiter
-        // arma la compra normal (el usuario paga la red, sale más barata que
-        // la cotizada sin gas), así que se vuelve a pedir la orden.
+        // Primero la red: la reserva si el SOL de la cuenta no alcanza, y la
+        // cuenta de la inversión si es la primera compra. Después se vuelve a
+        // pedir la orden: la cotizada cobraba en el precio esa apertura (y
+        // con más SOL en la cuenta, Jupiter puede armarla de otro modo).
         let order = quote.order;
         let feeBps = quote.jupiterFeeBps;
-        const fuelUnits = quote.fuelUnits > 0n ? await ensureFuel(owner, sign, onStep) : 0n;
-        if (fuelUnits > 0n) {
+        const fuelUnits =
+          quote.fuelUnits > 0n
+            ? await ensureFuel(owner, sign, onStep, buyLamportsNeeded(quote.openLamports))
+            : 0n;
+        const opened = quote.openLamports > 0n && (await openAccount(owner, quote.asset, sign, onStep));
+        if (fuelUnits > 0n || quote.openLamports > 0n) {
           try {
             const fresh = await fetchUltraOrder({
               side: "buy",
@@ -359,7 +378,11 @@ export function useRealEngine(): Engine {
             order = { transaction: fresh.transaction, requestId: fresh.requestId, expiresAt: null };
             feeBps = fresh.feeBps;
           } catch (err) {
-            // La orden cotizada sigue siendo válida hasta que venza.
+            // Con la cuenta ya abierta, la orden cotizada cobraría la apertura otra vez.
+            if (quote.openLamports > 0n) {
+              throw new Error("El precio cambió mientras abríamos tu cuenta. Pedilo de nuevo.");
+            }
+            // Si solo se cargó la reserva, la cotizada sigue valiendo hasta que venza.
             console.warn("[invest] no se pudo recotizar tras cargar la reserva", err);
           }
         }
@@ -385,6 +408,7 @@ export function useRealEngine(): Engine {
           feeSignature,
           multiplier: quote.multiplier,
           fuelUnits,
+          openLamports: opened ? quote.openLamports : 0n,
         };
       },
       quoteSell: async (asset, tokenUnits) => {
@@ -472,6 +496,11 @@ interface UltraOrderJson {
   feeBps: number;
   gasless: boolean;
   expireAt: string | number | null;
+  /** Sin gas: la parte de Jupiter dentro de feeBps y lo que adelanta (en lamports). */
+  platformFeeBps?: number;
+  signatureFeeLamports?: string;
+  prioritizationFeeLamports?: string;
+  rentFeeLamports?: string;
 }
 
 async function fetchUltraOrder(params: {
@@ -500,24 +529,77 @@ async function fetchUltraOrder(params: {
   return data.order as UltraOrderJson;
 }
 
+/**
+ * Con qué se paga la red de una compra: el SOL de la cuenta o 1 USDC de
+ * reserva, y cuánto SOL lleva abrir la cuenta de la inversión (0 si ya está).
+ */
+async function fetchBuyNetwork(
+  asset: XStockSymbol,
+  owner: string
+): Promise<{ fuelUnits: bigint; openLamports: bigint }> {
+  const res = await fetch(`/api/invest/account?${new URLSearchParams({ asset, owner })}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || typeof data.fuelUnits !== "string" || typeof data.openLamports !== "string") {
+    throw new Error(data.error ?? "No pudimos revisar tu cuenta.");
+  }
+  return { fuelUnits: BigInt(data.fuelUnits), openLamports: BigInt(data.openLamports) };
+}
+
 type Signer = (transaction: Uint8Array) => Promise<Uint8Array>;
 
 /**
- * La reserva de red: si la cuenta tiene menos SOL que el mínimo, cambia
- * 1 USDC por SOL con Jupiter (sin gas, que para eso no hay) y devuelve lo
- * que salió del saldo. Con reserva suficiente no hace nada.
+ * La reserva de red: si la cuenta tiene menos SOL del que pide la operación,
+ * cambia 1 USDC por SOL con Jupiter (sin gas, que para eso no hay) y devuelve
+ * lo que salió del saldo. Con SOL suficiente no hace nada.
  */
 async function ensureFuel(
   owner: string,
   sign: Signer,
-  onStep?: (step: "fuel") => void
+  onStep?: (step: "fuel") => void,
+  neededLamports?: bigint
 ): Promise<bigint> {
   const lamports = await fetchSolLamports(owner);
-  if (!needsFuel(lamports)) return 0n;
+  if (!needsFuel(lamports, neededLamports)) return 0n;
   onStep?.("fuel");
   const order = await fetchUltraOrder({ side: "fuel", units: FUEL_UNITS, taker: owner });
   await signAndExecute({ transaction: order.transaction, requestId: order.requestId }, sign);
   return FUEL_UNITS;
+}
+
+/**
+ * Abre la cuenta de la inversión con la reserva de SOL, antes de la primera
+ * compra. Devuelve false si ya estaba abierta (por ejemplo, de un intento
+ * anterior que no terminó).
+ */
+async function openAccount(
+  owner: string,
+  asset: XStockSymbol,
+  sign: Signer,
+  onStep?: (step: "open") => void
+): Promise<boolean> {
+  onStep?.("open");
+  const res = await fetch("/api/invest/account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "build", owner, asset }),
+  });
+  const built = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(built.error ?? "No pudimos abrir tu cuenta.");
+  if (built.open) return false;
+  const signed = await sign(base64ToBytes(built.transactionBase64));
+  const sent = await fetch("/api/invest/account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "submit",
+      transaction: bytesToBase64(signed),
+      blockhash: built.blockhash,
+      lastValidBlockHeight: built.lastValidBlockHeight,
+    }),
+  });
+  const result = await sent.json().catch(() => ({}));
+  if (!sent.ok || !result.signature) throw new Error(result.error ?? "No pudimos abrir tu cuenta.");
+  return true;
 }
 
 /** Firma la orden de Jupiter con la billetera embebida y la manda a ejecutar. */

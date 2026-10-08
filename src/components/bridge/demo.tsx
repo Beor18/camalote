@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PublicKey } from "@solana/web3.js";
 import {
+  demoBuyNetwork,
   demoQuote,
   demoQuoteSell,
   demoQuoteStock,
@@ -10,7 +11,6 @@ import {
   loadDemoBaseBalance,
   loadDemoHoldings,
   loadDemoIncoming,
-  loadDemoLamports,
   registerDemoAccount,
   runDemoBridge,
   runDemoBuy,
@@ -20,7 +20,6 @@ import {
   simulateDemoIncoming,
 } from "@/lib/demo";
 import { kindOf } from "@/lib/invest/catalog";
-import { fuelUnitsFor } from "@/lib/invest/fuel";
 import { fetchPrices } from "@/lib/invest/prices";
 import { useDemoAgent } from "@/components/bridge/use-agent";
 import type {
@@ -279,8 +278,15 @@ export function useDemoEngine(): Engine {
         const multiplier = kindOf(asset) !== "stock"
           ? (multipliers[asset] ?? 1)
           : (previousMultipliers[asset] ?? multipliers[asset] ?? 1);
-        const fuelUnits = email ? fuelUnitsFor(loadDemoLamports(email)) : 0n;
-        return demoQuoteStock(asset, usdcUnits, prices[asset] ?? 0, multiplier, fuelUnits);
+        const network = email ? demoBuyNetwork(email, asset) : { fuelUnits: 0n, openLamports: 0n };
+        return demoQuoteStock(
+          asset,
+          usdcUnits,
+          prices[asset] ?? 0,
+          multiplier,
+          network.fuelUnits,
+          network.openLamports
+        );
       },
       buyStock: async (quote, onStep) => {
         if (!email) throw new Error("Entrá con tu email para continuar.");

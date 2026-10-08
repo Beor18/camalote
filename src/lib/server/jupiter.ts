@@ -32,6 +32,12 @@ export interface UltraOrder {
   inUsdValue?: number;
   outUsdValue?: number;
   expireAt?: number | string;
+  /** Sin gas: la parte de Jupiter dentro de feeBps (el resto es lo que adelanta). */
+  platformFee?: { feeBps?: number };
+  /** Sin gas: lo que Jupiter adelanta y cobra en el precio (firma, prioridad, abrir la cuenta). */
+  signatureFeeLamports?: number;
+  prioritizationFeeLamports?: number;
+  rentFeeLamports?: number;
   errorMessage?: string;
   errorCode?: number;
   error?: string;

@@ -69,6 +69,7 @@ export async function executePurchase(opts: {
       feeSignature: result.feeSignature,
       multiplier: result.multiplier ?? quote.multiplier,
       fuelUnits: result.fuelUnits && result.fuelUnits > 0n ? result.fuelUnits.toString() : undefined,
+      openLamports: result.openLamports && result.openLamports > 0n ? result.openLamports.toString() : undefined,
     };
   } catch (err) {
     record = { ...record, status: "error", errorMessage: errorMessage(err) };

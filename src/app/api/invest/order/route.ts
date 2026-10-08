@@ -91,6 +91,10 @@ export async function GET(req: NextRequest) {
         router: order.router ?? null,
         priceImpactPct: order.priceImpactPct ?? null,
         expireAt: order.expireAt ?? null,
+        platformFeeBps: order.platformFee?.feeBps ?? 0,
+        signatureFeeLamports: String(order.signatureFeeLamports ?? 0),
+        prioritizationFeeLamports: String(order.prioritizationFeeLamports ?? 0),
+        rentFeeLamports: String(order.rentFeeLamports ?? 0),
       },
     });
   } catch (err) {

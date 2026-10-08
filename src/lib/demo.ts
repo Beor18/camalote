@@ -2,8 +2,13 @@
 
 import { computeQuote, type Quote } from "@/lib/cctp/quote";
 import { FEE_BPS } from "@/lib/config";
-import { decimalsOf, type XStockSymbol } from "@/lib/invest/catalog";
-import { DEMO_FUEL_LAMPORTS, fuelUnitsFor } from "@/lib/invest/fuel";
+import { decimalsOf, kindOf, type XStockSymbol } from "@/lib/invest/catalog";
+import {
+  DEMO_FUEL_LAMPORTS,
+  OPEN_ACCOUNT_LAMPORTS,
+  buyLamportsNeeded,
+  fuelUnitsFor,
+} from "@/lib/invest/fuel";
 import { feeBpsFor, investFee, tokensForUsdc, valueOfTokens } from "@/lib/invest/rules";
 import type {
   BuyResult,
@@ -54,9 +59,13 @@ export function loadDemoLamports(email: string): bigint {
  * Carga la reserva de red si falta: cambia 1 USDC por SOL, como hace la app
  * real con Jupiter. Devuelve lo que salió del saldo (0 si no hizo falta).
  */
-async function demoEnsureFuel(email: string, onStep?: () => void): Promise<bigint> {
+async function demoEnsureFuel(
+  email: string,
+  onStep?: () => void,
+  neededLamports?: bigint
+): Promise<bigint> {
   const balances = loadDemoBalances(email);
-  const fuelUnits = fuelUnitsFor(BigInt(balances.solLamports ?? "0"));
+  const fuelUnits = fuelUnitsFor(BigInt(balances.solLamports ?? "0"), neededLamports);
   if (fuelUnits === 0n) return 0n;
   if (fuelUnits > BigInt(balances.solanaUnits)) {
     throw new Error("No te alcanza el saldo para la reserva de red.");
@@ -67,6 +76,19 @@ async function demoEnsureFuel(email: string, onStep?: () => void): Promise<bigin
   balances.solLamports = (BigInt(balances.solLamports ?? "0") + DEMO_FUEL_LAMPORTS).toString();
   saveDemoBalances(email, balances);
   return fuelUnits;
+}
+
+/**
+ * Como la real: la primera compra de cada inversión abre su cuenta con la
+ * reserva de SOL, y la reserva se carga solo si ese SOL no alcanza.
+ */
+export function demoBuyNetwork(email: string, asset: XStockSymbol): { fuelUnits: bigint; openLamports: bigint } {
+  const open = loadDemoHoldings(email).some((h) => h.asset === asset);
+  const openLamports = open ? 0n : OPEN_ACCOUNT_LAMPORTS[kindOf(asset)];
+  return {
+    fuelUnits: fuelUnitsFor(loadDemoLamports(email), buyLamportsNeeded(openLamports)),
+    openLamports,
+  };
 }
 
 function balancesKey(email: string): string {
@@ -314,7 +336,8 @@ export function demoQuoteStock(
   usdcUnits: bigint,
   priceUsd: number,
   multiplier = 1,
-  fuelUnits = 0n
+  fuelUnits = 0n,
+  openLamports = 0n
 ): StockQuote {
   const camaloteFeeUnits = investFee(usdcUnits, { feeBps: feeBpsFor(asset) });
   const swapUnits = usdcUnits - camaloteFeeUnits;
@@ -330,11 +353,13 @@ export function demoQuoteStock(
     gasless: false,
     multiplier,
     fuelUnits,
+    openLamports,
   };
 }
 
 /**
- * Simula la compra cotizada: carga la reserva de red si falta, descuenta los
+ * Simula la compra cotizada: carga la reserva de red si falta, abre la
+ * cuenta de la inversión si es la primera compra, descuenta los
  * USDC de la cuenta Solana (con la comisión incluida) y acredita el token,
  * con el mismo ritmo que la real.
  */
@@ -344,11 +369,19 @@ export async function runDemoBuy(
   onStep?: (step: BuyStep) => void
 ): Promise<BuyResult> {
   const before = loadDemoBalances(email);
-  const fuelNeeded = fuelUnitsFor(BigInt(before.solLamports ?? "0"));
+  const neededLamports = buyLamportsNeeded(quote.openLamports);
+  const fuelNeeded = fuelUnitsFor(BigInt(before.solLamports ?? "0"), neededLamports);
   if (quote.usdcUnits + fuelNeeded > BigInt(before.solanaUnits)) {
     throw new Error("No te alcanza el saldo en Solana.");
   }
-  const fuelUnits = await demoEnsureFuel(email, () => onStep?.("fuel"));
+  const fuelUnits = await demoEnsureFuel(email, () => onStep?.("fuel"), neededLamports);
+  if (quote.openLamports > 0n) {
+    onStep?.("open");
+    await wait(700);
+    const reserve = loadDemoBalances(email);
+    reserve.solLamports = (BigInt(reserve.solLamports ?? "0") - quote.openLamports).toString();
+    saveDemoBalances(email, reserve);
+  }
   onStep?.("signing");
   await wait(700);
   onStep?.("sending");
@@ -372,6 +405,7 @@ export async function runDemoBuy(
     feeSignature: quote.camaloteFeeUnits > 0n ? randomBase58(88) : undefined,
     multiplier: quote.multiplier,
     fuelUnits,
+    openLamports: quote.openLamports,
   };
 }
 

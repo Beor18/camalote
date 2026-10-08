@@ -8,7 +8,7 @@ import { ExplorerLink } from "@/components/bridge/panel";
 import { AssetPicker } from "@/components/invest/asset-picker";
 import { MarketNote } from "@/components/invest/market-note";
 import { BUY_MIN_UNITS, solanaExplorerTx } from "@/lib/config";
-import { formatUsdc, parseUsdc } from "@/lib/format";
+import { formatSol, formatUsdc, parseUsdc } from "@/lib/format";
 import { useLang, type Lang } from "@/lib/i18n";
 import {
   assetName,
@@ -56,7 +56,7 @@ type State =
  */
 export function BuyCard({
   balanceUnits,
-  fuelUnits,
+  fuelUnitsFor,
   defaultAsset,
   defaultAmountUnits,
   demo,
@@ -66,8 +66,11 @@ export function BuyCard({
   onBuy,
 }: {
   balanceUnits: bigint | null;
-  /** Reserva de red que se carga antes de la compra (0 si la cuenta ya tiene SOL). */
-  fuelUnits: bigint;
+  /**
+   * Reserva de red que se carga antes de comprar esa inversión (0 si el SOL
+   * de la cuenta alcanza). Es una estimación: la cotización decide.
+   */
+  fuelUnitsFor: (asset: XStockSymbol) => bigint;
   defaultAsset: XStockSymbol;
   /** El monto con el que abre (por ejemplo, la compra que dejó lista el agente). */
   defaultAmountUnits?: bigint;
@@ -86,6 +89,7 @@ export function BuyCard({
   // Con USDC en la mano no se "compran dólares": se ponen a rendir. Toda la
   // hoja cambia de verbo, y lo que queda se muestra en dólares, no en USDY.
   const dollars = isDollars(asset);
+  const fuelUnits = fuelUnitsFor(asset);
   const priceOf = (sym: XStockSymbol) => prices?.prices[sym] ?? fallbackPrices()[sym] ?? 0;
   // Lo que se puede invertir: el saldo menos la reserva de red, si hay que cargarla.
   const spendableUnits =
@@ -128,6 +132,17 @@ export function BuyCard({
     setState({ phase: "quoting" });
     try {
       const q = await onQuote(asset, amountUnits);
+      // La estimación pudo no contar con la reserva: si con ella no alcanza, se avisa antes.
+      if (q.fuelUnits > 0n && balanceUnits !== null && q.usdcUnits + q.fuelUnits > balanceUnits) {
+        setState({
+          phase: "idle",
+          error: t.invest.buyInsufficientFuel(
+            formatUsdc(balanceUnits, 2, lang),
+            formatUsdc(q.fuelUnits, 0, lang)
+          ),
+        });
+        return;
+      }
       setState({ phase: "quoted", quote: q });
     } catch (err) {
       setState({
@@ -179,6 +194,11 @@ export function BuyCard({
               {t.invest.fuelDoneLine(formatUsdc(BigInt(p.fuelUnits), 2, lang))}
             </p>
           )}
+          {p.openLamports && BigInt(p.openLamports) > 0n && (
+            <p className="text-xs text-muted-foreground">
+              {t.invest.openDoneLine(assetName(p.asset, lang), formatSol(BigInt(p.openLamports), lang))}
+            </p>
+          )}
           {demo ? (
             <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
           ) : (
@@ -202,6 +222,7 @@ export function BuyCard({
   if (state.phase === "running") {
     const steps: BuyStep[] = [
       ...(state.quote.fuelUnits > 0n ? (["fuel"] as BuyStep[]) : []),
+      ...(state.quote.openLamports > 0n ? (["open"] as BuyStep[]) : []),
       "signing",
       "sending",
       "fee",
@@ -210,6 +231,7 @@ export function BuyCard({
     const labels: Record<BuyStep, string> = {
       quoting: t.invest.quoteLoading,
       fuel: t.invest.stepFuel,
+      open: t.invest.stepOpen(assetName(state.quote.asset, lang)),
       signing: t.invest.stepSigning,
       sending: isDollars(state.quote.asset) ? t.invest.dollarsStepSending : t.invest.stepSending,
       fee: t.invest.stepFee,
@@ -345,6 +367,11 @@ export function BuyCard({
                 + {formatUsdc(quoted.fuelUnits, 2, lang)} {t.common.usdc}
               </Row>
             )}
+            {quoted.openLamports > 0n && (
+              <Row label={t.invest.rowOpen(assetName(quoted.asset, lang))}>
+                {formatSol(quoted.openLamports, lang)} SOL
+              </Row>
+            )}
             <Row label={t.invest.rowCamaloteFee(pct(feeBpsFor(quoted.asset)))}>
               − {fee(quoted.camaloteFeeUnits)} {t.common.usdc}
             </Row>
@@ -387,10 +414,10 @@ export function BuyCard({
                 </dd>
               </div>
             )}
-            {quoted.fuelUnits > 0n ? (
+            {quoted.fuelUnits > 0n || quoted.openLamports > 0n ? (
               <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
                 <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                {t.invest.fuelNote}
+                {quoted.fuelUnits > 0n ? t.invest.fuelNote : t.invest.openNote}
               </p>
             ) : (
               !quoted.gasless && (

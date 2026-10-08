@@ -43,6 +43,11 @@ export function parseUsdc(input: string): bigint | null {
   }
 }
 
+/** 1559560n lamports → "0,0016" (dos cifras significativas: alcanza para montos de red). */
+export function formatSol(lamports: bigint, locale: "es" | "en" = "es"): string {
+  return (Number(lamports) / 1e9).toLocaleString(locale, { maximumSignificantDigits: 2 });
+}
+
 export function truncateAddress(address: string, chars = 4): string {
   if (address.length <= chars * 2 + 3) return address;
   return `${address.slice(0, chars)}…${address.slice(-chars)}`;

@@ -70,8 +70,11 @@ export interface RunOptions {
   recipientOwner?: string;
 }
 
-/** Pasos de una compra o venta de acciones tokenizadas ("fuel" = cargar la reserva de red). */
-export type BuyStep = "quoting" | "fuel" | "signing" | "sending" | "fee";
+/**
+ * Pasos de una compra o venta de acciones tokenizadas ("fuel" = cargar la
+ * reserva de red, "open" = abrir la cuenta de la inversión con esa reserva).
+ */
+export type BuyStep = "quoting" | "fuel" | "open" | "signing" | "sending" | "fee";
 
 /** Pasos de un retiro. */
 export type WithdrawStep = "fuel" | "signing" | "sending";

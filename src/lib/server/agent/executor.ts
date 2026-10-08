@@ -3,8 +3,8 @@ import "server-only";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { BUY_MIN_UNITS, FEE_RECIPIENT_SOLANA, SOLANA_RPC_URL } from "@/lib/config";
-import { findXStock, USDC_MAINNET_MINT } from "@/lib/invest/catalog";
-import { FUEL_UNITS, SOL_MINT, fitBuyToBalance, fuelUnitsFor } from "@/lib/invest/fuel";
+import { findXStock, USDC_MAINNET_MINT, type XStock } from "@/lib/invest/catalog";
+import { FUEL_UNITS, SOL_MINT, fitBuyToBalance } from "@/lib/invest/fuel";
 import { buyBlockedBy, formatNextOpen, formatPremium } from "@/lib/invest/guards";
 import { feeBpsFor, investFee, planInvestments } from "@/lib/invest/rules";
 import type { InvestRule, Purchase } from "@/lib/invest/types";
@@ -22,6 +22,7 @@ import { syncSolanaHistory } from "@/lib/solana/historySync";
 import { readState, writeState } from "@/lib/server/account-store";
 import { ultraExecute, ultraOrder } from "@/lib/server/jupiter";
 import { getMarketData } from "@/lib/server/market";
+import { buildOpenAccount, planBuyNetwork, submitOpenAccount, type BuyNetwork } from "@/lib/server/open-account";
 import { buildWithdraw, submitWithdraw } from "@/lib/server/withdraw";
 import { agentTurn } from "@/lib/server/agent/brain";
 import { signAsUser } from "@/lib/server/agent/privy";
@@ -35,7 +36,8 @@ import { assertAllowedPrograms, decodeTx, simulateOrder } from "@/lib/server/age
  * sin que la app esté abierta:
  *
  *   cobros nuevos → apartar el porcentaje → al juntar 10 USDC, decidir
- *   (la cabeza, o la regla sola) → reserva de red si falta → comprar por
+ *   (la cabeza, o la regla sola) → reserva de red si el SOL no alcanza →
+ *   abrir la cuenta de la inversión si es la primera compra → comprar por
  *   Jupiter → cobrar la comisión → anotar y avisar.
  *
  * Cada firma pasa por tres controles: la orden la pide este servidor (solo
@@ -128,6 +130,19 @@ async function collectFee(walletId: string, owner: string, feeUnits: bigint): Pr
   }
 }
 
+/**
+ * Abre la cuenta de la inversión con la reserva de SOL del usuario, firmada
+ * con el permiso (la política deja: presupuesto de cómputo y cuentas de token
+ * asociadas). Devuelve false si ya estaba abierta.
+ */
+async function openAccount(connection: Connection, walletId: string, owner: string, stock: XStock): Promise<boolean> {
+  const built = await buildOpenAccount(connection, owner, stock);
+  if (!built) return false;
+  const signed = await signAsUser(walletId, built.transactionBase64);
+  await submitOpenAccount(connection, signed, built.blockhash, built.lastValidBlockHeight);
+  return true;
+}
+
 /** Una compra de punta a punta. Devuelve el registro final; nunca lanza. */
 async function buy(opts: {
   connection: Connection;
@@ -135,7 +150,7 @@ async function buy(opts: {
   address: string;
   rule: InvestRule;
   usdcUnits: bigint;
-  needsFuel: boolean;
+  network: BuyNetwork;
 }): Promise<Purchase> {
   const { connection, walletId, address, rule, usdcUnits } = opts;
   const stock = findXStock(rule.asset);
@@ -155,10 +170,14 @@ async function buy(opts: {
   try {
     if (!stock) throw new Error("Ese destino ya no está disponible.");
     let fuelUnits = 0n;
-    if (opts.needsFuel) {
+    if (opts.network.fuelUnits > 0n) {
       await signAndRun({ connection, walletId, owner: address, outputMint: null, amount: FUEL_UNITS });
       fuelUnits = FUEL_UNITS;
     }
+    // La cuenta se abre con la reserva antes de pedir la orden: si no, Jupiter
+    // la abre en modo sin gas y la cobra en el precio.
+    const opened =
+      opts.network.openLamports > 0n && (await openAccount(connection, walletId, address, stock));
     const camaloteFeeUnits = investFee(usdcUnits, { feeBps: feeBpsFor(rule.asset) });
     const swapUnits = usdcUnits - camaloteFeeUnits;
     const swap = await signAndRun({ connection, walletId, owner: address, outputMint: stock.mint, amount: swapUnits });
@@ -173,6 +192,7 @@ async function buy(opts: {
       signature: swap.signature,
       feeSignature,
       fuelUnits: fuelUnits > 0n ? fuelUnits.toString() : undefined,
+      openLamports: opened ? opts.network.openLamports.toString() : undefined,
       multiplier: market?.multipliers[rule.asset] ?? 1,
     };
   } catch (err) {
@@ -186,17 +206,13 @@ async function buy(opts: {
   return record;
 }
 
-async function readBalances(connection: Connection, owner: string): Promise<{ usdc: bigint; lamports: bigint }> {
-  const ownerKey = new PublicKey(owner);
-  const ata = getAssociatedTokenAddressSync(new PublicKey(USDC_MAINNET_MINT), ownerKey, true);
-  const [usdc, lamports] = await Promise.all([
-    connection
-      .getTokenAccountBalance(ata, "confirmed")
-      .then((b) => BigInt(b.value.amount))
-      .catch(() => 0n),
-    connection.getBalance(ownerKey, "confirmed").then((l) => BigInt(l)),
-  ]);
-  return { usdc, lamports };
+async function readBalances(connection: Connection, owner: string): Promise<{ usdc: bigint }> {
+  const ata = getAssociatedTokenAddressSync(new PublicKey(USDC_MAINNET_MINT), new PublicKey(owner), true);
+  const usdc = await connection
+    .getTokenAccountBalance(ata, "confirmed")
+    .then((b) => BigInt(b.value.amount))
+    .catch(() => 0n);
+  return { usdc };
 }
 
 /** Corre el agente para una cuenta. Seguro de llamar varias veces seguidas. */
@@ -275,9 +291,19 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
           reference: market?.reference[current.asset],
         })
       : null;
-    const balances = await readBalances(connection, address);
-    const fuel = fuelUnitsFor(balances.lamports);
-    const fit = fitBuyToBalance({ buyUnits: plan.buyUnits, balanceUnits: balances.usdc, fuelUnits: fuel, minUnits: BUY_MIN_UNITS });
+    // Con qué se paga la red: el SOL de la cuenta, si alcanza, o 1 USDC de reserva.
+    const [balances, network] = await Promise.all([
+      readBalances(connection, address),
+      stock
+        ? planBuyNetwork(connection, address, stock)
+        : Promise.resolve<BuyNetwork>({ lamports: 0n, fuelUnits: 0n, openLamports: 0n }),
+    ]);
+    const fit = fitBuyToBalance({
+      buyUnits: plan.buyUnits,
+      balanceUnits: balances.usdc,
+      fuelUnits: network.fuelUnits,
+      minUnits: BUY_MIN_UNITS,
+    });
 
     if (blocked || fit.buyUnits === 0n) {
       const waitingRule: InvestRule = blocked
@@ -323,7 +349,7 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
         address,
         rule: current,
         usdcUnits: fit.buyUnits,
-        needsFuel: fuel > 0n,
+        network,
       });
       return purchase;
     };

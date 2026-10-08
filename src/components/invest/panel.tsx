@@ -24,7 +24,7 @@ import { requestCloudPush } from "@/lib/invest/cloud-sync";
 import { attestation, isEligible } from "@/lib/invest/eligibility";
 import { fallbackPrices, type XStockSymbol } from "@/lib/invest/catalog";
 import { executePurchase } from "@/lib/invest/execute";
-import { fuelUnitsFor } from "@/lib/invest/fuel";
+import { estimateBuyFuelUnits } from "@/lib/invest/fuel";
 import { goalProgress } from "@/lib/invest/goals";
 import { fetchPrices, type PricesResult } from "@/lib/invest/prices";
 import { defaultRule, portfolioSummary } from "@/lib/invest/rules";
@@ -502,7 +502,9 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
         open={buying !== null}
         onClose={() => setBuying(null)}
         balanceUnits={balances.solanaUnits}
-        fuelUnits={fuelUnitsFor(balances.solanaLamports)}
+        fuelUnitsFor={(asset) =>
+          estimateBuyFuelUnits(balances.solanaLamports, holdings?.some((h) => h.asset === asset) ?? false)
+        }
         defaultAsset={buying?.asset ?? rule?.asset ?? "SPYx"}
         defaultAmountUnits={buying?.units}
         demo={session.demo}

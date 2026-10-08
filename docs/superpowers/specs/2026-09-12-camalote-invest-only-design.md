@@ -166,6 +166,33 @@ pague a través de Jupiter". Sin relayer, cada cuenta paga su propia red:
 - **Lo que no prometemos**: rendimiento. Es el mercado, para arriba y para
   abajo, y la app lo dice.
 
+### Los dos caminos de la red (2026-10-08)
+
+Fernando: "pagar el fee con SOL en vez de que me lo descuente de los USDC
+… necesito que estén habilitados ambos caminos". Lo que encontramos:
+
+- Ultra arma la compra sin gas cuando la cuenta tiene menos de 0,01 SOL, y
+  ahí cobra en el precio lo que adelanta: la red y, en la primera compra de
+  cada inversión, abrir su cuenta (1.559.560 lamports una acción, 1.620.520
+  una pre-IPO, 1.488.440 los dólares). En 2,14 USDC de SPYx eso era 805 bps:
+  10 de Jupiter, 5 de red y 790 de la apertura. Ninguna opción de Ultra lo
+  cambia (`excludeRouters`, `payer`).
+- 1 USDC de reserva da menos de 0,01 SOL: después de cargarla, la orden
+  seguía sin gas y la apertura se cobraba igual. La reserva sola no alcanzaba.
+- Ahora la cuenta de la inversión se abre antes, con el SOL del usuario
+  (`/api/invest/account`, `src/lib/server/open-account.ts`): el servidor la
+  arma y la valida, el usuario o el agente la firman (la política del agente
+  ya deja ComputeBudget y cuentas asociadas). Después Ultra cobra solo 10 bps
+  y la red.
+- Camino SOL: si el SOL de la cuenta alcanza para abrir la cuenta, la
+  comisión y el mínimo de la red (650.240), se usa ese. Camino USDC: si no,
+  primero 1 USDC de reserva, y la apertura sale de ahí. Se decide simulando
+  la apertura con la cuenta del usuario (costo exacto); si la simulación
+  falla, el SOL no alcanza.
+- El ticket muestra la apertura en SOL y el precio ya sin ella
+  (`orderWithoutOpening`). Si la orden no se puede pedir de nuevo después de
+  abrir la cuenta, la compra se corta: la cotizada cobraría la apertura otra vez.
+
 ## La landing vende como una startup (2026-09-29)
 
 Fernando: "la narrativa de la landing no me convence, no vende, somos una

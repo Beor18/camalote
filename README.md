@@ -99,7 +99,8 @@ You get paid (USDC lands in your wallet)
 runAgent(): new payments → set your % aside → at 10 USDC:
   code checks market hours / premium / balance
   AI agent: invest now or wait (no answer → the rule runs alone)
-  SOL reserve if missing       (1 USDC → SOL, gasless)
+  network: your own SOL if it covers it, else 1 USDC → SOL (gasless)
+  first buy of an asset: open its token account with that SOL
   Jupiter Ultra order: USDC → xStocks / PreStocks / USDY / jlUSDC
   verify: allowed programs only + simulation (spends ≤ set-aside, lands in your account)
   Privy session signer signs, inside the user's policy
