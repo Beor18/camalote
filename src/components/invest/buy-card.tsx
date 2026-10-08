@@ -102,6 +102,8 @@ export function BuyCard({
   const [state, setState] = useState<State>({ phase: "idle" });
 
   const amountUnits = useMemo(() => parseUsdc(amountText), [amountText]);
+  // La reserva estimada no bloquea: la cotización sabe si hace falta, y si
+  // con ella no alcanza, avisa ahí.
   const amountError =
     amountText.trim() === ""
       ? null
@@ -109,13 +111,8 @@ export function BuyCard({
         ? t.invest.buyAmountInvalid
         : amountUnits < BUY_MIN_UNITS
           ? t.invest.buyAmountMin(minText)
-          : balanceUnits !== null && amountUnits + fuelUnits > balanceUnits
-            ? fuelUnits > 0n
-              ? t.invest.buyInsufficientFuel(
-                  formatUsdc(balanceUnits, 2, lang),
-                  formatUsdc(fuelUnits, 0, lang)
-                )
-              : t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
+          : balanceUnits !== null && amountUnits > balanceUnits
+            ? t.invest.buyInsufficient(formatUsdc(balanceUnits, 2, lang))
             : null;
   const canQuote = amountUnits !== null && amountError === null && state.phase === "idle";
 

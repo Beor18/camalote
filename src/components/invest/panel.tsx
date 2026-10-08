@@ -503,7 +503,12 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
         onClose={() => setBuying(null)}
         balanceUnits={balances.solanaUnits}
         fuelUnitsFor={(asset) =>
-          estimateBuyFuelUnits(balances.solanaLamports, holdings?.some((h) => h.asset === asset) ?? false)
+          // La cuenta de una inversión queda abierta aunque se venda todo: alcanza con una compra hecha.
+          estimateBuyFuelUnits(
+            balances.solanaLamports,
+            Boolean(holdings?.some((h) => h.asset === asset)) ||
+              purchases.some((p) => p.asset === asset && p.kind !== "sell" && p.status === "done" && !p.demo)
+          )
         }
         defaultAsset={buying?.asset ?? rule?.asset ?? "SPYx"}
         defaultAmountUnits={buying?.units}
