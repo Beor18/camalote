@@ -7,7 +7,8 @@ for you inside that limit, in your own non-custodial Solana account.**
 - Live app, Solana mainnet: [camalote.vercel.app](https://camalote.vercel.app)
 - Colosseum Crypto World's Fair, Superteam Argentina track:
   [colosseum.com/arena/projects/camalote](https://colosseum.com/arena/projects/camalote)
-- Live numbers: [camalote.vercel.app/api/stats](https://camalote.vercel.app/api/stats)
+- Live numbers: [camalote.vercel.app/stats](https://camalote.vercel.app/stats)
+  (raw JSON: [`/api/stats`](https://camalote.vercel.app/api/stats))
 
 ## The problem
 
@@ -189,7 +190,7 @@ thing we would fund.
   [`/api/health`](https://camalote.vercel.app/api/health) checks every
   dependency.
 - **Users: none yet.** The first 20 come this week, one by one, from
-  Superteam Argentina. [`/api/stats`](https://camalote.vercel.app/api/stats)
+  Superteam Argentina. [`/stats`](https://camalote.vercel.app/stats)
   counts accounts, rules on, agents on, rule buys and USDC invested, with a
   Solscan link for every recent buy.
 - **Not yet on video:** a real payment triggering the automatic buy on

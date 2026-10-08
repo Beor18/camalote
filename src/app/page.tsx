@@ -389,6 +389,13 @@ function Footer() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:px-8">
         <CamaloteLogo />
         <p className="text-xs text-muted-foreground">{t.landing.footerMadeIn}</p>
+        <Link
+          href="/stats"
+          className="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors duration-100 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span className="size-2 rounded-full bg-success" aria-hidden="true" />
+          {t.landing.footerStats}
+        </Link>
         <p className="max-w-xl text-xs text-muted-foreground">{t.landing.footerNote}</p>
       </div>
     </footer>

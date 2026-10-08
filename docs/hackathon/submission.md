@@ -90,7 +90,7 @@ privada del acelerador) y la entrega en Superteam Earn.
 - **Cómo usa Solana**: la misma respuesta de "How does your product use these chains?", traducida.
 - **Modelo de negocio**: Una comisión chica solo cuando la regla compra: 0,45 % por compra de acciones, nunca más de 0,50 USDC, y 0,10 % en dólares que rinden. Vender y retirar es gratis. Sin suscripción ni spread escondido; la comisión se cobra en la red con cada compra. Es un negocio de volumen: cada cobro es una compra. La escala viene de las plataformas que pagan en USDC y ofrecen Camalote a quien cobra.
 - **Go-to-market y validación**: los primeros 20 desde Superteam Argentina con la oferta de los diez minutos, después otras comunidades de Latinoamérica, y la escala con plataformas que pagan en USDC. Qué validé: soy el usuario, los pagos en stablecoins se duplicaron en 2025 y el 94 % del volumen cripto en pesos es stablecoin, falta el hábito y no el acceso, y todavía no hay usuarios de afuera. Sin "nadie lo hace" ni los 4.068 proyectos.
-- **Métricas on-chain**: Al 6/10: 1 cuenta (la mía), 1 regla prendida, 1 cobro real que pasó por la regla (2,15 USDC, 0,21 apartados), 0 usuarios de afuera. En vivo: camalote.vercel.app/api/stats
+- **Métricas on-chain**: Al 6/10: 1 cuenta (la mía), 1 regla prendida, 1 cobro real que pasó por la regla (2,15 USDC, 0,21 apartados), 0 usuarios de afuera. En vivo: camalote.vercel.app/stats
 - **Ingresos**: 0 USDC: la comisión se cobra cuando la regla compra, y todavía no hubo compras.
 - **Página de la entrega**: https://colosseum.com/arena/projects/camalote
 
@@ -287,7 +287,7 @@ YouTube):
 - **¿Es self-custody?** Los USDC sí. Las acciones tokenizadas tienen el
   permanent delegate de Backed: la app lo dice tal cual.
 - **¿Cuántos cobros reales procesó el agente?** Hoy, cero de usuarios, y
-  se dice así. `/api/stats` los cuenta en vivo desde la base, con el link de
+  se dice así. `/stats` los cuenta en vivo desde la base, con el link de
   cada compra.
 - **¿Dónde está la IA? Parece una regla.** La regla es el límite que
   ponés vos; el agente de IA es el que trabaja adentro de ese límite: se

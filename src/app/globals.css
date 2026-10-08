@@ -162,6 +162,69 @@ dialog::backdrop {
   }
 }
 
+/* ——— /stats ——— */
+
+/* el número grande: cada dígito es una tira 0-9 que se corre hasta su lugar */
+.odometer-strip {
+  transform: translateY(calc(var(--digit) * -10%));
+}
+
+/* el ticket: picado arriba y abajo, como recién cortado */
+.receipt-edge {
+  --hole: 6px;
+  --step: 16px;
+  -webkit-mask:
+    radial-gradient(var(--hole) at 50% 0, #0000 98%, #000) 50% 0 / var(--step) 51% repeat-x,
+    radial-gradient(var(--hole) at 50% 100%, #0000 98%, #000) 50% 100% / var(--step) 51% repeat-x;
+  mask:
+    radial-gradient(var(--hole) at 50% 0, #0000 98%, #000) 50% 0 / var(--step) 51% repeat-x,
+    radial-gradient(var(--hole) at 50% 100%, #0000 98%, #000) 50% 100% / var(--step) 51% repeat-x;
+}
+
+/* el recorrido de la regla: una correntada de puntos que avanza */
+.path-flow {
+  background-image: linear-gradient(90deg, var(--solana-purple) 50%, transparent 50%);
+  background-size: 12px 100%;
+  opacity: 0.55;
+}
+
+.path-flow-vertical {
+  background-image: linear-gradient(180deg, var(--solana-purple) 50%, transparent 50%);
+  background-size: 100% 12px;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .odometer-strip {
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: odometer-in 1400ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .path-flow {
+    animation: path-flow-x 1.2s linear infinite;
+  }
+  .path-flow-vertical {
+    animation: path-flow-y 1.2s linear infinite;
+  }
+}
+
+@keyframes odometer-in {
+  from {
+    transform: translateY(0);
+  }
+}
+
+@keyframes path-flow-x {
+  to {
+    background-position: 12px 0;
+  }
+}
+
+@keyframes path-flow-y {
+  to {
+    background-position: 0 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .camalote-sail {
     opacity: 1;
