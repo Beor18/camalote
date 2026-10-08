@@ -349,6 +349,20 @@ data is what Pyth publishes freely, and it's central to when the rule acts.
 
 ## Evidencia (para el pitch)
 
+- **Compra real en mainnet con el SOL de la cuenta (2026-10-08, 14:32 ART)**:
+  cuenta J6Eqt6LgL1FBysSdEkALP5z16BVbMFtRjhu8cHJ1kTC6, 2,15 USDC al S&P 500
+  (compra a mano desde camalote.vercel.app, confirmada por Fernando). Tres
+  transacciones, las tres SUCCESS:
+  - Abrir la cuenta de SPYx con su SOL (0,0015566 SOL):
+    solscan.io/tx/5ifp5tYgz883EWwiFAJGJuHR1STadDH43RC9CNV3dPd8ZyjrYmWJDE1kfod9ViYsCQRcdYYwifVbYytyNTRvfno6
+  - La compra, 2,137646 USDC por 0,0027705 SPYx, sin gas (mercado y red 0,11 %):
+    solscan.io/tx/2izaSnAhfpyq5YYHM5BG6rDPKLbP2BxgU45bZ6vvhww8oVdQ7vrmB6Sw4Md1i8c5NyRr9nhvmuhQdfpX3EbG9cVU
+  - La comisión de Camalote, 0,01 USDC:
+    solscan.io/tx/4djnhb4wgW9W7h3BH3ReN8ChWriwUuXBckYybbQLZeovXm5QoeqzyMJBBziQSWd5mX5yuPfjgdoBwksfFhM8mKtd
+  Sin abrir la cuenta antes, Jupiter cobraba 788 bps por la misma compra.
+  Quedaron 0,000915 SOL, lo calculado. El video editado de esa sesión (39 s,
+  sin voz) está en `docs/demo/video-real/`, que no se sube al repo.
+
 - No decir que "nadie lo hace": hay precedentes cercanos que no ganaron,
   Rail Money y EarnFlow (Frontier) y Paycheck (Radar), con auto-split o
   swaps recurrentes y sin uso real. Lo que los separa de Camalote es la
