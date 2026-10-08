@@ -9,14 +9,16 @@
  * con fondo transparente, tal como los dibuja Chrome en pantalla. Todo lo demás
  * sigue siendo texto.
  *
- * Uso: node scripts/pitch-pdf.mjs   (deja docs/hackathon/pitch/camalote-pitch.pdf)
+ * Uso: node scripts/pitch-pdf.mjs      (index.html → docs/hackathon/pitch/camalote-pitch.pdf)
+ *      node scripts/pitch-pdf.mjs en   (en.html → docs/hackathon/pitch/camalote-pitch-en.pdf)
  */
 import { chromium } from "playwright-core";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const DECK = resolve("docs/hackathon/pitch/index.html");
-const OUT = resolve("docs/hackathon/pitch/camalote-pitch.pdf");
+const EN = process.argv[2] === "en";
+const DECK = resolve(`docs/hackathon/pitch/${EN ? "en" : "index"}.html`);
+const OUT = resolve(`docs/hackathon/pitch/camalote-pitch${EN ? "-en" : ""}.pdf`);
 
 const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 3 });

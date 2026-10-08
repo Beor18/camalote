@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camalote · Colosseum Pitch</title>
+<!--
+  Versión en inglés del pitch deck (index.html): mismas slides, mismo orden
+  y mismas notas, traducidas. Las capturas de la app son en inglés
+  (img/*-en.png). Se maneja igual: flechas, N, P, T y F.
+  Para el PDF: node scripts/pitch-pdf.mjs en (deja camalote-pitch-en.pdf).
+  La slide de tracción está oculta. Si cambia index.html, cambiar esta también.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Inter:wght@400..700&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0f0d0c; }
+  h1, h2, h3, p, ul, ol { margin: 0; }
+  ul, ol { padding-left: 1.1em; }
+  li + li { margin-top: 0.15em; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 0.45em 0.6em; border-bottom: 1px solid #E7E5E4; text-align: left; }
+  th { font-weight: 600; }
+  aside { display: none; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #deck { width: 1920px; height: 1080px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; visibility: hidden; opacity: 0; transition: opacity 200ms ease-out; }
+  .slide.on { visibility: visible; opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+  #bar { position: fixed; left: 0; bottom: 0; height: 4px; background: linear-gradient(100deg,#0052ff,#8b5cf6 52%,#109d74); transition: width 200ms ease-out; }
+  #notes { position: fixed; left: 16px; right: 16px; bottom: 16px; max-height: 40vh; overflow: auto; padding: 16px 20px; border-radius: 12px; background: rgba(28,25,23,0.94); color: #f0eee9; font: 18px/1.5 Inter, Arial, sans-serif; display: none; }
+  #notes.on { display: block; }
+  #notes b { color: #fff; margin-right: 0.4em; }
+  #hint { position: fixed; top: 12px; right: 16px; color: #a8a29e; font: 13px Inter, Arial, sans-serif; opacity: 0.8; }
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { height: auto; background: none; }
+    #stage { position: static; display: block; }
+    #deck { transform: none !important; width: auto; height: auto; }
+    .slide { position: relative; visibility: visible; opacity: 1; break-after: page; }
+    #bar, #notes, #hint { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<section class="slide" id="cover" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<img src="img/tripulacion.png" alt="The Camalote crew sailing on a camalote" style="position:absolute;left:1340px;top:330px;width:452px;height:316px;object-fit:contain">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Colosseum - Superteam Argentina Track</p>
+<div style="width:1180px;display:flex;flex-direction:column;gap:32px">
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.05;letter-spacing:-2px;color:#F0EEE9">Part of every payment</h1>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:96px;font-weight:700;line-height:1.05;letter-spacing:-2px;background:linear-gradient(100deg, #6D9BFF 0%, #B9A4F8 52%, #34D399 100%);background-clip:text;-webkit-text-fill-color:transparent">gets invested.</h1>
+<p style="font-size:32px;line-height:1.4;color:#C9C3BC">For people paid in USDC. The moment it lands, before you spend it.</p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;color:#F0EEE9">camalote</p>
+<p style="font-size:24px;color:#C9C3BC">Fernando · Corrientes, Argentina · camalote.vercel.app</p>
+</div>
+<aside><b>0:00–0:08</b> A few weeks ago I got paid 400 dollars for a job. And I thought what I always think: if anything's left, I'll invest it.</aside>
+</section>
+<section class="slide" id="problema" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">The problem</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#F0EEE9">I get paid 400 USDC. By month's end, I've invested 0.</h2>
+</div>
+<p style="font-size:32px;line-height:1.4;color:#C9C3BC;width:1400px">I'm a freelancer in Argentina. Like millions of people around the world, I get paid from abroad in USDC, whenever they pay me. My plan was always to invest whatever was left.</p>
+<div style="display:flex;align-items:stretch;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:32px;border-radius:24px">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#B9A4F8">Day 3</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#F0EEE9">400 USDC lands</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">A client abroad pays for a job.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:32px;border-radius:24px">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#B9A4F8">Day 5</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#F0EEE9">Rent</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">The first thing to go.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#292524;padding:32px;border-radius:24px">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#B9A4F8">Day 12</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#F0EEE9">Card and bills</p>
+<p style="font-size:24px;line-height:1.35;color:#C9C3BC">What's left keeps shrinking.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#B91C1C;padding:32px;border-radius:24px">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#FDE2E2">Day 30</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#FFFFFF">Invested: 0</p>
+<p style="font-size:24px;line-height:1.35;color:#FDE2E2">Nothing was left. Nothing ever is.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#A8A29E">2</p></div>
+<aside><b>0:08–0:22</b> Rent on the 5th. The card on the 12th. And at the end of the month… I'd invested zero. As always. And this happens to anyone paid in digital dollars without a fixed salary.</aside>
+</section>
+<section class="slide" id="idea" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">What I realized</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">The problem isn't the money. It's the moment.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#F3F1EE;padding:48px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#57534E">Invest what's left</h3>
+<p style="font-size:30px;line-height:1.45;color:#57534E">It comes at the end of the month, when there's nothing left. And investing on the same day every month assumes a salary freelancers don't have.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:48px;border-radius:24px;border:3px solid #7C3AED;box-shadow:0 24px 64px rgba(124,58,237,0.12)">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;color:#7C3AED">Invest when you get paid</h3>
+<p style="font-size:30px;line-height:1.45;color:#1C1917">There's only one moment when there's always money: when it lands. That's when your share is set aside, before rent.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C">3</p></div>
+<aside><b>0:22–0:30</b> The problem isn't the money, it's the moment. There's only one moment when there's always money: when it lands.</aside>
+</section>
+<section class="slide" id="producto" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Camalote</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:600px;color:#1C1917">Set a rule once. Every payment follows it.</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:28px;width:580px">
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">What share</h3><p style="font-size:28px;line-height:1.4;color:#57534E">10, 20 or 30% of every payment.</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">What for</h3><p style="font-size:28px;line-height:1.4;color:#57534E">A goal with a name: the trip, a new laptop, a safety net.</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Where</h3><p style="font-size:28px;line-height:1.4;color:#57534E">The S&amp;P 500, companies before their IPO, or dollars that earn.</p></div>
+</div>
+<img src="img/account-en.png" alt="The Camalote app: the 30% rule for the trip, and 40 USDC that just landed" style="position:absolute;right:128px;top:200px;width:1000px;height:625px;object-fit:cover;object-position:top;border-radius:24px;border:1px solid #E7E5E4;box-shadow:0 32px 80px rgba(28,25,23,0.14)">
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C">4</p></div>
+<aside><b>0:30–0:45</b> That's Camalote. You set one rule, once, for example: 30% of every payment for The trip, in tokenized stocks. And every payment follows it. With those 400, 120 would have been invested the same day I got paid.</aside>
+</section>
+<!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
+<section hidden id="cobro" data-transition="fade" style="display:none !important;background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">With Camalote</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">Same month. This time, 120 invested.</h2>
+</div>
+<div style="display:flex;align-items:stretch;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:3px solid #7C3AED">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#7C3AED">Day 3</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#1C1917">400 USDC lands</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">30% is already invested for The trip: 120 USDC.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#7C3AED">Day 5</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#1C1917">Rent</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">You pay it anyway, with what's left.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#7C3AED">Day 12</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#1C1917">Card and bills</p>
+<p style="font-size:24px;line-height:1.35;color:#57534E">Same as always.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#7C3AED;padding:32px;border-radius:24px">
+<p style="font-size:22px;font-weight:600;letter-spacing:1px;color:#EDE7FD">Day 30</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:34px;font-weight:700;line-height:1.15;color:#FFFFFF">Invested: 120</p>
+<p style="font-size:24px;line-height:1.35;color:#EDE7FD">Without remembering a thing.</p>
+</div>
+</div>
+<p style="font-size:32px;line-height:1.4;color:#1C1917;width:1500px">One difference: <b>your share goes first</b>, the same day you get paid.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C">5</p></div>
+<aside>Now the same month, with Camalote. On day 3 I get paid the same 400 dollars, and at that moment 30% is already invested for The trip: 120 dollars. I didn't have to do anything. On the 5th I pay rent anyway, with what's left. On the 12th, the card, same as always. And on day 30, instead of zero, I have 120 invested. One difference: my share went first, the same day I got paid.</aside>
+</section>
+<section class="slide" id="confianza" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:24px;width:1080px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">The automation</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;color:#F0EEE9">An AI agent does the work for you.</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:32px;width:1000px">
+<div style="display:flex;gap:24px;align-items:flex-start">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1;color:#B9A4F8;width:40px;flex:none">1</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.15;color:#F0EEE9">It sees you got paid</p><p style="font-size:26px;line-height:1.4;color:#C9C3BC">Within seconds, at any hour.</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:flex-start">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1;color:#B9A4F8;width:40px;flex:none">2</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.15;color:#F0EEE9">It sets your share aside and invests it</p><p style="font-size:26px;line-height:1.4;color:#C9C3BC">In what you chose, and it stays in your account.</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:flex-start">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1;color:#B9A4F8;width:40px;flex:none">3</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.15;color:#F0EEE9">It tells you what it did</p><p style="font-size:26px;line-height:1.4;color:#C9C3BC">“Bought 120 USDC of S&amp;P 500 for The trip.”</p></div>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.45;color:#C9C3BC;width:1000px;background:#292524;padding:28px 32px;border-radius:20px"><b style="color:#F0EEE9">You give it permission, with limits.</b> It can only invest what your rule says. It can never withdraw or move your money. Turn it off anytime.</p>
+<img src="img/agent-permission-en.png" alt="The agent's permission: what it can and can't do" style="position:absolute;right:160px;top:150px;width:360px;height:780px;object-fit:cover;object-position:top;border-radius:36px;box-shadow:0 32px 80px rgba(0,0,0,0.5)">
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#A8A29E">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#A8A29E">5</p></div>
+<aside><b>0:45–1:05</b> An AI agent does it. It sees you got paid, sets your share aside, invests it and tells you what it did. And its permission has limits: it can only invest what your rule says. It can never withdraw or move your money.</aside>
+</section>
+<section class="slide" id="ahora" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Why now</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">The three pieces only now exist together.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1;color:#7C3AED">2x</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">growth in real stablecoin payments in 2025: salaries, invoices and remittances. Money already arrives in digital dollars.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1;color:#7C3AED">6x</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">growth in tokenized stock volume on Solana: $4.9B in the first half of 2026.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1;color:#7C3AED">2026</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">agents can sign inside a bounded permission. Before, you had to remember and press the button.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Sources: McKinsey and Artemis 2025 · Crypto Briefing, H1 2026</p><p style="font-size:24px;color:#78716C">6</p></div>
+<aside><b>1:05–1:15</b> Why now? Stablecoin payments doubled, stocks are already on Solana, and agents can now act inside the ecosystem.</aside>
+</section>
+<section class="slide" id="mercado" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Market</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1500px;color:#1C1917">Built for anyone paid in USDC. Starting in Argentina.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#57534E">TAM · World</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:60px;font-weight:700;line-height:1;color:#1C1917;white-space:nowrap">$390B</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">in real stablecoin payments in 2025: salaries, invoices and remittances.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:1px solid #E7E5E4">
+<p style="font-size:24px;font-weight:600;color:#57534E">SAM · Latin America</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:60px;font-weight:700;line-height:1;color:#1C1917;white-space:nowrap">$39B</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">a year, if the region weighs the same as in the rest of crypto: about 10%.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px;border:3px solid #7C3AED">
+<p style="font-size:24px;font-weight:600;color:#7C3AED">SOM · Argentina</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:60px;font-weight:700;line-height:1;color:#1C1917;white-space:nowrap">$7.8B</p>
+<p style="font-size:28px;line-height:1.4;color:#57534E">a year paid in stablecoins to freelancers working for clients abroad. That's where we start.</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#57534E;width:1500px"><b style="color:#1C1917">First-year goal:</b> 1% of that market running through a Camalote rule.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Sources: McKinsey and Artemis 2025 · Chainalysis 2025 · iProfesional · iProUP</p><p style="font-size:24px;color:#78716C">7</p></div>
+<aside><b>1:15–1:25</b> Worldwide, 390 billion dollars a year are paid in stablecoins. We start in Argentina, with 7.8 billion. The first-year goal is to capture 1% of that market.</aside>
+</section>
+<!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
+<section hidden id="competencia" data-transition="fade" style="display:none !important;background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Competition</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">They all sell access. None invests when you get paid.</h2>
+</div>
+<table style="font-size:28px;color:#1C1917;font-family:'Inter', Arial, sans-serif">
+<tr style="background:#F3F1EE"><th style="width:28%;text-align:left">Option</th><th style="width:20%;text-align:left">Invests when you get paid</th><th style="width:18%;text-align:left">Named goal</th><th style="width:16%;text-align:left">Non-custodial</th><th style="width:18%;text-align:left">Per buy</th></tr>
+<tr style="background:#F1EBFE"><td><b>Camalote</b></td><td><b>Yes, on its own</b></td><td><b>Yes</b></td><td><b>Yes</b></td><td><b>0.45%, max 0.50</b></td></tr>
+<tr><td>Lemon, stocks</td><td>No</td><td>No</td><td>No</td><td>0.5% + 0.5%</td></tr>
+<tr><td>Takenos</td><td>No</td><td>No</td><td>No</td><td>0% on ETFs</td></tr>
+<tr><td>Phantom</td><td>No</td><td>No</td><td>Yes</td><td>0.85%</td></tr>
+<tr><td>Buying by hand on Solana</td><td>No</td><td>No</td><td>Yes</td><td>0.10%</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4;color:#57534E;width:1500px">With all of them, you have to remember to buy. That's exactly the step that fails.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Fees as published on Sep 13, 2026</p><p style="font-size:24px;color:#78716C">9</p></div>
+<aside>There are good options to buy stocks: Lemon, Takenos, Phantom, or buying by hand on Solana. They all sell access, and with all of them you have to remember to buy. That's exactly the step that fails. Our edge isn't the price, it's the mechanism.</aside>
+</section>
+<section class="slide" id="negocio" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Business model</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">We only earn when your rule buys.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:110px;font-weight:700;line-height:1;letter-spacing:-3px;color:#7C3AED">0.45%</p><p style="font-size:28px;line-height:1.4;color:#57534E">per stock purchase, never more than 0.50 USDC.</p></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:110px;font-weight:700;line-height:1;letter-spacing:-3px;color:#15803D">0.10%</p><p style="font-size:28px;line-height:1.4;color:#57534E">on dollars that earn.</p></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:110px;font-weight:700;line-height:1;letter-spacing:-3px;color:#1C1917">0</p><p style="font-size:28px;line-height:1.4;color:#57534E">to sell or withdraw. No subscription, no hidden spread.</p></div>
+</div>
+<p style="font-size:30px;line-height:1.4;color:#1C1917;width:1500px">It's a volume business: every payment is a purchase. <b>Scale comes from platforms that pay in USDC</b> and offer Camalote to the people they pay.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C">8</p></div>
+<aside><b>1:25–1:30</b> We earn a small fee, only when your rule buys.</aside>
+</section>
+<section class="slide" id="salida" data-transition="fade" style="background:#FBFAF8;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Go to market</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">The first twenty, one by one.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">1</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Communities paid in USDC</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">We start at Superteam Argentina, where bounties are paid in USDC. Then chapter by chapter, country by country.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">2</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Ten minutes with each one</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">“Give me ten minutes and your next payment invests itself.”</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED">3</p>
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700;line-height:1.2">Platforms that pay</h3>
+<p style="font-size:28px;line-height:1.4;color:#57534E">Whoever pays in USDC offers Camalote to whoever gets paid. That's where the scale is.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C">9</p></div>
+<aside><b>1:30–1:38</b> The first twenty could come from Superteam Argentina, one by one. Then, country by country.</aside>
+</section>
+<section class="slide" id="equipo" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Team</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">I built what I needed.</h2>
+</div>
+<ul style="font-size:30px;line-height:1.55;color:#1C1917;width:1000px">
+<li>Fernando, founder. Fullstack developer.</li>
+<li>Four years at Global Hitss building Smart TV streaming for Claro Video.</li>
+<li>Founded Tuneport: music where fans earn by curating new artists.</li>
+<li>Looking for a growth cofounder to take Camalote to communities and platforms that pay in USDC.</li>
+</ul>
+<img src="img/tripulacion.png" alt="The Camalote crew" style="position:absolute;right:128px;top:330px;width:560px;height:392px;object-fit:contain">
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track · github.com/Beor18</p><p style="font-size:24px;color:#78716C">10</p></div>
+<aside><b>1:38–1:48</b> I'm Fernando, a fullstack developer. I also founded Tuneport, and I'm looking for a cofounder who wants to join this adventure and grow Camalote.</aside>
+</section>
+<section class="slide" id="cierre" data-transition="fade" style="background:#1C1917;color:#F0EEE9;font-family:'Inter', Arial, sans-serif;padding:128px;display:grid;grid-template-columns:1fr 380px;gap:64px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:44px">
+<p style="font-size:32px;line-height:1.4;color:#C9C3BC">My next payment already has a destination. Yours can too.</p>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:100px;font-weight:700;line-height:1.05;letter-spacing:-3px;color:#F0EEE9">Pay yourself first.</h1>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:100px;font-weight:700;line-height:1.05;letter-spacing:-3px;background:linear-gradient(100deg, #6D9BFF 0%, #B9A4F8 52%, #34D399 100%);background-clip:text;-webkit-text-fill-color:transparent">No more remembering.</h1>
+<div style="display:flex;gap:64px">
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Try it</p><p style="font-size:36px;color:#F0EEE9">camalote.vercel.app</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#B9A4F8">Code</p><p style="font-size:36px;color:#F0EEE9">github.com/Beor18/camalote</p></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:20px;background:#FFFFFF;padding:40px 40px 32px;border-radius:32px;box-shadow:0 32px 80px rgba(0,0,0,0.45)">
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" role="img" aria-label="QR code to camalote.vercel.app" viewBox="0 0 29 29" shape-rendering="crispEdges"><path fill="#FFFFFF" d="M0 0h29v29H0z"/><path stroke="#1C1917" d="M0 0.5h7m6 0h3m1 0h4m1 0h7M0 1.5h1m5 0h1m4 0h6m3 0h1m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h5m1 0h2m1 0h2m3 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h2m1 0h1m3 0h6m1 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h2m2 0h1m4 0h1m2 0h1m1 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h5m1 0h1m1 0h1m1 0h2M0 8.5h1m1 0h5m2 0h2m1 0h1m3 0h2m4 0h5M0 9.5h1m2 0h3m3 0h1m2 0h4m2 0h7m3 0h1M0 10.5h2m1 0h2m1 0h3m2 0h1m1 0h4m1 0h1m3 0h3M0 11.5h1m1 0h4m1 0h4m2 0h1m1 0h1m3 0h1m1 0h1m2 0h2m1 0h1M1 12.5h2m1 0h1m1 0h2m1 0h1m1 0h2m1 0h2m1 0h1m2 0h1m4 0h2M0 13.5h2m1 0h2m2 0h3m1 0h2m2 0h2m2 0h6m3 0h1M2 14.5h1m1 0h3m1 0h1m1 0h2m6 0h1m1 0h1m1 0h5M4 15.5h1m3 0h2m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m3 0h1M2 16.5h1m3 0h2m2 0h1m1 0h1m3 0h2m7 0h2M0 17.5h1m6 0h1m1 0h7m3 0h2m1 0h3m1 0h1m1 0h1M0 18.5h1m2 0h1m2 0h1m2 0h3m1 0h4m1 0h1m4 0h2m1 0h1M0 19.5h1m1 0h1m7 0h4m1 0h1m2 0h4m2 0h1m2 0h1M0 20.5h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h2m1 0h2m1 0h5m1 0h3M8 21.5h4m3 0h6m3 0h5M0 22.5h7m2 0h2m1 0h1m4 0h1m1 0h2m1 0h1m1 0h3M0 23.5h1m5 0h1m1 0h3m3 0h1m1 0h1m2 0h2m3 0h1m2 0h1M0 24.5h1m1 0h3m1 0h1m1 0h3m5 0h1m1 0h1m1 0h5m1 0h1m1 0h1M0 25.5h1m1 0h3m1 0h1m1 0h3m1 0h4m1 0h2m1 0h1m4 0h2M0 26.5h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h4m1 0h9M0 27.5h1m5 0h1m4 0h5m1 0h2m1 0h1m2 0h1m1 0h1m1 0h1M0 28.5h7m1 0h5m2 0h1m8 0h1m1 0h1"/></svg>
+<div style="text-align:center"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:700;color:#1C1917">Scan and try it</p><p style="margin-top:4px;font-size:22px;color:#57534E">camalote.vercel.app</p></div>
+</div>
+<aside><b>1:48–2:00</b> My next payment already has a destination. Pay yourself first, and never have to remember again. Thank you.</aside>
+</section>
+<!-- Oculta: sumar class="slide", sacar hidden y el display:none para mostrarla de nuevo. -->
+<!-- Anexo: para la pregunta regulatoria. Va después del cierre, fuera de los 2 minutos. -->
+<section class="slide" id="regulacion" data-transition="fade" style="background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Appendix · Regulation</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;max-width:1600px;color:#1C1917">We don't hold funds, we don't recommend, and each issuer sets its countries.</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15;color:#1C1917">Non-custodial</p><p style="font-size:28px;line-height:1.4;color:#57534E">Each user has their own account. Camalote never holds the money and can't withdraw it.</p></div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15;color:#1C1917">Your rule, not advice</p><p style="font-size:28px;line-height:1.4;color:#57534E">We execute the rule the user sets, on third-party protocols. We don't recommend assets.</p></div>
+<div style="display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:700;line-height:1.15;color:#1C1917">Each issuer, its countries</p><p style="font-size:28px;line-height:1.4;color:#57534E">Stocks: not in the US, UK, Canada or Australia. Pre-IPO, Treasuries and loans: not in the US either. Argentina isn't excluded by any of them.</p></div>
+</div>
+<p style="font-size:30px;line-height:1.4;color:#1C1917;width:1500px"><b>Before investing</b>, every user confirms they don't live in an excluded country; without that, nothing is invested. <b>What's missing:</b> a legal opinion on whether executing the rule requires registering as a PSAV with Argentina's CNV. It's the first thing we fund.</p>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Sources: each issuer's terms as of Oct 6, 2026, linked in the README</p><p style="font-size:24px;color:#78716C">A</p></div>
+<aside><b>Appendix, 20 s</b> We're non-custodial and we execute the user's own rule: we don't advise. Each issuer excludes its countries, Argentina isn't on any list, and before investing every user confirms they don't live in an excluded country. Whether executing the rule on its own requires registering as a PSAV with the CNV, we don't know yet: the legal opinion is the first thing we'd fund.</aside>
+</section>
+<section hidden id="traccion" data-transition="fade" style="display:none !important;background:#F3F1EE;color:#1C1917;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:1fr 1fr;gap:64px">
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#7C3AED">Traction</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Small, real numbers.</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">rules set up</p></div>
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">real payments that went through a rule</p></div>
+<div style="display:flex;align-items:baseline;gap:24px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1;color:#7C3AED;width:200px">[__]</p><p style="font-size:30px;color:#1C1917">USDC invested, with receipts</p></div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#57534E">As of Oct 12, 2026. Every number comes from our database and can be verified on-chain.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px;background:#FFFFFF;padding:48px;border-radius:24px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:700">Built during the hackathon, Sep 14 to Oct 12</h3>
+<ul style="font-size:28px;line-height:1.55;color:#1C1917">
+<li>Named goals, and how many payments to go.</li>
+<li>Dollars that earn as a destination.</li>
+<li>Redesign and a three-step onboarding.</li>
+<li>The agent that follows the rule on its own.</li>
+<li>The rule and what's set aside, saved in the database.</li>
+</ul>
+<p style="font-size:24px;line-height:1.4;color:#57534E">Camalote has existed since August 2026. Everything before is declared and in the repo history.</p>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:64px;display:flex;justify-content:space-between"><p style="font-size:24px;color:#78716C">Camalote · Colosseum - Superteam Argentina Track</p><p style="font-size:24px;color:#78716C"></p></div>
+<aside>Traction. [Fill in on October 12 with the real numbers: how many people set up their rule, how many real payments went through it and how many USDC were invested. Committed floor: 10 rules, 3 payments, 50 USDC.] They're small numbers, but they're real, and each one can be verified. And this is what we built inside the hackathon window: named goals, dollars that earn, the redesign with onboarding, the agent that follows the rule on its own, and the rule saved in the database. Camalote has existed since August: everything before is declared.</aside>
+</section>
+</div></div>
+<div id="bar"></div>
+<div id="notes" aria-live="polite"></div>
+<div id="hint">← → next · N notes · P notes in another window · F fullscreen</div>
+<!-- Notas privadas opcionales (preguntas y respuestas): el archivo vive solo en la máquina de quien presenta. -->
+<script src="notas-privadas.js"></script>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  for (const [id, html] of Object.entries(window.NOTAS_PRIVADAS ?? {})) {
+    document.querySelector(`#${id} aside`)?.insertAdjacentHTML("beforeend", html);
+  }
+  const deck = document.getElementById("deck");
+  const bar = document.getElementById("bar");
+  const notes = document.getElementById("notes");
+  let i = Math.min(Math.max(parseInt(location.hash.slice(1), 10) - 1 || 0, 0), slides.length - 1);
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    deck.style.transform = `scale(${s})`;
+  }
+  function show(n) {
+    i = Math.min(Math.max(n, 0), slides.length - 1);
+    slides.forEach((el, k) => el.classList.toggle("on", k === i));
+    bar.style.width = `${((i + 1) / slides.length) * 100}%`;
+    notes.innerHTML = slides[i].querySelector("aside")?.innerHTML.trim() ?? "";
+    renderPresenter();
+    history.replaceState(null, "", `#${i + 1}`);
+  }
+  // P abre las notas en otra ventana: grabás o compartís solo esta pestaña y leés de la otra.
+  // Las flechas andan desde las dos ventanas; T en la de notas arranca o reinicia el cronómetro.
+  let presenter = null;
+  let startedAt = null;
+  const titleOf = (el) => (el?.querySelector("h1, h2")?.textContent ?? "").replace(/\s+/g, " ").trim();
+  function renderPresenter() {
+    if (!presenter || presenter.closed) return;
+    const d = presenter.document;
+    d.getElementById("pos").textContent = `${i + 1} / ${slides.length}`;
+    d.getElementById("title").textContent = titleOf(slides[i]);
+    d.getElementById("note").innerHTML = slides[i].querySelector("aside")?.innerHTML ?? "<i>No notes</i>";
+    d.getElementById("next").textContent = slides[i + 1] ? `Next: ${titleOf(slides[i + 1])}` : "Last slide";
+  }
+  function openPresenter() {
+    if (presenter && !presenter.closed) return presenter.focus();
+    presenter = window.open("", "camalote-notas", "width=820,height=640");
+    if (!presenter) return alert("Allow pop-ups to open the notes in another window.");
+    const d = presenter.document;
+    d.open();
+    d.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Notes · Camalote</title><style>
+      body { margin: 0; padding: 24px 28px; background: #1c1917; color: #d6d3d1; font: 24px/1.55 Inter, system-ui, sans-serif; }
+      header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; color: #a8a29e; font-size: 16px; }
+      #clock { font: 600 30px ui-monospace, monospace; color: #f0eee9; }
+      #clock.over { color: #f87171; }
+      h1 { margin: 10px 0 16px; font-size: 20px; color: #b9a4f8; }
+      #note b { display: block; margin-bottom: 6px; font-size: 18px; color: #b9a4f8; }
+      #next { margin-top: 22px; padding-top: 12px; border-top: 1px solid #292524; color: #a8a29e; font-size: 16px; }
+      button { font: inherit; font-size: 15px; background: #292524; color: #f0eee9; border: 1px solid #44403c; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+    </style></head><body>
+      <header><span id="pos"></span><span><span id="clock">0:00</span> <button id="timer" type="button">Start (T)</button></span></header>
+      <h1 id="title"></h1><div id="note"></div><p id="next"></p>
+    </body></html>`);
+    d.close();
+    const toggleTimer = () => { startedAt = startedAt ? null : Date.now(); d.getElementById("timer").textContent = startedAt ? "Restart (T)" : "Start (T)"; };
+    d.getElementById("timer").addEventListener("click", toggleTimer);
+    d.addEventListener("keydown", (e) => {
+      if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); show(i + 1); }
+      else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+      else if (e.key.toLowerCase() === "t") toggleTimer();
+    });
+    const tick = setInterval(() => {
+      if (presenter.closed) return clearInterval(tick);
+      const sec = startedAt ? Math.floor((Date.now() - startedAt) / 1000) : 0;
+      const clock = d.getElementById("clock");
+      clock.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+      clock.classList.toggle("over", sec > 120);
+    }, 250);
+    // Escondemos las notas de esta ventana para que nunca salgan en la grabación.
+    notes.classList.remove("on");
+    renderPresenter();
+  }
+  addEventListener("resize", fit);
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key.toLowerCase() === "n") notes.classList.toggle("on");
+    else if (e.key.toLowerCase() === "p") openPresenter();
+    else if (e.key.toLowerCase() === "f") (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
+  });
+  document.getElementById("stage").addEventListener("click", (e) => show(e.clientX > innerWidth / 3 ? i + 1 : i - 1));
+  setTimeout(() => (document.getElementById("hint").style.display = "none"), 4000);
+  fit();
+  show(i);
+</script>
+</body>
+</html>
