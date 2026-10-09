@@ -719,9 +719,6 @@ export function RunProgress({
               {t.app.doneViewSolana}
             </ExplorerLink>
           )}
-          {demo && (
-            <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
-          )}
         </div>
         <Button onClick={onReset} variant="secondary" className="mt-2">
           <RotateCcw className="size-4" aria-hidden="true" />
@@ -885,7 +882,6 @@ function HistoryList({
                         item.payeeName || truncateAddress(item.recipient ?? "")
                       )}${item.concept ? ` · ${item.concept}` : ""}`
                     : ""}
-                  {item.demo ? t.app.historySim : ""}
                 </p>
               </div>
             </div>

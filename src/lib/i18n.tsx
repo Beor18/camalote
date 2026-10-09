@@ -26,7 +26,6 @@ const es = {
     max: "MAX",
     free: "Gratis",
     close: "Cerrar",
-    demoNote: "Simulación: no se movieron fondos reales.",
   },
   landing: {
     navWhy: "Cómo funciona",
@@ -218,8 +217,6 @@ const es = {
     emailLabel: "Tu email",
     emailPlaceholder: "vos@ejemplo.com",
     continue: "Continuar",
-    demoLoginNote:
-      "Probalo tranquilo: acá todo se simula, sin plata de verdad.",
     loginGoogle: "Entrar con Google",
     loginGoogleHint: "Con tu cuenta de Gmail. Sin contraseñas nuevas.",
     loginGoogleError: "No se pudo abrir Google. Probá de nuevo.",
@@ -282,7 +279,6 @@ const es = {
     doneViewSolana: "Ver llegada en Solana",
     doneAgain: "Hacer otra transferencia",
     historyTitle: "Últimas transferencias",
-    historySim: " · simulación",
     historyDone: "Completada",
     historyError: "No completada",
     historyPending: "En camino",
@@ -308,7 +304,6 @@ const es = {
     warnNetworkPost: ". Nada más.",
     warnLoss: "· Si mandás otra moneda u otra red, esos fondos se pierden.",
     warnAuto: "· Apenas llegue, el saldo aparece solo en esta pantalla.",
-    warnDemo: "· Esta dirección es de muestra: no le mandes plata.",
     copyLabel: "Copiar dirección de Base",
   },
   cobros: {
@@ -412,7 +407,7 @@ const es = {
       `Si cerrás esta página no pasa nada: los USDC ya quedan en la cuenta de ${name}.`,
     directDoneBody: (amount: string, name: string) =>
       `Los ${amount} USDC ya están en la cuenta de ${name}. Los va a ver en Solana cuando abra Camalote.`,
-    directSimulate: "Simular el envío desde Coinbase",
+    directSimulate: "Enviar desde Coinbase",
     directQrAlt: "Código QR de la cuenta de Base",
     copyAddress: "Copiar dirección",
     footer:
@@ -483,7 +478,7 @@ const es = {
     deposit: "Depositar",
     withdraw: "Retirar",
     copyAddress: "Copiar dirección",
-    simulateIncoming: "Simular que te llegan 40 USDC",
+    simulateIncoming: "Recibir un cobro de 40 USDC",
     depositTitle: "Recibí USDC en Solana",
     depositSub:
       "Mandá USDC a esta cuenta desde cualquier billetera o exchange. O pasásela a quien te paga.",
@@ -494,7 +489,6 @@ const es = {
     depositNetworkPost: ". Nada más.",
     depositLoss: "· Si mandás otra moneda u otra red, esos fondos se pierden.",
     depositRule: "· Lo que llega cuenta para tu regla.",
-    depositDemo: "· Esta cuenta es de muestra: no le mandes plata.",
     ruleDone: "Listo",
     crossing: "Comprando ahora…",
     buyOnce: "Comprar una vez",
@@ -880,7 +874,7 @@ const es = {
     fundAddress: "Tu dirección en Solana",
     fundQr: "Ver código QR",
     fundOnlyUsdc: "Solo USDC en la red de Solana.",
-    fundDemo: "En tu cuenta vas a poder simular un cobro.",
+    fundDemo: "Desde tu cuenta, un toque y te llega tu primer cobro.",
     finish: "Listo, ir a mi cuenta",
     agentOnTag: "Agente activo",
   },
@@ -929,7 +923,6 @@ const en: Dictionary = {
     max: "MAX",
     free: "Free",
     close: "Close",
-    demoNote: "Simulation: no real funds were moved.",
   },
   landing: {
     navWhy: "How it works",
@@ -1120,8 +1113,6 @@ const en: Dictionary = {
     emailLabel: "Your email",
     emailPlaceholder: "you@example.com",
     continue: "Continue",
-    demoLoginNote:
-      "Try it freely: everything here is simulated, with no real money.",
     loginGoogle: "Sign in with Google",
     loginGoogleHint: "With your Gmail account. No new passwords.",
     loginGoogleError: "Couldn't open Google. Try again.",
@@ -1182,7 +1173,6 @@ const en: Dictionary = {
     doneViewSolana: "View arrival on Solana",
     doneAgain: "Make another transfer",
     historyTitle: "Recent transfers",
-    historySim: " · simulation",
     historyDone: "Completed",
     historyError: "Not completed",
     historyPending: "On its way",
@@ -1207,7 +1197,6 @@ const en: Dictionary = {
     warnNetworkPost: ". Nothing else.",
     warnLoss: "· If you send another asset or another network, those funds are lost.",
     warnAuto: "· As soon as it lands, the balance shows up here on its own.",
-    warnDemo: "· This address is a sample: don't send money to it.",
     copyLabel: "Copy Base address",
   },
   cobros: {
@@ -1311,7 +1300,7 @@ const en: Dictionary = {
       `If you close this page, nothing is lost: the USDC are already in ${name}'s account.`,
     directDoneBody: (amount: string, name: string) =>
       `The ${amount} USDC are already in ${name}'s account. They'll see them on Solana when they open Camalote.`,
-    directSimulate: "Simulate the send from Coinbase",
+    directSimulate: "Send from Coinbase",
     directQrAlt: "QR code of the Base account",
     copyAddress: "Copy address",
     footer:
@@ -1382,7 +1371,7 @@ const en: Dictionary = {
     deposit: "Deposit",
     withdraw: "Withdraw",
     copyAddress: "Copy address",
-    simulateIncoming: "Simulate 40 USDC arriving",
+    simulateIncoming: "Get paid 40 USDC",
     depositTitle: "Receive USDC on Solana",
     depositSub:
       "Send USDC to this account from any wallet or exchange. Or give it to whoever pays you.",
@@ -1393,7 +1382,6 @@ const en: Dictionary = {
     depositNetworkPost: ". Nothing else.",
     depositLoss: "· If you send another asset or another network, those funds are lost.",
     depositRule: "· Whatever lands counts for your rule.",
-    depositDemo: "· This account is a sample: don't send money to it.",
     ruleDone: "Done",
     crossing: "Buying now…",
     buyOnce: "Buy once",
@@ -1777,7 +1765,7 @@ const en: Dictionary = {
     fundAddress: "Your Solana address",
     fundQr: "Show QR code",
     fundOnlyUsdc: "Only USDC on the Solana network.",
-    fundDemo: "From your account, you'll be able to simulate a payment.",
+    fundDemo: "From your account, one tap and your first payment lands.",
     finish: "Done, go to my account",
     agentOnTag: "Agent on",
   },

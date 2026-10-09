@@ -158,11 +158,7 @@ export function WithdrawModal({
                 : t.withdrawModal.doneBodyNoAmount}
             </p>
           </div>
-          {demo ? (
-            <p className="text-xs text-muted-foreground">
-              {t.common.demoNote}
-            </p>
-          ) : (
+          {!demo && (
             <a
               href={solanaExplorerTx(signature)}
               target="_blank"

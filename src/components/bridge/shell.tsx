@@ -245,10 +245,6 @@ export function LoginCard({
     </form>
   );
 
-  const demoNote = session.demo && (
-    <p className="text-center text-xs text-muted-foreground">{t.app.demoLoginNote}</p>
-  );
-
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 animate-fade-up">
       <div className="text-center">
@@ -273,7 +269,6 @@ export function LoginCard({
                 <p className="text-center text-xs text-muted-foreground">{t.app.loginHint}</p>
               </>
             )}
-            {demoNote}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -315,7 +310,6 @@ export function LoginCard({
                 {t.app.loginEmailLink}
               </button>
             )}
-            {demoNote}
           </div>
         )}
       </Card>

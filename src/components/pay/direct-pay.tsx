@@ -94,7 +94,6 @@ export function DirectPayCard({
         <p className="mt-2 text-muted-foreground">
           {t.pay.directDoneBody(formatUsdc(arrived, 2, lang), payeeName)}
         </p>
-        {demo && <p className="mt-3 text-xs text-muted-foreground">{t.common.demoNote}</p>}
         <ViralCta />
       </Card>
     );

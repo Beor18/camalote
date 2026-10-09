@@ -6,6 +6,8 @@ import { X } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
 import { useLang } from "@/lib/i18n";
 
+const DEMO_QR_TARGET = "https://camalote.vercel.app";
+
 /**
  * Muestra la dirección de Base del usuario para que se mande sus USDC
  * (desde Coinbase, otra billetera, etc.), con QR y advertencias claras.
@@ -34,7 +36,9 @@ export function DepositModal({
 
   useEffect(() => {
     if (open && address && canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, address, {
+      // En el demo la dirección no es de nadie: el QR lleva a la web, así nadie
+      // le manda plata escaneándolo de un video.
+      QRCode.toCanvas(canvasRef.current, demo ? DEMO_QR_TARGET : address, {
         width: 176,
         margin: 1,
         color: { dark: "#1c1917", light: "#ffffff" },
@@ -42,7 +46,7 @@ export function DepositModal({
         // sin QR igual queda la dirección en texto
       });
     }
-  }, [open, address]);
+  }, [open, address, demo]);
 
   return (
     <dialog
@@ -97,7 +101,6 @@ export function DepositModal({
           </li>
           <li>{t.deposit.warnLoss}</li>
           <li>{t.deposit.warnAuto}</li>
-          {demo && <li>{t.deposit.warnDemo}</li>}
         </ul>
       </div>
     </dialog>

@@ -198,16 +198,10 @@ export function SellModal({
                   )}
             </p>
           </div>
-          {demo ? (
-            <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
-          ) : (
-            state.purchase.signature && (
-              <div className="text-sm">
-                <ExplorerLink href={solanaExplorerTx(state.purchase.signature)}>
-                  {t.invest.viewOnSolana}
-                </ExplorerLink>
-              </div>
-            )
+          {!demo && state.purchase.signature && (
+            <div className="text-sm">
+              <ExplorerLink href={solanaExplorerTx(state.purchase.signature)}>{t.invest.viewOnSolana}</ExplorerLink>
+            </div>
           )}
           <Button onClick={close} variant="secondary" className="mt-1">
             {t.invest.done}

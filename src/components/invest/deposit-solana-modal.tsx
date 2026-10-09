@@ -8,6 +8,8 @@ import { PhantomFund } from "@/components/invest/phantom-fund";
 import type { BridgeActions, BridgeSession } from "@/components/bridge/types";
 import { useLang } from "@/lib/i18n";
 
+const DEMO_QR_TARGET = "https://camalote.vercel.app";
+
 /**
  * La cuenta de Solana del usuario, con QR: para mandarse USDC desde donde
  * sea, o para pasársela a quien le paga. Lo que llega cuenta para la regla.
@@ -39,7 +41,9 @@ export function SolanaDepositModal({
 
   useEffect(() => {
     if (open && address && canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, address, {
+      // En el demo la dirección no es de nadie: el QR lleva a la web, así nadie
+      // le manda plata escaneándolo de un video.
+      QRCode.toCanvas(canvasRef.current, demo ? DEMO_QR_TARGET : address, {
         width: 176,
         margin: 1,
         color: { dark: "#1c1917", light: "#ffffff" },
@@ -47,7 +51,7 @@ export function SolanaDepositModal({
         // sin QR igual queda la dirección en texto
       });
     }
-  }, [open, address]);
+  }, [open, address, demo]);
 
   return (
     <dialog
@@ -103,7 +107,6 @@ export function SolanaDepositModal({
           </li>
           <li>{t.invest.depositLoss}</li>
           <li>{t.invest.depositRule}</li>
-          {demo && <li>{t.invest.depositDemo}</li>}
         </ul>
       </div>
     </dialog>

@@ -203,16 +203,10 @@ export function BuyCard({
               {t.invest.openDoneLine(assetName(p.asset, lang), formatSol(BigInt(p.openLamports), lang))}
             </p>
           )}
-          {demo ? (
-            <p className="text-xs text-muted-foreground">{t.common.demoNote}</p>
-          ) : (
-            p.signature && (
-              <div className="text-sm">
-                <ExplorerLink href={solanaExplorerTx(p.signature)}>
-                  {t.invest.viewOnSolana}
-                </ExplorerLink>
-              </div>
-            )
+          {!demo && p.signature && (
+            <div className="text-sm">
+              <ExplorerLink href={solanaExplorerTx(p.signature)}>{t.invest.viewOnSolana}</ExplorerLink>
+            </div>
           )}
           <Button variant="secondary" className="mt-1" onClick={() => setState({ phase: "idle" })}>
             <RotateCcw className="size-4" aria-hidden="true" />
