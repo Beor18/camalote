@@ -129,3 +129,20 @@ export function fitBuyToBalance(opts: {
   if (fits < minUnits) return { buyUnits: 0n, leftoverUnits: buyUnits };
   return { buyUnits: fits, leftoverUnits: buyUnits - fits };
 }
+
+/**
+ * Qué decirle a quien compra a mano cuando la reserva no entra en su saldo:
+ * hasta cuánto puede invertir si bajando el monto alcanza, o cuánto necesita
+ * en total si ni el mínimo entra (2,12 USDC con mínimo 2 y reserva 1: 3).
+ */
+export function fuelShortfall(opts: {
+  balanceUnits: bigint;
+  fuelUnits: bigint;
+  minUnits?: bigint;
+}): { kind: "lower"; maxUnits: bigint } | { kind: "topUp"; neededUnits: bigint } {
+  const minUnits = opts.minUnits ?? BUY_MIN_UNITS;
+  const maxUnits = opts.balanceUnits - opts.fuelUnits;
+  return maxUnits >= minUnits
+    ? { kind: "lower", maxUnits }
+    : { kind: "topUp", neededUnits: minUnits + opts.fuelUnits };
+}

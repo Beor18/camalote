@@ -8,6 +8,7 @@ import {
   buyLamportsNeeded,
   estimateBuyFuelUnits,
   fitBuyToBalance,
+  fuelShortfall,
   fuelUnitsFor,
   needsFuel,
   orderWithoutOpening,
@@ -118,5 +119,30 @@ describe("la orden de Jupiter con la cuenta ya abierta", () => {
     expect(
       orderWithoutOpening({ ...order, feeBps: 10, rentFeeLamports: 0n, signatureFeeLamports: 0n, prioritizationFeeLamports: 0n })
     ).toEqual({ outAmount: 252_594n, feeBps: 10 });
+  });
+});
+
+describe("cuando la reserva de red no entra en el saldo", () => {
+  it("si bajando el monto alcanza, dice hasta cuánto se puede invertir", () => {
+    // 3,50 USDC, quiere 3, la reserva lleva 1: puede invertir hasta 2,50.
+    expect(fuelShortfall({ balanceUnits: 3_500_000n, fuelUnits: FUEL_UNITS, minUnits: 2_000_000n })).toEqual({
+      kind: "lower",
+      maxUnits: 2_500_000n,
+    });
+  });
+
+  it("si ni el mínimo entra, dice cuánto hace falta en total", () => {
+    // El caso del 2026-10-08: 2,12 USDC, mínimo 2 y reserva 1: hacen falta 3.
+    expect(fuelShortfall({ balanceUnits: 2_124_144n, fuelUnits: FUEL_UNITS, minUnits: 2_000_000n })).toEqual({
+      kind: "topUp",
+      neededUnits: 3_000_000n,
+    });
+  });
+
+  it("justo el mínimo más la reserva alcanza", () => {
+    expect(fuelShortfall({ balanceUnits: 3_000_000n, fuelUnits: FUEL_UNITS, minUnits: 2_000_000n })).toEqual({
+      kind: "lower",
+      maxUnits: 2_000_000n,
+    });
   });
 });

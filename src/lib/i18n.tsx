@@ -671,8 +671,12 @@ const es = {
     buyAmountMin: (min: string) => `El mínimo por compra es ${min} USDC.`,
     buyInsufficient: (balance: string) =>
       `No te alcanza: tenés ${balance} USDC en tu cuenta.`,
-    buyInsufficientFuel: (balance: string, fuel: string) =>
-      `No te alcanza: tenés ${balance} USDC y la reserva de red lleva ${fuel}.`,
+    buyFuelOpening: (asset: string, fuel: string) =>
+      `Tu primera compra de ${asset} abre su cuenta y lleva ${fuel} USDC de reserva de red, que queda en tu cuenta como SOL.`,
+    buyFuelLowSol: (fuel: string) =>
+      `A tu cuenta casi no le queda SOL para la red: esta compra lleva ${fuel} USDC de reserva, que queda en tu cuenta como SOL.`,
+    buyFuelUpTo: (max: string) => `Podés invertir hasta ${max} USDC.`,
+    buyFuelNeedAtLeast: (needed: string, balance: string) => `Necesitás al menos ${needed} USDC y tenés ${balance}.`,
     buyQuote: (asset: string) => `Ver precio de ${asset}`,
     quoteLoading: "Buscando el mejor precio…",
     rowSpend: "Invertís",
@@ -1569,8 +1573,12 @@ const en: Dictionary = {
     buyAmountMin: (min: string) => `The minimum per purchase is ${min} USDC.`,
     buyInsufficient: (balance: string) =>
       `Not enough: you have ${balance} USDC in your account.`,
-    buyInsufficientFuel: (balance: string, fuel: string) =>
-      `Not enough: you have ${balance} USDC and the network reserve takes ${fuel}.`,
+    buyFuelOpening: (asset: string, fuel: string) =>
+      `Your first ${asset} purchase opens its account and takes ${fuel} USDC of network reserve, which stays in your account as SOL.`,
+    buyFuelLowSol: (fuel: string) =>
+      `Your account is almost out of SOL for the network: this purchase takes ${fuel} USDC of reserve, which stays in your account as SOL.`,
+    buyFuelUpTo: (max: string) => `You can invest up to ${max} USDC.`,
+    buyFuelNeedAtLeast: (needed: string, balance: string) => `You need at least ${needed} USDC and you have ${balance}.`,
     buyQuote: (asset: string) => `See ${asset} price`,
     quoteLoading: "Finding the best price…",
     rowSpend: "You invest",

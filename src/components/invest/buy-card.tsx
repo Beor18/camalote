@@ -18,6 +18,7 @@ import {
   isDollars,
   type XStockSymbol,
 } from "@/lib/invest/catalog";
+import { fuelShortfall } from "@/lib/invest/fuel";
 import type { PricesResult } from "@/lib/invest/prices";
 import {
   feeBpsFor,
@@ -131,13 +132,19 @@ export function BuyCard({
       const q = await onQuote(asset, amountUnits);
       // La estimación pudo no contar con la reserva: si con ella no alcanza, se avisa antes.
       if (q.fuelUnits > 0n && balanceUnits !== null && q.usdcUnits + q.fuelUnits > balanceUnits) {
-        setState({
-          phase: "idle",
-          error: t.invest.buyInsufficientFuel(
-            formatUsdc(balanceUnits, 2, lang),
-            formatUsdc(q.fuelUnits, 0, lang)
-          ),
-        });
+        // Por qué lleva reserva (abrir la cuenta de esa inversión, o el SOL que
+        // se acabó) y qué hacer: bajar el monto o cargar más.
+        const fuelText = formatUsdc(q.fuelUnits, 0, lang);
+        const why =
+          q.openLamports > 0n
+            ? t.invest.buyFuelOpening(assetName(q.asset, lang), fuelText)
+            : t.invest.buyFuelLowSol(fuelText);
+        const short = fuelShortfall({ balanceUnits, fuelUnits: q.fuelUnits });
+        const next =
+          short.kind === "lower"
+            ? t.invest.buyFuelUpTo(formatUsdc(short.maxUnits, 2, lang))
+            : t.invest.buyFuelNeedAtLeast(formatUsdc(short.neededUnits, 0, lang), formatUsdc(balanceUnits, 2, lang));
+        setState({ phase: "idle", error: `${why} ${next}` });
         return;
       }
       setState({ phase: "quoted", quote: q });
