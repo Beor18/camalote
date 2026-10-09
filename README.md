@@ -195,8 +195,15 @@ thing we would fund.
   Solscan link for every recent buy.
 - **Not yet on video:** a real payment triggering the automatic buy on
   mainnet. It needs 20 USDC (10 USDC minimum buy at a 50% rule).
-- **175 unit tests** (Vitest) on the rule, goals, fees, guards, yields,
-  merges, withdrawals, the stats and the agent's chat tools.
+- **220 tests** (Vitest) on the rule, goals, fees, guards, yields,
+  merges, withdrawals, the stats and the agent's chat tools, plus the
+  agent's full circuit end to end
+  ([`src/test/agent-circuit.test.ts`](src/test/agent-circuit.test.ts)):
+  a payment webhook sets the share aside and buys, the network reserve and
+  the new account come first, repeated webhooks buy once, an order with a
+  program outside the allow list is never signed, and the agent waits for
+  Wall Street hours. Only Solana, Jupiter, Privy, the database and the AI
+  are mocked.
 
 ## Business model
 
