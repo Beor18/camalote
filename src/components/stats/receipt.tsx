@@ -92,7 +92,8 @@ export function Receipt({ data }: { data: Traction }) {
                     <span className="truncate font-sans font-medium">{name}</span>
                     <span className="text-right font-semibold tabular-nums">{usdc} USDC</span>
                     <span className="min-w-0 text-xs text-muted-foreground">
-                      {when.date} · {when.time} · {buy.source === "rule" ? t.stats.sourceRule : t.stats.sourceManual}
+                      {when.date} · {when.time}
+                      {buy.source === "rule" ? ` · ${t.stats.sourceRule}` : ""}
                     </span>
                     <span className="inline-flex items-center justify-end gap-0.5 text-xs font-medium">
                       {t.stats.verify}

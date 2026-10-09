@@ -10,11 +10,9 @@ import {
   LogOut,
   Mail,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
 } from "lucide-react";
 import { CamaloteLogo } from "@/components/logo";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,14 +56,6 @@ export function BridgeShell({
           </Link>
           <div className="flex items-center gap-2">
             <LangToggle />
-            {session.demo && (
-              <Badge tone="warning" title={t.common.demoBadge}>
-                <Sparkles className="size-3" aria-hidden="true" />
-                {/* En teléfonos muy angostos el texto no entra al lado del logo. */}
-                <span className="hidden min-[400px]:inline">{t.common.demoBadge}</span>
-                <span className="sr-only min-[400px]:hidden">{t.common.demoBadge}</span>
-              </Badge>
-            )}
             {session.authenticated && (
               <button
                 type="button"

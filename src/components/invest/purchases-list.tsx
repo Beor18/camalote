@@ -82,10 +82,9 @@ export function PurchasesList({
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
-                    {sell ? "" : ` · ${p.source === "rule" ? t.invest.sourceRule : t.invest.sourceManual}`}
+                    {!sell && p.source === "rule" ? ` · ${t.invest.sourceRule}` : ""}
                     {p.status === "done" ? ` · ${tokens} ${p.asset}` : ""}
                     {feeText}
-                    {p.demo ? t.invest.sim : ""}
                     {p.status === "error" && p.errorMessage ? ` · ${p.errorMessage}` : ""}
                   </p>
                 </div>

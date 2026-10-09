@@ -12,12 +12,10 @@ import { useLang } from "@/lib/i18n";
  */
 export function AgentSheet({
   open,
-  demo,
   onEnable,
   onClose,
 }: {
   open: boolean;
-  demo: boolean;
   onEnable: () => Promise<void>;
   onClose: () => void;
 }) {
@@ -95,7 +93,7 @@ export function AgentSheet({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          {t.agent.sheetNote} {demo && t.agent.sheetNoteDemo}
+          {t.agent.sheetNote}
         </p>
 
         {error && (

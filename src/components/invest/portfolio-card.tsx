@@ -29,7 +29,6 @@ export function StocksSection({
   pricesLive,
   reference,
   yields = {},
-  demo,
   hasRule,
   onSell,
 }: {
@@ -40,7 +39,6 @@ export function StocksSection({
   reference?: ReferenceMap;
   /** Rendimiento de hoy de los dólares; si falta, el de referencia. */
   yields?: YieldMap;
-  demo: boolean;
   /** La regla está armada: el vacío dice "se compra solo con tu próximo cobro". */
   hasRule: boolean;
   onSell: (asset: XStockSymbol) => void;
@@ -141,7 +139,6 @@ export function StocksSection({
                           formatTokensPrecise(row.dividendUnits, lang, decimalsOf(row.asset)),
                           row.asset
                         )}
-                        {demo ? t.invest.sim : ""}
                       </p>
                     )}
                     {stock?.kind === "preipo" && reference?.[row.asset] && (

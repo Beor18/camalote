@@ -47,6 +47,8 @@ console.log("LANDING:", h, "px,", (h / 860).toFixed(2), "pantallas");
 
 // 2. Fer entra con su email
 await page.goto(`${BASE}/app`, { waitUntil: "networkidle" });
+// El email está detrás del link, debajo de Google y Phantom.
+await page.click("[data-testid=login-email]");
 await page.fill("#email", "fer@camalote.xyz");
 await page.click("button[type=submit]");
 await page.waitForSelector("[data-testid=invest-welcome]", { timeout: 15000 });
@@ -102,6 +104,10 @@ await page.click("[data-testid=simulate-incoming]");
 await purchasesDone(1);
 await page.waitForTimeout(1200);
 await shot("04-compra-por-regla");
+// Los movimientos: la compra de la regla dice "por tu regla" y nada más.
+await page.locator("[data-testid=invest-purchases]").scrollIntoViewIfNeeded();
+await page.locator("[data-testid=invest-purchases]").screenshot({ path: `${OUT}/04-movimientos.png` });
+console.log("MOVEMENTS:", (await text("[data-testid=invest-purchases]"))?.replace(/\s+/g, " "));
 console.log("PURCHASE:", await text("[data-testid=invest-purchases] p"));
 console.log("GOAL 2:", await text("[data-testid=goal-progress]"), "·", await text("[data-testid=goal-pct]"));
 console.log("MOMENT:", await text("[data-testid=rule-moment]"));
@@ -163,7 +169,7 @@ await page.waitForSelector("text=Earning!", { timeout: 30000 });
 console.log("DOLLARS BUY:", await text("[data-testid=invest-buy] p"));
 await page.click("[data-testid=buy-close]");
 await page.waitForTimeout(600);
-console.log("DOLLARS ROW:", await text("[data-testid=invest-portfolio] li:has-text('Dollars')"));
+console.log("DOLLARS ROW:", await text("[data-testid=invest-portfolio] li:has-text('US Treasuries')"));
 
 // 5b. Después 10 USDC de NVIDIA, como siempre.
 await page.click("[data-testid=buy-open]");

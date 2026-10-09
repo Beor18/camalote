@@ -328,7 +328,6 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
   const agentSheetEl = (
     <AgentSheet
       open={agentSheet}
-      demo={session.demo}
       onEnable={agent.enable}
       onClose={() => setAgentSheet(false)}
     />
@@ -438,7 +437,6 @@ export function InvestPanel({ session, balances, actions, agent }: Engine) {
           pricesLive={prices ? prices.live : null}
           reference={prices?.reference}
           yields={prices?.yields}
-          demo={session.demo}
           hasRule={Boolean(rule?.enabled)}
           onSell={(asset) => setSelling(asset)}
         />
