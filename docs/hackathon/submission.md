@@ -29,19 +29,23 @@ de proveedores, como el deck. Límites del formulario: Brief description 500, Wh
 500, notas para jurados 600 y 500. Están verificados.
 
 **2026-10-06:** el informe de Superteam Argentina pidió sacar "agente de
-IA". Decisión de Fernando: se queda, Camalote es un agente de IA. Estos
-campos son los publicados; no hay que volver a pegarlos. Cada número tiene
-su fuente en el README.
+IA". Decisión de Fernando: se queda, Camalote es un agente de IA. Cada
+número tiene su fuente en el README.
 
-**Brief description** (es el "About the project" público, 492/500 caracteres):
+**2026-10-09:** el rol de la IA, dicho igual en todos lados: la regla
+decide qué y cuánto; la IA decide cuándo y te cuenta. Cambiaron la Brief
+description y "What are you building": **hay que pegarlas en la ficha**.
+El resto de los campos sigue igual a lo publicado.
 
-You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. An AI agent invests your share the moment you get paid, in your own Solana account. It can never withdraw or move your money. Pay yourself first.
+**Brief description** (es el "About the project" público, 497/500 caracteres):
 
-**What are you building, and who is it for?** (727/1000):
+You get paid in USDC, but not on a schedule. The plan is to invest whatever is left, and nothing is ever left. The problem isn't the money, it's the moment: there's always money when it lands. With Camalote you set one rule, once (what share, what for, and where: the S&P 500, pre-IPO companies or dollars that earn) and every payment follows it. Your rule decides what and how much; an AI agent decides when and tells you, in your own Solana account. It can't withdraw a cent. Pay yourself first.
+
+**What are you building, and who is it for?** (842/1000):
 
 Camalote: you set one rule, once, and every payment follows it. What share (say 20%), what for (a goal with a name: the trip, a new laptop) and where (the S&P 500, companies before their IPO, or dollars that earn).
 
-An AI agent does the work: it learns you got paid within seconds, sets your share aside, invests it and tells you what it did. Its permission has limits: it can only invest what your rule says and can never withdraw or move your money. Sign in with Google or Phantom; everything stays in your own Solana account.
+Your rule decides what and how much; an AI agent decides when, and tells you. A payment lands and your share is set aside within seconds; once it reaches 10 USDC, the agent decides whether to invest now or wait, invests it and tells you why. Its permission has limits: it can only invest what your rule says and can never withdraw or move your money. Sign in with Google or Phantom; everything stays in your own Solana account.
 
 It's for freelancers and remote workers paid in USDC without a fixed salary. We start in Argentina, where freelancers working for clients abroad get about 7.8 billion dollars a year in stablecoins.
 

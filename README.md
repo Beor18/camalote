@@ -33,9 +33,11 @@ paid in USDC (30%) or USDT (22%) ([sources](#sources)). We start there.
      and others, with their risks stated in the app.
    - Dollars that earn: US Treasuries (USDY) or secured loans (Jupiter
      Lend), with today's rate.
-2. **Your AI agent does the rest.** USDC lands, the agent sets your share
-   aside, and once it adds up to 10 USDC it invests it in your own account
-   and tells you what it did. Small payments add up.
+2. **Your rule decides what and how much; your AI agent decides when, and
+   tells you.** USDC lands and your rule's share is set aside within
+   seconds. Once it adds up to 10 USDC, the agent decides whether to invest
+   now or wait, invests it in your own account and tells you why. Small
+   payments add up.
 3. **You see where it is.** The goal fills with every payment ("about 6
    more payments like the last one"), the portfolio shows today's value,
    the dividends xStocks reinvested for you, and a Solscan receipt for
@@ -46,20 +48,21 @@ Load USDC from Phantom and withdraw back to it.
 
 ## The AI agent
 
-You turn it on once and it works for you: it learns you got paid within
-seconds, sets your share aside, decides whether to invest now or wait,
-invests, and tells you in plain words what it did ("I bought 120 USDC of
-the S&P 500 for The trip"). "Your agent" in the app shows everything it
-did and who decided each step.
+Your rule decides what and how much; the AI agent decides when, and tells
+you. You turn it on once. Within seconds of a payment, code sets your
+rule's share aside, with no AI involved. Once it adds up to 10 USDC, the
+agent decides whether to invest now or wait, invests inside your rule, and
+tells you in plain words what it did and why ("What you set aside reached
+10 USDC and Wall Street is open, so I bought 12 USDC of S&P 500 for The
+trip"). It writes in the language of your app, and "Your agent" shows
+everything it did and who decided each step.
 
-Your rule is the limit it works inside:
-
-| The agent does | The limit |
-| --- | --- |
-| Notices every payment and sets your share aside | The share is the one in your rule |
-| Decides whether to invest now or wait (Wall Street closed, a pre-IPO premium too high) | It waits 6 hours at most; code checks market hours, premium and balance first |
-| Invests | Only in the asset of your rule, only what was set aside, signed inside a limited permission |
-| Tells you what it did | It never gives investment advice or changes your rule |
+| Step | Who | The limit |
+| --- | --- | --- |
+| Notice the payment and set your share aside | Code, from your rule, within seconds | The share is the one in your rule |
+| Decide whether to invest now or wait (Wall Street closed, a pre-IPO premium too high) | The AI agent | It waits 6 hours at most; code checks market hours, premium and balance first |
+| Invest | The agent's signer | Only in the asset of your rule, only what was set aside, inside a limited permission |
+| Tell you what it did and why | The AI agent | It never gives investment advice or changes your rule |
 
 The model is gpt-oss-120b, with other models as fallback. If no model
 answers, the rule keeps running on its own: your money never depends on the
@@ -140,6 +143,27 @@ Tokens in your own account · portfolio read from the chain
   the order: it must spend at most what was set aside and the bought
   tokens must land in the user's account ([`verify.ts`](src/lib/server/agent/verify.ts)).
   The policy can't see inside a Jupiter route; the simulation can.
+- **Proof, from the circuit test.** Jupiter is mocked to return an "order"
+  that sends SOL to a stranger through the System Program. The server
+  rejects it before signing: Privy's signer is never called, nothing is
+  sent to Jupiter, the 10 USDC set aside stay saved and the rule pauses.
+
+  ```
+  $ npx vitest run src/test/agent-circuit.test.ts -t "no es una compra" --reporter=verbose
+
+  stderr | src/test/agent-circuit.test.ts > el circuito completo: lo que el agente no hace > si Jupiter arma algo que no es una compra, no firma: lo apartado queda guardado y se pausa
+  [agent] orden rechazada, no se firma: La orden usa un programa no permitido (11111111111111111111111111111111).
+
+   ✓ src/test/agent-circuit.test.ts > el circuito completo: lo que el agente no hace > si Jupiter arma algo que no es una compra, no firma: lo apartado queda guardado y se pausa 23ms
+
+   Test Files  1 passed (1)
+        Tests  1 passed | 10 skipped (11)
+  ```
+
+  The server log, in English: "order rejected, not signed: the order uses
+  a program that isn't allowed (11111111111111111111111111111111, the
+  System Program)". The same line shows up in the production logs whenever
+  an order fails the check.
 - **One lock per account** in the database prevents double buys when two
   notifications arrive together.
 - **The chat never moves money.** Buys and sales from the chat open the
@@ -184,18 +208,18 @@ question: whether automatically executing the user's own rule requires
 registration with Argentina's CNV (as a PSAV); a legal opinion is the first
 thing we would fund.
 
-## Status (2026-10-06)
+## Status (2026-10-09)
 
 - **Live on Solana mainnet**: [camalote.vercel.app](https://camalote.vercel.app);
   [`/api/health`](https://camalote.vercel.app/api/health) checks every
   dependency.
-- **Users: none yet.** The first 20 come this week, one by one, from
-  Superteam Argentina. [`/stats`](https://camalote.vercel.app/stats)
-  counts accounts, rules on, agents on, rule buys and USDC invested, with a
-  Solscan link for every recent buy.
+- **Numbers on 2026-10-09**, live at [`/stats`](https://camalote.vercel.app/stats):
+  7 accounts, 3 rules on, 2 agents on and 4.28 USDC invested, in two buys
+  of the S&P 500, each with its Solscan link. Rule buys: none yet. The
+  first 20 users come one by one from Superteam Argentina.
 - **Not yet on video:** a real payment triggering the automatic buy on
   mainnet. It needs 20 USDC (10 USDC minimum buy at a 50% rule).
-- **220 tests** (Vitest) on the rule, goals, fees, guards, yields,
+- **225 tests** (Vitest) on the rule, goals, fees, guards, yields,
   merges, withdrawals, the stats and the agent's chat tools, plus the
   agent's full circuit end to end
   ([`src/test/agent-circuit.test.ts`](src/test/agent-circuit.test.ts)):
