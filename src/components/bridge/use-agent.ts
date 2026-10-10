@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSigners } from "@privy-io/react-auth";
 import { AGENT_POLICY_ID, AGENT_SIGNER_ID } from "@/lib/config";
 import { useLang } from "@/lib/i18n";
-import { disabledMessage, enabledMessage } from "@/lib/invest/agent-messages";
+import { disabledMessage, enabledMessage, inBothLangs, type Lang, type Messages } from "@/lib/invest/agent-messages";
 import { AgentChatError, postAgentChat } from "@/lib/invest/agent-chat";
 import { requestCloudPull } from "@/lib/invest/cloud-sync";
 import { AGENT_EVENT, loadDemoAgent, setDemoAgentEnabled } from "@/lib/invest/demo-agent";
@@ -13,6 +13,12 @@ import type { AgentControls, AgentEventView } from "@/components/bridge/types";
 
 const POLL_ON_MS = 30_000;
 const POLL_OFF_MS = 120_000;
+
+/** Un mensaje de plantilla, en el idioma de ahora y en los dos para la bitácora. */
+function bilingual(write: (lang: Lang) => string, lang: Lang): { message: string; messages: Messages } {
+  const messages = inBothLangs(write);
+  return { message: messages[lang], messages };
+}
 
 /** El agente en demo: estado y bitácora en el navegador, misma pantalla. */
 export function useDemoAgent(address: string | null): AgentControls {
@@ -40,12 +46,12 @@ export function useDemoAgent(address: string | null): AgentControls {
       if (!address) return;
       // Lo que tarda Privy en mostrar el permiso, para que el demo se sienta igual.
       await new Promise((r) => setTimeout(r, 700));
-      setDemoAgentEnabled(address, true, enabledMessage(lang));
+      setDemoAgentEnabled(address, true, bilingual(enabledMessage, lang));
       notifyIncoming();
     },
     disable: async () => {
       if (!address) return;
-      setDemoAgentEnabled(address, false, disabledMessage(lang));
+      setDemoAgentEnabled(address, false, bilingual(disabledMessage, lang));
     },
     runNow: async () => {
       notifyIncoming();
@@ -71,9 +77,13 @@ export function useRealAgent(
 ): AgentControls {
   const { lang } = useLang();
   const { addSigners, removeSigners } = useSigners();
-  const [state, setState] = useState<{ available: boolean; enabled: boolean; events: AgentEventView[] } | null>(
-    null
-  );
+  const [state, setState] = useState<{
+    available: boolean;
+    enabled: boolean;
+    /** En qué idioma escribe el agente en el servidor. */
+    lang: Lang | null;
+    events: AgentEventView[];
+  } | null>(null);
   const lastEventId = useRef<string | number | null>(null);
   const tokenRef = useRef(getAccessToken);
   useEffect(() => {
@@ -83,7 +93,7 @@ export function useRealAgent(
   const configured = Boolean(AGENT_SIGNER_ID && AGENT_POLICY_ID);
 
   const call = useCallback(
-    async (method: "GET" | "POST" | "DELETE", path: string, body?: unknown) => {
+    async (method: "GET" | "POST" | "PATCH" | "DELETE", path: string, body?: unknown) => {
       const token = await tokenRef.current();
       if (!token) throw new Error("Volvé a entrar con tu email.");
       const res = await fetch(path, {
@@ -108,11 +118,23 @@ export function useRealAgent(
       const newest = events[0]?.id ?? null;
       if (lastEventId.current !== null && newest !== lastEventId.current) requestCloudPull();
       lastEventId.current = newest;
-      setState({ available: Boolean(data.available), enabled: Boolean(data.enabled), events });
+      const serverLang = data.lang === "es" || data.lang === "en" ? data.lang : null;
+      setState({ available: Boolean(data.available), enabled: Boolean(data.enabled), lang: serverLang, events });
     } catch {
-      setState((prev) => prev ?? { available: false, enabled: false, events: [] });
+      setState((prev) => prev ?? { available: false, enabled: false, lang: null, events: [] });
     }
   }, [address, authenticated, configured, call]);
+
+  // Si la app cambió de idioma después de activarlo, el agente pasa a escribir en el nuevo.
+  const serverLang = state?.enabled ? state.lang : null;
+  useEffect(() => {
+    if (!address || !serverLang || serverLang === lang) return;
+    call("PATCH", "/api/agent", { address, lang })
+      .then(() => setState((prev) => (prev ? { ...prev, lang } : prev)))
+      .catch(() => {
+        // se vuelve a intentar en la próxima lectura
+      });
+  }, [address, serverLang, lang, call]);
 
   useEffect(() => {
     // refresh() solo hace setState después de await (nunca sincrónicamente).

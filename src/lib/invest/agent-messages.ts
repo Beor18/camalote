@@ -1,4 +1,4 @@
-import { assetName, isDollars } from "@/lib/invest/catalog";
+import { assetName, isDollars, kindOf } from "@/lib/invest/catalog";
 import { formatUsdc } from "@/lib/format";
 
 /**
@@ -8,6 +8,21 @@ import { formatUsdc } from "@/lib/format";
  */
 
 export type Lang = "es" | "en";
+
+/** El mismo mensaje en los dos idiomas: la bitácora se lee en el idioma de la app. */
+export type Messages = Record<Lang, string>;
+
+export function inBothLangs(write: (lang: Lang) => string): Messages {
+  return { es: write("es"), en: write("en") };
+}
+
+/**
+ * Lo que muestra la bitácora: el mensaje en el idioma de la app si se guardó
+ * en los dos; si no (lo escribió la IA, en el idioma de la cuenta), tal cual.
+ */
+export function eventText(event: { message: string; messages?: Partial<Messages> | null }, lang: Lang): string {
+  return event.messages?.[lang] ?? event.message;
+}
 
 const usd = (units: bigint, lang: Lang) => formatUsdc(units, 2, lang);
 
@@ -23,24 +38,31 @@ export function setAsideMessage(
   return `You got ${usd(o.receivedUnits, lang)} USDC. I set aside ${usd(o.setAsideUnits, lang)}${where}. ${usd(o.pendingUnits, lang)} of 10 saved for the next buy.`;
 }
 
+/**
+ * Qué compró y por qué: lo apartado llegó al mínimo y, si es una acción y
+ * se sabe, Wall Street está abierto.
+ */
 export function boughtMessage(
-  o: { usdcUnits: bigint; asset: string; goalName?: string },
+  o: { usdcUnits: bigint; asset: string; goalName?: string; marketOpen?: boolean },
   lang: Lang
 ): string {
   const name = assetName(o.asset, lang);
   const dollars = isDollars(o.asset);
+  const open = o.marketOpen === true && kindOf(o.asset) === "stock";
   if (lang === "es") {
+    const why = open ? "Lo apartado llegó a 10 USDC y Wall Street está abierto" : "Lo apartado llegó a 10 USDC";
     const what = dollars
-      ? `Puse ${usd(o.usdcUnits, lang)} USDC a rendir en dólares`
-      : `Compré ${usd(o.usdcUnits, lang)} USDC de ${name}`;
+      ? `puse ${usd(o.usdcUnits, lang)} USDC a rendir en dólares`
+      : `compré ${usd(o.usdcUnits, lang)} USDC de ${name}`;
     const goal = o.goalName ? ` para ${o.goalName}` : "";
-    return `${what}${goal}.`;
+    return `${why}, así que ${what}${goal}.`;
   }
+  const why = open ? "What you set aside reached 10 USDC and Wall Street is open" : "What you set aside reached 10 USDC";
   const what = dollars
     ? `I put ${usd(o.usdcUnits, lang)} USDC to earn in dollars`
     : `I bought ${usd(o.usdcUnits, lang)} USDC of ${name}`;
   const goal = o.goalName ? ` for ${o.goalName}` : "";
-  return `${what}${goal}.`;
+  return `${why}, so ${what}${goal}.`;
 }
 
 export function waitingMarketMessage(o: { asset: string; nextOpen: string | null }, lang: Lang): string {

@@ -44,7 +44,11 @@ function save(address: string, state: DemoAgentState): void {
   }
 }
 
-export function setDemoAgentEnabled(address: string, enabled: boolean, message: string): void {
+export function setDemoAgentEnabled(
+  address: string,
+  enabled: boolean,
+  text: Pick<AgentEventView, "message" | "messages">
+): void {
   const current = loadDemoAgent(address);
   save(address, {
     enabled,
@@ -53,7 +57,7 @@ export function setDemoAgentEnabled(address: string, enabled: boolean, message: 
         id: `demo-${Date.now()}`,
         createdAt: Date.now(),
         kind: enabled ? ("enabled" as const) : ("disabled" as const),
-        message,
+        ...text,
       },
       ...current.events,
     ].slice(0, MAX_EVENTS),

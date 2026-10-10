@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/server/account-store";
+import type { Messages } from "@/lib/invest/agent-messages";
 
 /** Lo que el agente hizo y le contó al usuario. */
 export type AgentEventKind = "set_aside" | "bought" | "waiting" | "error" | "enabled" | "disabled";
@@ -10,6 +11,8 @@ export interface AgentEvent {
   createdAt: number;
   kind: AgentEventKind;
   message: string;
+  /** El mismo mensaje en los dos idiomas, cuando sale de una plantilla (no de la IA). */
+  messages?: Messages;
   decidedBy: "agent" | "rule" | null;
   data: Record<string, unknown>;
 }
@@ -78,6 +81,15 @@ export async function setAgent(
   if (error) throw new Error(error.message);
 }
 
+/** El idioma en que el agente escribe: el de la app, que puede cambiar después de activarlo. */
+export async function setAgentLang(address: string, lang: "es" | "en"): Promise<void> {
+  const { error } = await base()
+    .from("accounts")
+    .update({ lang, updated_at: new Date().toISOString() })
+    .eq("solana_address", address);
+  if (error) throw new Error(error.message);
+}
+
 /** Toma el candado de la cuenta. false = otro aviso ya está trabajando en ella. */
 export async function tryLock(address: string, seconds = 90): Promise<boolean> {
   const { data, error } = await base().rpc("agent_try_lock", { p_address: address, p_seconds: seconds });
@@ -91,14 +103,21 @@ export async function unlock(address: string): Promise<void> {
 
 export async function addEvent(
   address: string,
-  event: { kind: AgentEventKind; message: string; decidedBy?: "agent" | "rule"; data?: Record<string, unknown> }
+  event: {
+    kind: AgentEventKind;
+    message: string;
+    messages?: Messages;
+    decidedBy?: "agent" | "rule";
+    data?: Record<string, unknown>;
+  }
 ): Promise<void> {
   const { error } = await base().from("agent_events").insert({
     solana_address: address,
     kind: event.kind,
     message: event.message,
     decided_by: event.decidedBy ?? null,
-    data: event.data ?? {},
+    // Los dos idiomas viajan en data: no hace falta otra columna.
+    data: event.messages ? { ...(event.data ?? {}), messages: event.messages } : (event.data ?? {}),
   });
   if (error) console.error("[agent] no se pudo guardar el evento", error.message);
 }
@@ -111,12 +130,21 @@ export async function listEvents(address: string, limit = 20): Promise<AgentEven
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    id: row.id as number,
-    createdAt: Date.parse(row.created_at as string),
-    kind: row.kind as AgentEventKind,
-    message: row.message as string,
-    decidedBy: (row.decided_by as "agent" | "rule" | null) ?? null,
-    data: (row.data as Record<string, unknown>) ?? {},
-  }));
+  return (data ?? []).map((row) => {
+    const { messages, ...rest } = (row.data as Record<string, unknown>) ?? {};
+    return {
+      id: row.id as number,
+      createdAt: Date.parse(row.created_at as string),
+      kind: row.kind as AgentEventKind,
+      message: row.message as string,
+      ...(isMessages(messages) ? { messages } : {}),
+      decidedBy: (row.decided_by as "agent" | "rule" | null) ?? null,
+      data: rest,
+    };
+  });
+}
+
+function isMessages(value: unknown): value is Messages {
+  const m = value as Partial<Messages> | null;
+  return typeof m?.es === "string" && typeof m?.en === "string";
 }

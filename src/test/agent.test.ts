@@ -14,7 +14,7 @@ import { createCloseAccountInstruction, createTransferCheckedInstruction } from 
 import { assertAllowedPrograms, tokenAmountOf } from "@/lib/server/agent/verify";
 import { agentTurn, cleanMessage } from "@/lib/server/agent/brain";
 import { ownersReceivingUsdc } from "@/lib/server/agent/helius";
-import { boughtMessage, setAsideMessage, waitingMarketMessage } from "@/lib/invest/agent-messages";
+import { boughtMessage, eventText, inBothLangs, setAsideMessage, waitingMarketMessage } from "@/lib/invest/agent-messages";
 import { USDC_MAINNET_MINT } from "@/lib/invest/catalog";
 
 const payer = Keypair.generate().publicKey;
@@ -186,13 +186,37 @@ describe("mensajes del agente", () => {
       setAsideMessage({ receivedUnits: 40_000_000n, setAsideUnits: 8_000_000n, pendingUnits: 8_000_000n, goalName: "El viaje" }, "es")
     ).toBe("Te llegaron 40,00 USDC. Aparté 8,00 para El viaje. Ya junté 8,00 de 10 para la próxima compra.");
   });
-  it("dice qué compró, en inglés", () => {
+  it("dice qué compró y por qué, en inglés", () => {
     expect(boughtMessage({ usdcUnits: 12_000_000n, asset: "SPYx", goalName: "The trip" }, "en")).toBe(
-      "I bought 12.00 USDC of S&P 500 for The trip."
+      "What you set aside reached 10 USDC, so I bought 12.00 USDC of S&P 500 for The trip."
+    );
+  });
+  it("con Wall Street abierto, lo dice", () => {
+    expect(boughtMessage({ usdcUnits: 12_000_000n, asset: "SPYx", goalName: "El viaje", marketOpen: true }, "es")).toBe(
+      "Lo apartado llegó a 10 USDC y Wall Street está abierto, así que compré 12,00 USDC de S&P 500 para El viaje."
     );
   });
   it("dólares que rinden: no se compran, se ponen a rendir", () => {
-    expect(boughtMessage({ usdcUnits: 10_000_000n, asset: "USDY" }, "es")).toBe("Puse 10,00 USDC a rendir en dólares.");
+    expect(boughtMessage({ usdcUnits: 10_000_000n, asset: "USDY" }, "es")).toBe(
+      "Lo apartado llegó a 10 USDC, así que puse 10,00 USDC a rendir en dólares."
+    );
+  });
+  it("los dólares no esperan a Wall Street: no lo nombra", () => {
+    expect(boughtMessage({ usdcUnits: 10_000_000n, asset: "USDY", marketOpen: true }, "en")).not.toContain("Wall Street");
+  });
+  it("guarda el mismo mensaje en los dos idiomas", () => {
+    expect(inBothLangs((lang) => boughtMessage({ usdcUnits: 12_000_000n, asset: "SPYx" }, lang))).toEqual({
+      es: "Lo apartado llegó a 10 USDC, así que compré 12,00 USDC de S&P 500.",
+      en: "What you set aside reached 10 USDC, so I bought 12.00 USDC of S&P 500.",
+    });
+  });
+  it("la bitácora se lee en el idioma de la app", () => {
+    const event = { message: "Compré 12,00 USDC de S&P 500.", messages: { es: "Compré 12,00 USDC de S&P 500.", en: "I bought 12.00 USDC of S&P 500." } };
+    expect(eventText(event, "en")).toBe("I bought 12.00 USDC of S&P 500.");
+    expect(eventText(event, "es")).toBe("Compré 12,00 USDC de S&P 500.");
+  });
+  it("lo que escribió la IA queda en su idioma", () => {
+    expect(eventText({ message: "Compré 10 USDC de S&P 500." }, "en")).toBe("Compré 10 USDC de S&P 500.");
   });
   it("sin guion largo", () => {
     expect(waitingMarketMessage({ asset: "SPYx", nextOpen: "lunes 10:30" }, "es")).not.toContain("—");

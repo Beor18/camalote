@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { disabledMessage, enabledMessage } from "@/lib/invest/agent-messages";
+import { disabledMessage, enabledMessage, inBothLangs } from "@/lib/invest/agent-messages";
 import { AuthError, assertOwner, storeConfigured, userFromToken } from "@/lib/server/account-store";
 import { runAgent } from "@/lib/server/agent/executor";
 import { heliusConfigured, unwatchAddress, watchAddress } from "@/lib/server/agent/helius";
 import { agentSignerConfigured, agentWalletFor } from "@/lib/server/agent/privy";
 import { brainConfigured } from "@/lib/server/agent/brain";
-import { addEvent, getAgentAccount, listEvents, setAgent } from "@/lib/server/agent/store";
+import { addEvent, getAgentAccount, listEvents, setAgent, setAgentLang } from "@/lib/server/agent/store";
 import { clientIp, makeRateLimiter } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
       {
         available: true,
         enabled: Boolean(account?.enabled),
+        lang: account?.lang ?? null,
         enabledAt: account?.enabledAt ?? null,
         lastRun: account?.lastRun ?? null,
         brain: brainConfigured(),
@@ -94,7 +95,8 @@ export async function POST(req: NextRequest) {
     const walletId = await agentWalletFor(userId, address);
     if (!walletId) return NextResponse.json({ error: "No encontramos tu cuenta en Privy." }, { status: 409 });
     await setAgent(address, { enabled: true, walletId, lang });
-    await addEvent(address, { kind: "enabled", message: enabledMessage(lang) });
+    const messages = inBothLangs(enabledMessage);
+    await addEvent(address, { kind: "enabled", message: messages[lang], messages });
     after(async () => {
       try {
         await watchAddress(address);
@@ -109,6 +111,31 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * PATCH /api/agent { address, lang } → el agente escribe en el idioma de la
+ * app. La app lo manda cuando el idioma cambia después de activarlo.
+ */
+export async function PATCH(req: NextRequest) {
+  if (!available()) return NextResponse.json({ error: "El agente no está disponible." }, { status: 503 });
+  if (limited(clientIp(req))) return NextResponse.json({ error: "Esperá un minuto." }, { status: 429 });
+  let body: { address?: unknown; lang?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Cuerpo inválido." }, { status: 400 });
+  }
+  const { address, lang } = body;
+  if (!isAddress(address)) return NextResponse.json({ error: "Cuenta inválida." }, { status: 400 });
+  if (lang !== "es" && lang !== "en") return NextResponse.json({ error: "Idioma inválido." }, { status: 400 });
+  try {
+    await authorize(req, address);
+    await setAgentLang(address, lang);
+    return NextResponse.json({ lang });
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 /** DELETE /api/agent?address=… → apaga el agente (el navegador también saca el firmante en Privy). */
 export async function DELETE(req: NextRequest) {
   if (!available()) return NextResponse.json({ error: "El agente no está disponible." }, { status: 503 });
@@ -118,7 +145,8 @@ export async function DELETE(req: NextRequest) {
     await authorize(req, address);
     const account = await getAgentAccount(address);
     await setAgent(address, { enabled: false, walletId: null });
-    await addEvent(address, { kind: "disabled", message: disabledMessage(account?.lang ?? "en") });
+    const messages = inBothLangs(disabledMessage);
+    await addEvent(address, { kind: "disabled", message: messages[account?.lang ?? "en"], messages });
     after(async () => {
       try {
         await unwatchAddress(address);

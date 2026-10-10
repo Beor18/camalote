@@ -16,7 +16,14 @@ const h = vi.hoisted(() => {
   const state = {
     rule: null as Record<string, unknown> | null,
     purchases: [] as Record<string, unknown>[],
-    events: [] as { kind: string; decidedBy: string | null; message: string; data: Record<string, unknown>; createdAt: number }[],
+    events: [] as {
+      kind: string;
+      decidedBy: string | null;
+      message: string;
+      messages?: { es: string; en: string };
+      data: Record<string, unknown>;
+      createdAt: number;
+    }[],
     account: null as Record<string, unknown> | null,
     chain: [] as Record<string, unknown>[],
     locks: new Set<string>(),
@@ -54,7 +61,10 @@ vi.mock("@/lib/server/agent/store", () => ({
     return true;
   },
   unlock: async (address: string) => void h.state.locks.delete(address),
-  addEvent: async (_address: string, e: { kind: string; decidedBy: string | null; message: string; data: Record<string, unknown> }) =>
+  addEvent: async (
+    _address: string,
+    e: { kind: string; decidedBy: string | null; message: string; messages?: { es: string; en: string }; data: Record<string, unknown> }
+  ) =>
     void h.state.events.unshift({ ...e, createdAt: Date.now() }),
   listEvents: async (_address: string, limit = 20) => h.state.events.slice(0, limit),
 }));
@@ -251,6 +261,9 @@ describe("el circuito completo: un cobro termina en una compra", () => {
     expect(h.state.rule).toMatchObject({ pendingUnits: "0", seenSignatures: ["pay-1"] });
     expect(h.state.events[0]).toMatchObject({ kind: "bought", decidedBy: "rule" });
     expect(h.state.events[0].data).toMatchObject({ signature: "swap-sig", trigger: "webhook" });
+    // La bitácora se muestra en el idioma de la app, sea cual sea el de la cuenta.
+    expect(h.state.events[0].messages?.es).toMatch(/^Lo apartado llegó a 10 USDC/);
+    expect(h.state.events[0].messages?.en).toMatch(/^What you set aside reached 10 USDC/);
   });
 
   it("cuando decide la IA, la compra queda a su nombre", async () => {
@@ -261,6 +274,8 @@ describe("el circuito completo: un cobro termina en una compra", () => {
     await getPaid("pay-1", 50);
     expect(h.state.purchases[0]).toMatchObject({ status: "done", signature: "swap-sig" });
     expect(h.state.events[0]).toMatchObject({ kind: "bought", decidedBy: "agent", message: "Compré 10 USDC de S&P 500." });
+    // Lo que escribe la IA está en un solo idioma: el de la cuenta.
+    expect(h.state.events[0].messages).toBeUndefined();
   });
 
   it("primera compra sin SOL: carga la reserva, abre la cuenta y compra, en ese orden", async () => {

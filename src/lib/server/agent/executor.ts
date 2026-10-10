@@ -11,6 +11,8 @@ import type { InvestRule, Purchase } from "@/lib/invest/types";
 import {
   boughtMessage,
   errorMessage,
+  inBothLangs,
+  type Lang,
   setAsideMessage,
   waitingBalanceMessage,
   waitingEligibilityMessage,
@@ -95,15 +97,21 @@ async function signAndRun(opts: {
     taker: opts.owner,
   });
   if (!order.transaction) throw new Error("Jupiter no armó la operación.");
-  assertAllowedPrograms(decodeTx(order.transaction));
-  await simulateOrder({
-    connection: opts.connection,
-    transactionBase64: order.transaction,
-    owner: opts.owner,
-    inputMint: USDC_MAINNET_MINT,
-    outputMint: opts.outputMint,
-    maxInputUnits: opts.amount,
-  });
+  try {
+    assertAllowedPrograms(decodeTx(order.transaction));
+    await simulateOrder({
+      connection: opts.connection,
+      transactionBase64: order.transaction,
+      owner: opts.owner,
+      inputMint: USDC_MAINNET_MINT,
+      outputMint: opts.outputMint,
+      maxInputUnits: opts.amount,
+    });
+  } catch (err) {
+    // Queda en el log del servidor: una orden que no pasa la revisión no se firma.
+    console.warn("[agent] orden rechazada, no se firma:", err instanceof Error ? err.message : err);
+    throw err;
+  }
   const signed = await signAsUser(opts.walletId, order.transaction);
   const result = await ultraExecute({ signedTransaction: signed, requestId: order.requestId });
   if (result.status !== "Success" || !result.signature) {
@@ -221,6 +229,11 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
   if (!account?.enabled || !account.walletId) return "disabled";
   if (!(await tryLock(address))) return "busy";
   const lang = account.lang;
+  // Las plantillas se guardan en los dos idiomas: la bitácora se lee en el de la app.
+  const say = (write: (l: Lang) => string) => {
+    const messages = inBothLangs(write);
+    return { message: messages[lang], messages };
+  };
   try {
     const state = await readState(address);
     const rule = state.rule;
@@ -248,14 +261,16 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
       await addEvent(address, {
         kind: "set_aside",
         decidedBy: "rule",
-        message: setAsideMessage(
-          {
-            receivedUnits: BigInt(current.lastIncoming?.amountUnits ?? "0"),
-            setAsideUnits: plan.setAsideUnits,
-            pendingUnits: BigInt(current.pendingUnits),
-            goalName,
-          },
-          lang
+        ...say((l) =>
+          setAsideMessage(
+            {
+              receivedUnits: BigInt(current.lastIncoming?.amountUnits ?? "0"),
+              setAsideUnits: plan.setAsideUnits,
+              pendingUnits: BigInt(current.pendingUnits),
+              goalName,
+            },
+            l
+          )
         ),
         data: { setAsideUnits: plan.setAsideUnits.toString(), trigger },
       });
@@ -272,7 +287,7 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
         await addEvent(address, {
           kind: "waiting",
           decidedBy: "rule",
-          message: waitingEligibilityMessage(lang),
+          ...say(waitingEligibilityMessage),
           data: { blocked: { reason: "eligibility" }, trigger },
         });
       }
@@ -310,15 +325,17 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
         ? { ...current, pendingUnits: plan.buyUnits.toString(), waiting: blocked }
         : { ...current, pendingUnits: fit.leftoverUnits.toString(), waiting: undefined };
       await saveRule(address, waitingRule);
-      const message = blocked
-        ? blocked.reason === "market"
-          ? waitingMarketMessage({ asset: current.asset, nextOpen: formatNextOpen(blocked.nextOpen, lang) }, lang)
-          : waitingPremiumMessage({ asset: current.asset, premium: formatPremium(blocked.premiumBps, lang) }, lang)
-        : waitingBalanceMessage(lang);
+      const text = say((l) =>
+        blocked
+          ? blocked.reason === "market"
+            ? waitingMarketMessage({ asset: current.asset, nextOpen: formatNextOpen(blocked.nextOpen, l) }, l)
+            : waitingPremiumMessage({ asset: current.asset, premium: formatPremium(blocked.premiumBps, l) }, l)
+          : waitingBalanceMessage(l)
+      );
       // Un aviso por espera, no uno por vuelta.
       const last = (await listEvents(address, 1))[0];
       if (last?.kind !== "waiting") {
-        await addEvent(address, { kind: "waiting", decidedBy: "rule", message, data: { blocked, trigger } });
+        await addEvent(address, { kind: "waiting", decidedBy: "rule", ...text, data: { blocked, trigger } });
       }
       return "waiting";
     }
@@ -380,7 +397,7 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
         await addEvent(address, {
           kind: "waiting",
           decidedBy: "agent",
-          message: agentMessage ?? waitingBalanceMessage(lang),
+          ...(agentMessage ? { message: agentMessage } : say(waitingBalanceMessage)),
           data: { reason: agentWaitReason, trigger },
         });
         return "waiting";
@@ -402,7 +419,7 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
       await addEvent(address, {
         kind: "error",
         decidedBy,
-        message: errorMessage(lang),
+        ...say(errorMessage),
         data: { error: done.errorMessage, trigger },
       });
       return "error";
@@ -413,9 +430,19 @@ export async function runAgent(address: string, trigger: "webhook" | "tick" | "m
     await addEvent(address, {
       kind: "bought",
       decidedBy,
-      message:
-        agentMessage ??
-        boughtMessage({ usdcUnits: fit.buyUnits, asset: current.asset, goalName }, lang),
+      ...(agentMessage
+        ? { message: agentMessage }
+        : say((l) =>
+            boughtMessage(
+              {
+                usdcUnits: fit.buyUnits,
+                asset: current.asset,
+                goalName,
+                marketOpen: market?.market[current.asset]?.open,
+              },
+              l
+            )
+          )),
       data: { signature: done.signature, usdcUnits: done.usdcUnits, asset: done.asset, trigger },
     });
     return "bought";

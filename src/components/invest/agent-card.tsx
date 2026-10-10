@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLang } from "@/lib/i18n";
+import { eventText } from "@/lib/invest/agent-messages";
 import type { AgentControls, AgentEventView } from "@/components/bridge/types";
 
 /** En la tarjeta, las últimas tres cosas que importan. El resto, en "Ver todo". */
@@ -57,7 +58,7 @@ function EventRow({ event, now, clamp }: { event: AgentEventView; now: number; c
           <p className="truncate text-sm font-medium">{t.agent.kinds[event.kind] ?? event.kind}</p>
           <p className="shrink-0 text-xs tabular-nums text-muted-foreground">{ago ? t.agent.ago(ago) : t.agent.justNow}</p>
         </div>
-        <p className={`text-xs leading-relaxed text-muted-foreground ${clamp ? "line-clamp-2" : ""}`}>{event.message}</p>
+        <p className={`text-xs leading-relaxed text-muted-foreground ${clamp ? "line-clamp-2" : ""}`}>{eventText(event, lang)}</p>
       </div>
     </li>
   );

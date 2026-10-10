@@ -55,6 +55,8 @@ await page.waitForSelector("[data-testid=invest-welcome]", { timeout: 15000 });
 await page.waitForTimeout(900);
 await shot("02-app");
 console.log("LANG:", await page.evaluate(() => document.documentElement.lang));
+// En demo, la cabecera lo dice: nadie confunde el demo con el producto.
+console.log("DEMO BADGE:", await text("[data-testid=demo-badge]"));
 console.log("TABS VISIBLES:", await page.locator("nav[aria-label=Sections]").count());
 console.log("WELCOME CTA:", await text("[data-testid=rule-setup]"), "· primary buttons:", await page.locator("button.bg-primary").count());
 
@@ -114,6 +116,15 @@ console.log("MOMENT:", await text("[data-testid=rule-moment]"));
 console.log("PACE:", await text("[data-testid=goal-pace]"));
 await page.waitForFunction(() => document.querySelectorAll("[data-testid=agent-events] li").length >= 1, null, { timeout: 15000 });
 console.log("AGENT SAID:", await text("[data-testid=agent-events] li p.text-xs.leading-relaxed"));
+await page.locator("[data-testid=agent-events]").scrollIntoViewIfNeeded();
+await shot("04d-tu-agente");
+// La bitácora del agente sigue al idioma de la app, también lo que ya dijo.
+await page.click("[aria-label='Language / Idioma'] button:has-text('es')");
+await page.waitForTimeout(300);
+console.log("AGENT SAID (es):", await text("[data-testid=agent-events] li p.text-xs.leading-relaxed"));
+await shot("04e-tu-agente-es");
+await page.click("[aria-label='Language / Idioma'] button:has-text('en')");
+await page.waitForTimeout(300);
 
 // 4b. Edita: abre en el resumen, toca "Para qué" y baja la meta a 10: ya llegó.
 // Festejo y elige la próxima (el curso), que abre directo en ese paso.

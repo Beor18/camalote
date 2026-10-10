@@ -146,6 +146,8 @@ export interface AgentEventView {
   createdAt: number;
   kind: "set_aside" | "bought" | "waiting" | "error" | "enabled" | "disabled";
   message: string;
+  /** El mismo mensaje en los dos idiomas (plantillas). Lo que escribe la IA viene solo en `message`. */
+  messages?: { es: string; en: string };
   /** "agent" = decidió el modelo de IA; "rule" = la regla sola (plan B). */
   decidedBy?: "agent" | "rule" | null;
 }

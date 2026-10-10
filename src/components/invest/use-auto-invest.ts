@@ -5,6 +5,8 @@ import { useLang } from "@/lib/i18n";
 import {
   boughtMessage,
   errorMessage,
+  inBothLangs,
+  type Lang,
   setAsideMessage,
   waitingBalanceMessage,
   waitingEligibilityMessage,
@@ -105,13 +107,15 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
         notifyInvest();
       }
       // La bitácora del agente (solo demo: en red real la escribe el servidor).
-      const say = (kind: "set_aside" | "bought" | "waiting" | "error", message: string) => {
-        if (demo) recordDemoAgentEvent(address, { kind, message, decidedBy: "rule" });
+      // Se guarda en los dos idiomas: si cambia el de la app, la bitácora también.
+      const say = (kind: "set_aside" | "bought" | "waiting" | "error", write: (l: Lang) => string) => {
+        if (!demo) return;
+        const messages = inBothLangs(write);
+        recordDemoAgentEvent(address, { kind, message: messages[langRef.current], messages, decidedBy: "rule" });
       };
       const goalName = (r: InvestRule) => r.goal?.name;
       if (plan.setAsideUnits > 0n && plan.buyUnits === null) {
-        say(
-          "set_aside",
+        say("set_aside", (l) =>
           setAsideMessage(
             {
               receivedUnits: BigInt(plan.rule.lastIncoming?.amountUnits ?? "0"),
@@ -119,7 +123,7 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
               pendingUnits: BigInt(plan.rule.pendingUnits),
               goalName: goalName(plan.rule),
             },
-            langRef.current
+            l
           )
         );
       }
@@ -129,7 +133,7 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
         saveRule(address, { ...plan.rule, pendingUnits: plan.buyUnits.toString() });
         notifyInvest();
         // Se avisa cuando entra plata nueva, no en cada revisión.
-        if (plan.setAsideUnits > 0n) say("waiting", waitingEligibilityMessage(langRef.current));
+        if (plan.setAsideUnits > 0n) say("waiting", waitingEligibilityMessage);
         return;
       }
       if (plan.buyUnits !== null) {
@@ -155,17 +159,10 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
             waiting: blocked,
           });
           notifyInvest();
-          say(
-            "waiting",
+          say("waiting", (l) =>
             blocked.reason === "market"
-              ? waitingMarketMessage(
-                  { asset: rule.asset, nextOpen: formatNextOpen(blocked.nextOpen, langRef.current) },
-                  langRef.current
-                )
-              : waitingPremiumMessage(
-                  { asset: rule.asset, premium: formatPremium(blocked.premiumBps, langRef.current) },
-                  langRef.current
-                )
+              ? waitingMarketMessage({ asset: rule.asset, nextOpen: formatNextOpen(blocked.nextOpen, l) }, l)
+              : waitingPremiumMessage({ asset: rule.asset, premium: formatPremium(blocked.premiumBps, l) }, l)
           );
           return;
         }
@@ -181,7 +178,7 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
         if (fit.buyUnits === 0n) {
           saveRule(address, { ...plan.rule, pendingUnits: fit.leftoverUnits.toString(), waiting: undefined });
           notifyInvest();
-          say("waiting", waitingBalanceMessage(langRef.current));
+          say("waiting", waitingBalanceMessage);
           return;
         }
         const purchase = await executePurchase({
@@ -201,7 +198,7 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
             lastError: purchase.errorMessage,
             waiting: undefined,
           });
-          say("error", errorMessage(langRef.current));
+          say("error", errorMessage);
         } else {
           saveRule(address, {
             ...plan.rule,
@@ -210,9 +207,16 @@ export function useAutoInvest({ session, balances, actions, agent }: Engine): vo
             lastError: undefined,
             waiting: undefined,
           });
-          say(
-            "bought",
-            boughtMessage({ usdcUnits: fit.buyUnits, asset: rule.asset, goalName: goalName(plan.rule) }, langRef.current)
+          say("bought", (l) =>
+            boughtMessage(
+              {
+                usdcUnits: fit.buyUnits,
+                asset: rule.asset,
+                goalName: goalName(plan.rule),
+                marketOpen: market[rule.asset]?.open,
+              },
+              l
+            )
           );
         }
         notifyInvest();
