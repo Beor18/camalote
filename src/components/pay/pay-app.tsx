@@ -9,9 +9,11 @@ import {
   HandCoins,
   Info,
   LogOut,
+  Sparkles,
 } from "lucide-react";
 import { CamaloteLogo } from "@/components/logo";
 import { SolanaMark } from "@/components/chain-logos";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +53,12 @@ export function PayApp() {
           </Link>
           <div className="flex items-center gap-2">
             <LangToggle />
+            {session.demo && (
+              <Badge tone="warning">
+                <Sparkles className="size-3" aria-hidden="true" />
+                {t.common.demoBadge}
+              </Badge>
+            )}
             {session.authenticated && (
               <button
                 type="button"

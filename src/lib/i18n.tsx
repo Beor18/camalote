@@ -26,6 +26,7 @@ const es = {
     max: "MAX",
     free: "Gratis",
     close: "Cerrar",
+    demoBadge: "Demo · simulado",
   },
   landing: {
     navWhy: "Cómo funciona",
@@ -923,6 +924,7 @@ const en: Dictionary = {
     max: "MAX",
     free: "Free",
     close: "Close",
+    demoBadge: "Demo · simulated",
   },
   landing: {
     navWhy: "How it works",
